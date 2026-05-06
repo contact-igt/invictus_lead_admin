@@ -4,11 +4,12 @@ export interface ColumnConfig {
   field: string;
   header: string;
   type: FieldType;
-  options?: string[]; // For select or status_chip types
+  options?: string[]; 
   flex?: number;
   minWidth?: number;
   required?: boolean;
 }
+
 
 export interface DashboardMetricConfig {
   key: string;
