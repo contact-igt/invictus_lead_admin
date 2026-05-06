@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from 'react';
-import { Avatar3 } from 'data/images';
 import Menu from '@mui/material/Menu';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
@@ -24,11 +23,6 @@ interface MenuItems {
 
 const menuItems: MenuItems[] = [
   {
-    id: 1,
-    title: 'View Profile',
-    icon: 'hugeicons:user-circle-02',
-  },
-  {
     id: 2,
     title: 'Account Settings',
     icon: 'hugeicons:account-setting-02',
@@ -40,8 +34,11 @@ const menuItems: MenuItems[] = [
   },
 ];
 
-const ProfileMenu = ({user}: any) => {
-  const dispatch = useDispatch()
+const firstLetter = (name?: string | null): string =>
+  (name || '?').trim().charAt(0).toUpperCase();
+
+const ProfileMenu = ({ user }: any) => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -52,7 +49,7 @@ const ProfileMenu = ({user}: any) => {
 
   const handleProfileMenuClose = () => {
     setAnchorEl(null);
-  };  
+  };
 
   const logout = () => {
     dispatch(clearAuthData());
@@ -69,13 +66,16 @@ const ProfileMenu = ({user}: any) => {
         disableRipple
       >
         <Avatar
-          src={user && user?.profile_picture || Avatar3}
           sx={{
             height: 48,
             width: 48,
             bgcolor: 'primary.main',
+            fontWeight: 700,
+            fontSize: 20,
           }}
-        />
+        >
+          {firstLetter(user?.username)}
+        </Avatar>
       </ButtonBase>
 
       <Menu
@@ -86,23 +86,31 @@ const ProfileMenu = ({user}: any) => {
         onClick={handleProfileMenuClose}
         sx={{
           mt: 1.5,
-          '& .MuiList-root': {
-            p: 0,
-            width: 230,
-          },
+          '& .MuiList-root': { p: 0, width: 230 },
         }}
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
         <Box p={1}>
           <MenuItem onClick={handleProfileMenuClose} sx={{ '&:hover': { bgcolor: 'info.light' } }}>
-            <Avatar src={user && user?.profile_picture || Avatar3} sx={{ mr: 1, height: 42, width: 42 }} />
+            <Avatar
+              sx={{
+                mr: 1,
+                height: 42,
+                width: 42,
+                bgcolor: 'primary.main',
+                fontWeight: 700,
+                fontSize: 18,
+              }}
+            >
+              {firstLetter(user?.username)}
+            </Avatar>
             <Stack direction="column">
               <Typography variant="body2" color="text.primary" fontWeight={600}>
-                {user && user?.username}
+                {user?.username}
               </Typography>
               <Typography variant="caption" color="text.secondary" fontWeight={400}>
-              {user && user?.email}
+                {user?.email}
               </Typography>
             </Stack>
           </MenuItem>
@@ -112,12 +120,14 @@ const ProfileMenu = ({user}: any) => {
 
         <Box p={1}>
           {menuItems.map((item) => {
-              const handleClick = () => {
-                handleProfileMenuClose();
-                if (item.title === 'Logout') {
-                  logout(); // call your logout function here
-                }
-              };
+            const handleClick = () => {
+              handleProfileMenuClose();
+              if (item.title === 'Logout') {
+                logout();
+              } else if (item.title === 'Account Settings') {
+                navigate(path.settings);
+              }
+            };
             return (
               <MenuItem key={item.id} onClick={handleClick} sx={{ py: 1 }}>
                 <ListItemIcon sx={{ mr: 1, color: 'text.secondary', fontSize: 'h5.fontSize' }}>

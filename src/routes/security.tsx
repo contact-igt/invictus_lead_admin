@@ -15,6 +15,11 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
     return <Navigate to={`${paths.signin}`} state={{ from: location }} replace />;
   }
 
+  // Settings is always accessible to any authenticated user
+  if (location.pathname === paths.settings) {
+    return children;
+  }
+
   // Find the current route in the sitemap to determine requirements
   const currentItem = sitemap.find(item =>
     item.path === location.pathname ||

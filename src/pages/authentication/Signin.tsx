@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Navigate } from 'react-router-dom';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import Link from '@mui/material/Link';
@@ -12,9 +13,9 @@ import TextField from '@mui/material/TextField';
 import Checkbox from '@mui/material/Checkbox';
 import CircularProgress from '@mui/material/CircularProgress';
 import IconifyIcon from 'components/base/IconifyIcon';
-import Image from 'components/base/Image';
-import LogoImg from '/assets/brand-logo.png';
+import { useAuth } from 'redux/selectors/auth/authSelector';
 import { useLoginMutation } from './hooks/useLogin';
+import { resolveClientModuleKey } from 'utils/clientModuleResolver';
 
 const loginSchema = Yup.object().shape({
   email: Yup.string().email('Invalid email address').required('Email is required'),
@@ -22,8 +23,18 @@ const loginSchema = Yup.object().shape({
 });
 
 const Signin = () => {
+  const { token, user } = useAuth();
   const { mutate, isLoading } = useLoginMutation();
   const [showPassword, setShowPassword] = useState(false);
+
+  // Already logged in — redirect to the correct home
+  if (token) {
+    if (user?.role === 'client') {
+      const moduleKey = resolveClientModuleKey(user.clientKey);
+      return <Navigate to={moduleKey ? `/pages/d/${moduleKey}/overview` : '/'} replace />;
+    }
+    return <Navigate to="/" replace />;
+  }
 
   const formik = useFormik({
     initialValues: {
@@ -38,22 +49,11 @@ const Signin = () => {
 
   return (
     <>
-      <Stack
-        top={0}
-        pt={1}
-        pb={2.5}
-        justifyContent="center"
-        alignItems="center"
-        bgcolor="info.lighter"
-        zIndex={1000}
-      >
-        <Image src={LogoImg} alt="logo" height={50} width={200} sx={{ mr: 1.25 }} />
-      </Stack>
-      <Typography align="center" variant="h4" fontWeight={700}>
+      <Typography align="center" variant="h5" fontWeight={800} mb={0.5}>
         Sign In
       </Typography>
-      <Typography mt={1.5} mb={4} align="center" variant="body2" color="text.secondary">
-        Welcome back! Please enter your credentials to continue.
+      <Typography mb={3} align="center" variant="body2" color="text.secondary">
+        Enter your credentials to access the dashboard.
       </Typography>
 
       <Stack component="form" mt={3} onSubmit={formik.handleSubmit} direction="column" gap={2.5}>
