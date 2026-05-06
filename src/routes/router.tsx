@@ -15,6 +15,7 @@ const Signin = lazy(() => import('pages/authentication/Signin'));
 const UserManagement = lazy(() => import('pages/management'));
 const ClientManagement = lazy(() => import('pages/client'));
 const DynamicPage = lazy(() => import('pages/dynamic'));
+const SettingsPage = lazy(() => import('pages/settings'));
 
 const router = createBrowserRouter(
   [
@@ -70,6 +71,10 @@ const router = createBrowserRouter(
             {
               path: paths.clients,
               element: <ClientManagement />,
+            },
+            {
+              path: paths.settings,
+              element: <SettingsPage />,
             },
           ],
         },

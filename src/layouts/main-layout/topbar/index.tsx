@@ -51,7 +51,7 @@ const Topbar = ({ isClosing, mobileOpen, setMobileOpen }: TopbarProps) => {
           <Image src={LogoImg} alt="logo" height={50} width={200} sx={{ mr: 1.25 }} />
         </ButtonBase>
 
-        <Toolbar sx={{ display: { xm: 'block', lg: 'none' } }}>
+        <Toolbar sx={{ display: { xs: 'block', lg: 'none' } }}>
           <IconButton
             size="large"
             edge="start"
@@ -63,7 +63,7 @@ const Topbar = ({ isClosing, mobileOpen, setMobileOpen }: TopbarProps) => {
           </IconButton>
         </Toolbar>
 
-        <Toolbar sx={{ display: { xm: 'block', md: 'none' } }}>
+        <Toolbar sx={{ display: { xs: 'block', md: 'none' } }}>
           <IconButton size="large" edge="start" color="inherit" aria-label="search">
             <IconifyIcon icon="mynaui:search" />
           </IconButton>
