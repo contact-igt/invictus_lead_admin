@@ -1,0 +1,139 @@
+import { useState, ChangeEvent } from 'react';
+import { Box, Button, Drawer, Paper, Stack } from '@mui/material';
+import IconifyIcon from 'components/base/IconifyIcon';
+import PageTitle from 'components/common/PageTitle';
+import PageLoader from 'components/loader/PageLoader';
+import { Popup } from 'components/common/Popup';
+import ConfirmAlert from 'components/common/ConfirmAlert';
+import {
+  ClientRecord,
+  useClientQuery,
+  useCreateClientMutation,
+  useDeleteClientMutation,
+  useUpdateClientMutation,
+} from 'components/hooks/useClientQuery';
+import ClientTable from './ClientTable';
+import ClientForm from './ClientForm';
+
+const ClientSection = () => {
+  const { data: clients = [], isLoading } = useClientQuery();
+  const createMutation = useCreateClientMutation();
+  const updateMutation = useUpdateClientMutation();
+  const deleteMutation = useDeleteClientMutation();
+
+  const [searchText, setSearchText] = useState('');
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [selectedClient, setSelectedClient] = useState<ClientRecord | null>(null);
+  const [selectedId, setSelectedId] = useState<number | string>(0);
+  const [isReadOnly, setIsReadOnly] = useState(false);
+
+  const handleSearch = (e: ChangeEvent<HTMLInputElement>) => setSearchText(e.target.value);
+
+  const openDrawer = (client?: ClientRecord, readOnly = false) => {
+    setSelectedClient(client ?? null);
+    setIsReadOnly(readOnly);
+    setDrawerOpen(true);
+  };
+
+  const closeDrawer = () => {
+    setDrawerOpen(false);
+    setSelectedClient(null);
+    setIsReadOnly(false);
+  };
+
+  const openConfirm = (id: number | string) => {
+    setSelectedId(id);
+    setConfirmOpen(true);
+  };
+
+  const handleDelete = () => {
+    deleteMutation.mutate(selectedId, {
+      onSuccess: () => setConfirmOpen(false),
+    });
+  };
+
+  const handleSubmit = (values: { name: string; client_key?: string }) => {
+    if (selectedClient) {
+      updateMutation.mutate(
+        { id: selectedClient.id, data: values },
+        { onSuccess: closeDrawer },
+      );
+    } else {
+      createMutation.mutate(values, { onSuccess: closeDrawer });
+    }
+  };
+
+  if (isLoading) return <PageLoader />;
+
+  return (
+    <>
+      <Stack direction="column" spacing={1.5} width={1}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <PageTitle
+            title="Client Management"
+            searchText={searchText}
+            handleInputChange={handleSearch}
+          />
+          <Button
+            variant="contained"
+            startIcon={<IconifyIcon icon="mingcute:add-line" />}
+            onClick={() => openDrawer()}
+            sx={{ height: 45, px: 2.5 }}
+          >
+            Add Client
+          </Button>
+        </Box>
+
+        <Paper
+          elevation={0}
+          sx={{
+            p: 0,
+            width: 1,
+            borderRadius: 3,
+            border: '1px solid',
+            borderColor: 'divider',
+            boxShadow: '0px 4px 24px rgba(0,0,0,0.04)',
+            overflow: 'hidden',
+          }}
+        >
+          <ClientTable
+            rows={clients}
+            searchText={searchText}
+            isLoading={isLoading}
+            onEdit={(row) => openDrawer(row)}
+            onDelete={openConfirm}
+          />
+        </Paper>
+      </Stack>
+
+      {/* Delete Confirm */}
+      <Popup open={confirmOpen} onClose={() => setConfirmOpen(false)} showOnClose={false}>
+        <ConfirmAlert
+          title="Are you sure you want to delete this client?"
+          onConfirm={handleDelete}
+          onCancel={() => setConfirmOpen(false)}
+          isLoading={deleteMutation.isLoading}
+        />
+      </Popup>
+
+      {/* Create / Edit Drawer */}
+      <Drawer
+        anchor="right"
+        open={drawerOpen}
+        onClose={closeDrawer}
+        PaperProps={{ sx: { width: { xs: '100vw', sm: 480 }, borderLeft: 0 } }}
+      >
+        <ClientForm
+          initialValues={selectedClient}
+          onSubmit={handleSubmit}
+          onCancel={closeDrawer}
+          isLoading={createMutation.isLoading || updateMutation.isLoading}
+          isReadOnly={isReadOnly}
+        />
+      </Drawer>
+    </>
+  );
+};
+
+export default ClientSection;

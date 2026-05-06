@@ -15,9 +15,13 @@ interface ManagementTableProps {
 
 const ManagementTable = ({ searchText, usersData, handleRemove, handleEdit, handleView }: ManagementTableProps) => {
     const apiRef = useGridApiRef<GridApi>();
+    const { user: authUser } = useAuth();
+    const isSuperAdmin = authUser?.role === 'super-admin';
 
     useEffect(() => {
-        apiRef.current.setQuickFilterValues(searchText.split(/\b\W+\b/).filter((w) => w));
+        if (apiRef.current?.setQuickFilterValues) {
+            apiRef.current.setQuickFilterValues(searchText.split(/\b\W+\b/).filter(Boolean));
+        }
     }, [searchText]);
 
     const columns: GridColDef[] = [
@@ -53,13 +57,14 @@ const ManagementTable = ({ searchText, usersData, handleRemove, handleEdit, hand
             ),
         },
         {
-            field: 'client_key',
-            headerName: 'Client Key',
+            field: 'client',
+            headerName: 'Client',
             flex: 1.5,
             minWidth: 150,
             align: 'center',
             headerAlign: 'center',
-            renderCell: (params) => params.value || '---',
+            valueGetter: (_value: any, row: any) => row?.client?.name || null,
+            renderCell: (params) => params.value || <span style={{ color: 'rgba(0,0,0,0.3)' }}>—</span>,
         },
         {
             field: 'mobile',
@@ -78,18 +83,13 @@ const ManagementTable = ({ searchText, usersData, handleRemove, handleEdit, hand
             filterable: false,
             align: 'center',
             headerAlign: 'center',
-            renderCell: (params) => {
-                const { user } = useAuth();
-                const isSuperAdmin = user?.role === 'super-admin';
-
-                return (
-                    <ActionMenu
-                        onRemove={isSuperAdmin ? () => handleRemove(params.row.id) : undefined}
-                        onEdit={isSuperAdmin ? () => handleEdit(params.row) : undefined}
-                        onView={() => handleView(params.row)}
-                    />
-                );
-            },
+            renderCell: (params) => (
+                <ActionMenu
+                    onRemove={isSuperAdmin ? () => handleRemove(params.row.id) : undefined}
+                    onEdit={isSuperAdmin ? () => handleEdit(params.row) : undefined}
+                    onView={() => handleView(params.row)}
+                />
+            ),
         },
     ];
 

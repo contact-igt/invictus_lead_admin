@@ -13,22 +13,22 @@ export interface UserPayload {
 
 export class ManagementApiData {
     createUser = async (data: UserPayload) => {
-        return await _axios('post', '/management', data);
+        return await _axios('post', '/users', data);
     };
 
     getAllManagements = async () => {
-        return await _axios('get', '/managements');
+        return await _axios('get', '/users');
     };
 
     getManagementById = async (id: number | string) => {
-        return await _axios('get', `/management/${id}`);
+        return await _axios('get', `/users/${id}`);
     };
 
     updateManagement = async (id: number | string, data: Partial<UserPayload>) => {
-        return await _axios('put', `/management/${id}`, data);
+        return await _axios('patch', `/users/${id}`, data);
     };
 
     deleteManagement = async (id: number | string) => {
-        return await _axios('delete', `/management/${id}`);
+        return await _axios('delete', `/users/${id}`);
     };
 }

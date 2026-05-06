@@ -10,12 +10,18 @@ interface JwtPayload {
   [key: string]: any;
 }
 
+interface AxiosHelperOptions {
+  responseType?: 'json' | 'blob' | 'arraybuffer' | 'text';
+  returnRawResponse?: boolean;
+}
+
 export const _axios = async (
   method?: string,
   url?: string,
   body?: any,
   contentType: string = 'application/json',
   params?: any,
+  options?: AxiosHelperOptions,
 ) => {
   const APIURL =
     import.meta.env.VITE_SERVER_PORT === 'production'
@@ -24,7 +30,11 @@ export const _axios = async (
         ? import.meta.env.VITE_DEVELOPMENT_API_URL
         : import.meta.env.VITE_LOCALHOST_API_URL;
 
-  const endpoint = `${APIURL}${url}`;
+  const normalizedApiUrl = APIURL?.trim();
+  const endpoint = `${normalizedApiUrl}${url}`;
+  const isNgrokUrl = normalizedApiUrl?.includes('ngrok-free.dev');
+  const lowerMethod = (method || '').toLowerCase();
+  const isGetRequest = lowerMethod === 'get';
   const state: RootState = store.getState();
   const token = state.auth.token;
 
@@ -46,18 +56,32 @@ export const _axios = async (
   }
 
   const isFormData = body instanceof FormData;
+  // Add a timestamp to all GET requests so stale/proxy cache does not affect any client module.
+  const requestParams = isGetRequest ? { ...(params || {}), _ts: Date.now() } : params;
 
   try {
     const res = await axios({
       headers: {
         ...(isFormData ? {} : { 'Content-Type': contentType }),
+        ...(isGetRequest
+          ? {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            Pragma: 'no-cache',
+            Expires: '0',
+          }
+          : {}),
+        ...(isNgrokUrl ? { 'ngrok-skip-browser-warning': 'true' } : {}),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       method: method,
       url: endpoint,
       data: body,
-      params: params,
+      params: requestParams,
+      responseType: options?.responseType,
     });
+    if (options?.returnRawResponse) {
+      return res;
+    }
     return res.data;
   } catch (err) {
     console.error('Axios error:', err);

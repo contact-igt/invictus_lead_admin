@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { setAuthData } from 'redux/slices/auth/authSlice';
 import { useSnackbar } from 'notistack';
 import { AxiosError } from 'axios';
+import { resolveClientModuleKey } from 'utils/clientModuleResolver';
 
 const { login } = new AuthApis();
 
@@ -31,6 +32,15 @@ export const useLoginMutation = () => {
           user: data.user,
         }),
       );
+
+      if (data.user?.role === 'client') {
+        const moduleKey = resolveClientModuleKey(data.user?.clientKey);
+        if (moduleKey) {
+          navigate(`/pages/d/${moduleKey}/overview`);
+          return;
+        }
+      }
+
       navigate('/');
     },
     onError: (error) => {

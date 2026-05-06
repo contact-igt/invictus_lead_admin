@@ -1,11 +1,12 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-interface User {
+export interface User {
+  id: number;
   email: string;
-  role: string;
-  name?: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any;
+  role: 'super-admin' | 'admin' | 'client';
+  username: string;
+  clientId: number | null;
+  clientKey: string | null;
 }
 
 interface AuthState {

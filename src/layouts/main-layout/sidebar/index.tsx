@@ -33,11 +33,17 @@ const Sidebar = ({ mobileOpen, setMobileOpen, setIsClosing }: SidebarProps) => {
         onClose={handleDrawerClose}
         ModalProps={{ keepMounted: true }}
         sx={{ display: { xs: 'block', lg: 'none' } }}
+        PaperProps={{ sx: { backgroundColor: '#111714' } }}
       >
         <DrawerItems />
       </Drawer>
 
-      <Drawer variant="permanent" sx={{ display: { xs: 'none', lg: 'block' } }} open>
+      <Drawer
+        variant="permanent"
+        sx={{ display: { xs: 'none', lg: 'block' } }}
+        PaperProps={{ sx: { backgroundColor: '#111714' } }}
+        open
+      >
         <DrawerItems />
       </Drawer>
     </Box>

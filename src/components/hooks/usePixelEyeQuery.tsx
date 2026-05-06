@@ -1,44 +1,90 @@
-import { AxiosError } from "axios";
-import { useSnackbar } from "notistack";
-import { useMutation, useQuery, useQueryClient } from "react-query";
-import { PixelEyeApiData } from "services/pixelEye";
+import { useQuery, useMutation, useQueryClient } from 'react-query';
+import { _axios } from 'helper/axios';
 
+export interface PixelEyeLead {
+    id: number;
+    date?: string;
+    time?: string;
+    call_id?: string;
+    customer_name?: string;
+    phone_number?: string;
+    agent_name?: string;
+    status?: string;
+    day_1?: string;
+    day_2?: string;
+    day_3?: string;
+    day_4?: string;
+    day_5?: string;
+    source?: string;
+    type_of_enquiry?: string;
+    follow_up_date?: string;
+}
 
-const PixelEyeApis = new PixelEyeApiData();
+export interface CreatePixelEyePayload {
+    date: string;
+    time: string;
+    call_id: string;
+    customer_name: string;
+    phone_number: string;
+    agent_name: string;
+    status: string;
+    source?: string;
+    type_of_enquiry?: string;
+    follow_up_date?: string;
+    _client_key?: string;
+}
 
+export interface UpdatePixelEyePayload {
+    id: number;
+    status?: string;
+    date?: string;
+    time?: string;
+    call_id?: string;
+    customer_name?: string;
+    phone_number?: string;
+    agent_name?: string;
+    source?: string;
+    type_of_enquiry?: string;
+    follow_up_date?: string;
+    day_1?: string;
+    day_2?: string;
+    day_3?: string;
+    day_4?: string;
+    day_5?: string;
+}
 
-export const usePixelEyeQuery = () => {
-    const { enqueueSnackbar } = useSnackbar();
-
-    const { data, isLoading, isError } = useQuery(['pixel'], () => PixelEyeApis.getAllPixelEye(), {
-        staleTime: 2 * 60 * 1000,
-        onError: (error: Error) => {
-            enqueueSnackbar(error.message || 'Failed to load user', { variant: 'error' });
-        },
+export const usePixelEyeQuery = () =>
+    useQuery<PixelEyeLead[]>(['pixelEyeLeads'], async () => {
+        const res = await _axios('get', '/pixeleye');
+        return (res?.data ?? []) as PixelEyeLead[];
     });
 
-    return { data, isLoading, isError };
+export const useCreatePixelEyeMutation = () => {
+    const queryClient = useQueryClient();
+    return useMutation(
+        (payload: CreatePixelEyePayload) => _axios('post', '/pixeleye', payload),
+        {
+            onSuccess: () => queryClient.invalidateQueries(['pixelEyeLeads']),
+        }
+    );
 };
 
-
-
-export const deletePixelEyeByIdQuery = () => {
+export const useUpdatePixelEyeMutation = () => {
     const queryClient = useQueryClient();
-    const { enqueueSnackbar } = useSnackbar();
-
-    return useMutation<void, Error, { id: number }>(
-        ({ id }) => PixelEyeApis.deleteByIdPixelEye(id),
+    return useMutation(
+        ({ id, ...payload }: UpdatePixelEyePayload) => _axios('patch', `/pixeleye/${id}`, payload),
         {
-            onSuccess: () => {
-                enqueueSnackbar('Pixel eye User deleted successfully', { variant: 'success' });
-                queryClient.invalidateQueries(['pixel']);
-            },
-            onError: (error) => {
-                const err = error as AxiosError<any>;
-                enqueueSnackbar(err.response?.data?.message || 'Something went wrong', {
-                    variant: 'error',
-                });
-            },
-        },
+            onSuccess: () => queryClient.invalidateQueries(['pixelEyeLeads']),
+        }
     );
-}
+};
+
+export const useDeletePixelEyeMutation = () => {
+    const queryClient = useQueryClient();
+    return useMutation(
+        (id: number) => _axios('delete', `/pixeleye/${id}`),
+        {
+            onSuccess: () => queryClient.invalidateQueries(['pixelEyeLeads']),
+        }
+    );
+};

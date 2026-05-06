@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import {
@@ -17,6 +17,8 @@ import {
 } from '@mui/material';
 import { UserPayload } from 'services/management';
 import IconifyIcon from 'components/base/IconifyIcon';
+import { useClientQuery } from 'components/hooks/useClientQuery';
+import { normalizeClientKey } from 'utils/clientKey';
 
 const validationSchema = Yup.object({
     username: Yup.string().required('Username is required'),
@@ -32,8 +34,8 @@ const validationSchema = Yup.object({
         .required('Mobile number is required'),
     role: Yup.string().oneOf(['super-admin', 'admin', 'client']).required('Role is required'),
     client_key: Yup.string().when('role', {
-        is: 'client',
-        then: (schema) => schema.required('Client Key is required'),
+        is: (role: string) => role === 'admin' || role === 'client',
+        then: (schema) => schema.required('Client Key is required for admin/client users'),
         otherwise: (schema) => schema.notRequired(),
     }),
 });
@@ -48,6 +50,7 @@ interface UserFormProps {
 
 const UserForm = ({ initialValues, onSubmit, onCancel, isLoading, isReadOnly }: UserFormProps) => {
     const isEdit = !!initialValues;
+    const { data: clientRecords = [], isLoading: isClientsLoading } = useClientQuery();
 
     const formik = useFormik({
         initialValues: {
@@ -58,13 +61,18 @@ const UserForm = ({ initialValues, onSubmit, onCancel, isLoading, isReadOnly }: 
             mobile: initialValues?.mobile || '',
             password: '',
             role: initialValues?.role || 'client',
-            client_key: initialValues?.client_key || '',
+            client_key: normalizeClientKey(initialValues?.client_key || ''),
             isEdit,
         },
         validationSchema,
         onSubmit: (values) => {
             const payload: any = { ...values };
             delete payload.isEdit;
+
+            if (payload.role === 'super-admin') {
+                delete payload.client_key;
+            }
+
             if (isEdit && !payload.password) {
                 delete payload.password;
             }
@@ -85,51 +93,65 @@ const UserForm = ({ initialValues, onSubmit, onCancel, isLoading, isReadOnly }: 
         { label: 'Singapore (+65)', value: '65' },
     ];
 
-    const clientKeys = [
-        { label: 'Invictus', value: 'invictus' },
-        { label: 'VLS Law', value: 'vls_law' },
-        { label: 'Netralaya', value: 'netralaya' },
-        { label: 'Pixel Eye', value: 'pixel_eye' },
-        { label: 'Ophthall Webinar', value: 'ophthall_webinar' },
-        { label: 'KR Institute', value: 'kr_institute' },
-        { label: 'Wellinit', value: 'wellinit' },
-        { label: 'Mirra Builders', value: 'mirra_builders' },
-        { label: 'Mahimmy Foods', value: 'mahimmy_foods' },
-        { label: 'Naitrika', value: 'naitrika' },
-        { label: 'Ramanan Financial', value: 'ramanan_financial' },
-    ];
+    const clientKeys = useMemo(() => {
+        const options = clientRecords
+            .filter((client) => Boolean(client.client_key))
+            .map((client) => {
+                const value = normalizeClientKey(client.client_key);
+                const label = client.name ? `${client.name} (${value})` : value;
+                return { label, value };
+            });
 
-    const inputSx = {
-        '& .MuiInputBase-root': {
-            height: 48,
-        },
-        '& .MuiOutlinedInput-input': {
-            padding: '12px 14px',
-        },
+        const selectedKey = normalizeClientKey(formik.values.client_key);
+        if (selectedKey && !options.some((option) => option.value === selectedKey)) {
+            options.unshift({ label: selectedKey, value: selectedKey });
+        }
+
+        return options;
+    }, [clientRecords, formik.values.client_key]);
+
+    const ctrl = {
+        height: 44,
+        '& .MuiInputBase-root': { height: 44 },
+        '& .MuiOutlinedInput-input': { padding: '10px 14px' },
     };
 
     return (
-        <Box sx={{ p: 4, width: { xs: '100%', sm: 400, md: 450 } }}>
-            <Typography variant="h5" mb={4} sx={{ fontWeight: 700, color: 'text.primary' }}>
-                {isEdit ? (isReadOnly ? 'User Details' : 'Update User') : 'New User Account'}
-            </Typography>
-            <form onSubmit={formik.handleSubmit} style={{ width: '100%' }}>
-                <Stack direction="column" spacing={3} width="100%">
-                    <FormControl fullWidth disabled={isReadOnly} sx={inputSx}>
+        <Box
+            component="form"
+            onSubmit={formik.handleSubmit}
+            noValidate
+            sx={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}
+        >
+            {/* Header */}
+            <Box sx={{ px: 3, py: 2.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Box>
+                    <Typography variant="h5" fontWeight={700}>
+                        {isEdit ? (isReadOnly ? 'User Details' : 'Edit User') : 'Create User'}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" mt={0.5}>
+                        User Management
+                    </Typography>
+                </Box>
+                <IconButton onClick={onCancel} size="small" sx={{ color: 'text.secondary' }}>
+                    <IconifyIcon icon="mdi:close" width={22} height={22} />
+                </IconButton>
+            </Box>
+
+            <Box sx={{ borderBottom: 1, borderColor: 'divider' }} />
+
+            {/* Body */}
+            <Box sx={{ flexGrow: 1, overflowY: 'auto', px: 3, py: 3 }}>
+                {/* Row 1 – Title + Username */}
+                <Stack direction="row" spacing={2} mb={2.5} alignItems="flex-start">
+                    <FormControl disabled={isReadOnly} sx={{ width: 110, ...ctrl }}>
                         <InputLabel id="title-label">Title</InputLabel>
-                        <Select
-                            labelId="title-label"
-                            name="title"
-                            value={formik.values.title}
-                            label="Title"
-                            onChange={formik.handleChange}
-                        >
+                        <Select labelId="title-label" name="title" value={formik.values.title} label="Title" onChange={formik.handleChange}>
                             <MenuItem value="Mr">Mr.</MenuItem>
                             <MenuItem value="Ms">Ms.</MenuItem>
                             <MenuItem value="Mrs">Mrs.</MenuItem>
                         </Select>
                     </FormControl>
-
                     <TextField
                         fullWidth
                         name="username"
@@ -137,149 +159,152 @@ const UserForm = ({ initialValues, onSubmit, onCancel, isLoading, isReadOnly }: 
                         value={formik.values.username}
                         onChange={formik.handleChange}
                         error={formik.touched.username && Boolean(formik.errors.username)}
-                        helperText={formik.touched.username && typeof formik.errors.username === 'string' ? (formik.errors.username as string) : ''}
+                        helperText={formik.touched.username && typeof formik.errors.username === 'string' ? formik.errors.username : ''}
                         disabled={isReadOnly}
-                        sx={inputSx}
+                        sx={ctrl}
                     />
+                </Stack>
 
+                {/* Row 2 – Email */}
+                <TextField
+                    fullWidth
+                    name="email"
+                    label="Email Address"
+                    value={formik.values.email}
+                    onChange={formik.handleChange}
+                    error={formik.touched.email && Boolean(formik.errors.email)}
+                    helperText={formik.touched.email && typeof formik.errors.email === 'string' ? formik.errors.email : ''}
+                    disabled={isReadOnly}
+                    sx={{ ...ctrl, mb: 2.5 }}
+                />
+
+                {/* Row 3 – Country code + Mobile */}
+                <Stack direction="row" spacing={2} mb={2.5} alignItems="flex-start">
+                    <FormControl disabled={isReadOnly} sx={{ width: 130, ...ctrl }}>
+                        <InputLabel id="cc-label">Code</InputLabel>
+                        <Select labelId="cc-label" name="country_code" value={formik.values.country_code} label="Code" onChange={formik.handleChange}>
+                            {countryCodes.map((cc) => (
+                                <MenuItem key={cc.value} value={cc.value}>+{cc.value}</MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
                     <TextField
                         fullWidth
-                        name="email"
-                        label="Email Address"
-                        value={formik.values.email}
-                        onChange={formik.handleChange}
-                        error={formik.touched.email && Boolean(formik.errors.email)}
-                        helperText={formik.touched.email && typeof formik.errors.email === 'string' ? (formik.errors.email as string) : ''}
+                        name="mobile"
+                        label="Mobile Number"
+                        value={formik.values.mobile}
+                        onChange={(e) => {
+                            const val = e.target.value.replace(/\D/g, '');
+                            if (val.length <= 10) formik.setFieldValue('mobile', val);
+                        }}
+                        error={formik.touched.mobile && Boolean(formik.errors.mobile)}
+                        helperText={formik.touched.mobile && typeof formik.errors.mobile === 'string' ? formik.errors.mobile : ''}
                         disabled={isReadOnly}
-                        sx={inputSx}
+                        sx={ctrl}
                     />
+                </Stack>
 
-                    <Stack direction="row" spacing={2}>
-                        <FormControl sx={{ width: '150px', ...inputSx }} disabled={isReadOnly}>
-                            <InputLabel id="country-code-label">Code</InputLabel>
-                            <Select
-                                labelId="country-code-label"
-                                name="country_code"
-                                value={formik.values.country_code}
-                                label="Code"
-                                onChange={formik.handleChange}
-                            >
-                                {countryCodes.map((cc) => (
-                                    <MenuItem key={cc.value} value={cc.value}>
-                                        {cc.value} ({cc.label.split('(')[0].trim()})
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
-                        <TextField
-                            fullWidth
-                            name="mobile"
-                            label="Mobile Number"
-                            value={formik.values.mobile}
-                            onChange={(e) => {
-                                const val = e.target.value.replace(/\D/g, '');
-                                if (val.length <= 10) {
-                                    formik.setFieldValue('mobile', val);
-                                }
-                            }}
-                            error={formik.touched.mobile && Boolean(formik.errors.mobile)}
-                            helperText={formik.touched.mobile && typeof formik.errors.mobile === 'string' ? formik.errors.mobile : ''}
-                            disabled={isReadOnly}
-                            sx={inputSx}
-                        />
-                    </Stack>
+                {/* Row 4 – Password (create / edit only) */}
+                {!isReadOnly && (
+                    <TextField
+                        fullWidth
+                        type={showPassword ? 'text' : 'password'}
+                        name="password"
+                        label={isEdit ? 'New Password (Optional)' : 'Password'}
+                        value={formik.values.password}
+                        onChange={formik.handleChange}
+                        error={formik.touched.password && Boolean(formik.errors.password)}
+                        helperText={formik.touched.password && typeof formik.errors.password === 'string' ? formik.errors.password : ''}
+                        sx={{ ...ctrl, mb: 2.5 }}
+                        InputProps={{
+                            endAdornment: (
+                                <InputAdornment position="end">
+                                    <IconButton onClick={handleClickShowPassword} edge="end" size="small">
+                                        <IconifyIcon icon={showPassword ? 'mingcute:eye-line' : 'mingcute:eye-close-line'} />
+                                    </IconButton>
+                                </InputAdornment>
+                            ),
+                        }}
+                    />
+                )}
 
-                    {!isReadOnly && (
-                        <TextField
-                            fullWidth
-                            type={showPassword ? 'text' : 'password'}
-                            name="password"
-                            label={isEdit ? 'New Password (Optional)' : 'Password'}
-                            value={formik.values.password}
-                            onChange={formik.handleChange}
-                            error={formik.touched.password && Boolean(formik.errors.password)}
-                            helperText={formik.touched.password && typeof formik.errors.password === 'string' ? (formik.errors.password as string) : ''}
-                            sx={inputSx}
-                            InputProps={{
-                                endAdornment: (
-                                    <InputAdornment position="end">
-                                        <IconButton onClick={handleClickShowPassword} edge="end" size="small">
-                                            <IconifyIcon icon={showPassword ? 'mingcute:eye-line' : 'mingcute:eye-close-line'} />
-                                        </IconButton>
-                                    </InputAdornment>
-                                ),
-                            }}
-                        />
-                    )}
-
-                    <FormControl fullWidth disabled={isReadOnly} sx={inputSx}>
+                {/* Row 5 – Role + Client (when role = client) */}
+                <Stack direction="row" spacing={2} alignItems="flex-start">
+                    <FormControl disabled={isReadOnly} sx={{ flex: 1, ...ctrl }}>
                         <InputLabel id="role-label">Account Role</InputLabel>
-                        <Select
-                            labelId="role-label"
-                            name="role"
-                            value={formik.values.role}
-                            label="Account Role"
-                            onChange={formik.handleChange}
-                        >
+                        <Select labelId="role-label" name="role" value={formik.values.role} label="Account Role" onChange={formik.handleChange}>
                             <MenuItem value="super-admin">Super Admin</MenuItem>
                             <MenuItem value="admin">Admin</MenuItem>
                             <MenuItem value="client">Client</MenuItem>
                         </Select>
                     </FormControl>
-
-                    {formik.values.role === 'client' && (
-                        <FormControl fullWidth error={formik.touched.client_key && Boolean(formik.errors.client_key)} disabled={isReadOnly} sx={inputSx}>
-                            <InputLabel id="client-key-label">Client Association</InputLabel>
-                            <Select
-                                labelId="client-key-label"
-                                name="client_key"
-                                value={formik.values.client_key}
-                                label="Client Association"
-                                onChange={formik.handleChange}
-                            >
-                                {clientKeys.map((ck) => (
-                                    <MenuItem key={ck.value} value={ck.value}>
-                                        {ck.label}
+                    {formik.values.role !== 'super-admin' && (
+                        <FormControl
+                            error={formik.touched.client_key && Boolean(formik.errors.client_key)}
+                            disabled={isReadOnly || isClientsLoading}
+                            sx={{ flex: 1, ...ctrl }}
+                        >
+                            <InputLabel id="client-key-label">Client</InputLabel>
+                            <Select labelId="client-key-label" name="client_key" value={formik.values.client_key} label="Client" onChange={formik.handleChange}>
+                                {clientKeys.length === 0 ? (
+                                    <MenuItem value="" disabled>
+                                        No clients available
                                     </MenuItem>
+                                ) : null}
+                                {clientKeys.map((ck) => (
+                                    <MenuItem key={ck.value} value={ck.value}>{ck.label}</MenuItem>
                                 ))}
                             </Select>
-                            {formik.touched.client_key && formik.errors.client_key && (
+                            {formik.touched.client_key && formik.errors.client_key ? (
                                 <FormHelperText>
-                                    {typeof formik.errors.client_key === 'string' ? (formik.errors.client_key as string) : ''}
+                                    {typeof formik.errors.client_key === 'string' ? formik.errors.client_key : ''}
                                 </FormHelperText>
-                            )}
+                            ) : null}
                         </FormControl>
                     )}
-
-                    <Stack direction="row" spacing={2} justifyContent="flex-end" sx={{ mt: 2 }}>
-                        <Button
-                            onClick={onCancel}
-                            sx={{ color: 'text.secondary', textTransform: 'none', fontWeight: 600 }}
-                        >
-                            {isReadOnly ? 'Close' : 'Cancel'}
-                        </Button>
-                        {!isReadOnly && (
-                            <Button
-                                type="submit"
-                                variant="contained"
-                                disabled={isLoading}
-                                sx={{
-                                    height: 48,
-                                    textTransform: 'none',
-                                    fontWeight: 700,
-                                    px: 4,
-                                    borderRadius: '8px',
-                                    boxShadow: 'none',
-                                    backgroundColor: '#2D3748',
-                                    '&:hover': { backgroundColor: '#1A202C', boxShadow: 'none' }
-                                }}
-                            >
-                                {isEdit ? 'Save Changes' : 'Create User'}
-                            </Button>
-                        )}
-                    </Stack>
                 </Stack>
-            </form>
+            </Box>
+
+            <Box sx={{ borderTop: 1, borderColor: 'divider' }} />
+
+            {/* Footer */}
+            <Box sx={{ px: 3, py: 2, display: 'flex', justifyContent: 'flex-end', gap: 1.5 }}>
+                <Button
+                    onClick={onCancel}
+                    variant="outlined"
+                    sx={{
+                        height: 44,
+                        px: 3,
+                        textTransform: 'none',
+                        fontWeight: 600,
+                        borderColor: 'divider',
+                        color: 'text.secondary',
+                        '&:hover': { borderColor: 'text.secondary', backgroundColor: 'transparent' },
+                    }}
+                >
+                    {isReadOnly ? 'Close' : 'Cancel'}
+                </Button>
+                {!isReadOnly && (
+                    <Button
+                        type="submit"
+                        variant="contained"
+                        disabled={isLoading}
+                        startIcon={isLoading ? <IconifyIcon icon="eos-icons:loading" /> : null}
+                        sx={{
+                            height: 44,
+                            px: 3.5,
+                            textTransform: 'none',
+                            fontWeight: 700,
+                            borderRadius: '8px',
+                            boxShadow: 'none',
+                            backgroundColor: '#2E8B57',
+                            '&:hover': { backgroundColor: '#1F6B40', boxShadow: 'none' },
+                        }}
+                    >
+                        {isLoading ? 'Saving…' : (isEdit ? 'Save Changes' : 'Create User')}
+                    </Button>
+                )}
+            </Box>
         </Box>
     );
 };

@@ -2,10 +2,14 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from 'redux/selectors/auth/authSelector';
 import paths from './paths';
 import sitemap from './sitemap';
+import { normalizeClientKey } from 'utils/clientKey';
+import { resolveClientModuleKey } from 'utils/clientModuleResolver';
 
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   const location = useLocation();
   const { token, user } = useAuth();
+  const userModuleKey = resolveClientModuleKey(user?.clientKey);
+  const clientHomePath = userModuleKey ? `/pages/d/${userModuleKey}/overview` : '/';
 
   if (!token) {
     return <Navigate to={`${paths.signin}`} state={{ from: location }} replace />;
@@ -17,28 +21,65 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
     item.items?.some(subItem => subItem.path === location.pathname)
   );
 
-  const requiredKey = currentItem?.clientKey;
+  let requiredKey = currentItem?.clientKey || '';
   const routeId = currentItem?.id;
 
-  // 1. Super-admin & Admin Bypass (Admins can view User Management but not manage)
-  if (user?.role === 'super-admin' || user?.role === 'admin') {
+  // Fallback for aliased dynamic client URLs (e.g. /pages/d/pixel_eye/overview).
+  if (!requiredKey && location.pathname.startsWith('/pages/d/')) {
+    const segments = location.pathname.split('/').filter(Boolean);
+    if (segments.length >= 3) {
+      requiredKey = segments[2];
+    }
+  }
+
+  // 1. Super-admin bypass.
+  if (user?.role === 'super-admin') {
     return children;
   }
 
-  // 2. Client Access
-  if (user?.role === 'client') {
-    // Block User Management entirely
-    if (routeId === 'user-management') {
+  // 2. Admin access: dashboard + user-management + own client module only.
+  if (user?.role === 'admin') {
+    if (routeId === 'client-management') {
       return <Navigate to="/" replace />;
     }
 
-    // Restricted to dashboard or matching project key
     if (!requiredKey) {
-      return routeId === 'dashboard' ? children : <Navigate to="/" replace />;
+      if (routeId === 'dashboard' || routeId === 'user-management') {
+        return children;
+      }
+      return <Navigate to="/" replace />;
     }
 
-    if (requiredKey !== user.client_key) {
+    if (normalizeClientKey(requiredKey) !== normalizeClientKey(userModuleKey)) {
       return <Navigate to="/" replace />;
+    }
+
+    return children;
+  }
+
+  // 3. Client Access
+  if (user?.role === 'client') {
+    // Dashboard and all management pages are not allowed for client users.
+    if (routeId === 'dashboard' || routeId === 'user-management' || routeId === 'client-management') {
+      if (location.pathname === clientHomePath) {
+        return children;
+      }
+      return <Navigate to={clientHomePath} replace />;
+    }
+
+    // Client users can only access their own module routes.
+    if (!requiredKey) {
+      if (location.pathname === clientHomePath) {
+        return children;
+      }
+      return <Navigate to={clientHomePath} replace />;
+    }
+
+    if (normalizeClientKey(requiredKey) !== normalizeClientKey(userModuleKey)) {
+      if (location.pathname === clientHomePath) {
+        return children;
+      }
+      return <Navigate to={clientHomePath} replace />;
     }
   }
 

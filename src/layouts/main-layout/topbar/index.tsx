@@ -72,7 +72,7 @@ const Topbar = ({ isClosing, mobileOpen, setMobileOpen }: TopbarProps) => {
         {location.pathname === '/' && (
           <TextField
             variant="filled"
-            placeholder="Search Pets, Tips, Events..."
+            placeholder="Search data, reports, or users..."
             sx={{ width: 350, display: { xs: 'none', md: 'flex' } }}
             InputProps={{
               endAdornment: (

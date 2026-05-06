@@ -2,29 +2,27 @@ import { _axios } from 'helper/axios';
 
 export class VlsApiData {
   getAllVlsLawPractice = async () => {
-    return await _axios('get', '/vls-law-practices');
-  };
-
-  deleteVlsLawPracticeById = async (id: number) => {
-    return await _axios('delete', `/vls-law-practice/${id}`);
+    return await _axios('get', '/dynamic/vlslaw_practice');
   };
 
   getAllVlsLawAcademy = async () => {
-    return await _axios('get', '/vls-law-academys');
+    return await _axios('get', '/dynamic/vlslaw_academy');
   };
-  
-  deleteVlsLawAcademyById = async (id: number) => {
-  return await _axios('delete', `/vls-law-academy/${id}`);
-};
-
-  // vls AIBE
 
   getAllVlsAibe = async () => {
-    return await _axios('get', '/vls-law-aibes');
+    return await _axios('get', '/dynamic/vlslaw_aibe');
   };
 
-  deleteVlsLawAibe = async (id: number) => {
-    return await _axios('delete', `/vls-law-aibe/${id}`);
+  deleteVlsLawPracticeById = async (id: number | string) => {
+    return await _axios('delete', `/dynamic/vlslaw_practice/${id}`);
+  };
+
+  deleteVlsLawAcademyById = async (id: number | string) => {
+    return await _axios('delete', `/dynamic/vlslaw_academy/${id}`);
+  };
+
+  deleteVlsLawAibe = async (id: number | string) => {
+    return await _axios('delete', `/dynamic/vlslaw_aibe/${id}`);
   };
 }
 

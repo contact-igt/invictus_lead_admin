@@ -1,4 +1,6 @@
-import { useState, ChangeEvent, FormEvent } from 'react';
+import { useState } from 'react';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
@@ -8,26 +10,31 @@ import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import TextField from '@mui/material/TextField';
 import Checkbox from '@mui/material/Checkbox';
+import CircularProgress from '@mui/material/CircularProgress';
 import IconifyIcon from 'components/base/IconifyIcon';
 import Image from 'components/base/Image';
 import LogoImg from '/assets/brand-logo.png';
 import { useLoginMutation } from './hooks/useLogin';
-import { User } from '../../services/auth/script';
-import { ThreeDots } from 'react-loader-spinner';
+
+const loginSchema = Yup.object().shape({
+  email: Yup.string().email('Invalid email address').required('Email is required'),
+  password: Yup.string().min(6, 'Password must be at least 6 characters').required('Password is required'),
+});
 
 const Signin = () => {
   const { mutate, isLoading } = useLoginMutation();
-  const [user, setUser] = useState<User>({ email: '', password: '', role: 'admin' });
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setUser({ ...user, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    mutate(user);
-  };
+  const formik = useFormik({
+    initialValues: {
+      email: '',
+      password: '',
+    },
+    validationSchema: loginSchema,
+    onSubmit: (values) => {
+      mutate(values as any);
+    },
+  });
 
   return (
     <>
@@ -42,31 +49,30 @@ const Signin = () => {
       >
         <Image src={LogoImg} alt="logo" height={50} width={200} sx={{ mr: 1.25 }} />
       </Stack>
-      <Typography align="center" variant="h4">
+      <Typography align="center" variant="h4" fontWeight={700}>
         Sign In
       </Typography>
-      <Typography mt={1.5} mb={4} align="center" variant="body2">
-        Welcome back! Let's continue with,
+      <Typography mt={1.5} mb={4} align="center" variant="body2" color="text.secondary">
+        Welcome back! Please enter your credentials to continue.
       </Typography>
 
-      <Stack component="form" mt={3} onSubmit={handleSubmit} direction="column" gap={2}>
+      <Stack component="form" mt={3} onSubmit={formik.handleSubmit} direction="column" gap={2.5}>
         <TextField
           id="email"
           name="email"
           type="email"
-          value={user.email}
-          onChange={handleInputChange}
-          variant="standard"
-          placeholder="Your Email"
+          value={formik.values.email}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          error={formik.touched.email && Boolean(formik.errors.email)}
+          helperText={formik.touched.email && formik.errors.email}
+          variant="outlined"
+          placeholder="admin@example.com"
           autoComplete="email"
-          label="Email"
+          label="Email Address"
           fullWidth
           autoFocus
-          required
           InputProps={{
-            sx: {
-              marginTop: '30px !important',
-            },
             startAdornment: (
               <InputAdornment position="start">
                 <IconifyIcon icon="hugeicons:mail-at-sign-02" />
@@ -78,40 +84,31 @@ const Signin = () => {
           id="password"
           name="password"
           type={showPassword ? 'text' : 'password'}
-          value={user.password}
-          onChange={handleInputChange}
-          variant="standard"
-          placeholder="Your Password"
+          value={formik.values.password}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          error={formik.touched.password && Boolean(formik.errors.password)}
+          helperText={formik.touched.password && formik.errors.password}
+          variant="outlined"
+          placeholder="••••••••"
           autoComplete="current-password"
           fullWidth
-          required
           label="Password"
           InputProps={{
-            sx: {
-              marginTop: '30px !important',
-            },
             startAdornment: (
               <InputAdornment position="start">
                 <IconifyIcon icon="hugeicons:lock-key" />
               </InputAdornment>
             ),
             endAdornment: (
-              <InputAdornment
-                position="end"
-                sx={{
-                  opacity: user.password ? 1 : 0,
-                  pointerEvents: user.password ? 'auto' : 'none',
-                }}
-              >
+              <InputAdornment position="end">
                 <IconButton
                   aria-label="toggle password visibility"
                   onClick={() => setShowPassword(!showPassword)}
-                  sx={{ border: 'none', bgcolor: 'transparent !important' }}
                   edge="end"
                 >
                   <IconifyIcon
                     icon={showPassword ? 'fluent-mdl2:view' : 'fluent-mdl2:hide-3'}
-                    color="neutral.light"
                   />
                 </IconButton>
               </InputAdornment>
@@ -119,36 +116,25 @@ const Signin = () => {
           }}
         />
 
-        <Stack mt={2} mb={4} alignItems="center" justifyContent="space-between">
+        <Stack direction="row" alignItems="center" justifyContent="space-between" mb={2}>
           <FormControlLabel
             control={<Checkbox id="checkbox" name="checkbox" size="small" color="primary" />}
             label="Remember me"
-            sx={{ ml: -1 }}
           />
-          <Link href="#!" fontSize="body2.fontSize">
+          <Link href="#!" variant="body2" sx={{ fontWeight: 600 }}>
             Forgot password?
           </Link>
         </Stack>
 
         <Button
-          style={{ marginBottom: '20px' }}
           type="submit"
           variant="contained"
-          size="medium"
+          size="large"
           fullWidth
           disabled={isLoading}
+          sx={{ py: 1.5, fontSize: '1rem', fontWeight: 700 }}
         >
-          {isLoading ? (
-            <ThreeDots
-              height="30"
-              width="30"
-              color="#E1801C"
-              radius="9"
-              ariaLabel="three-dots-loading"
-            />
-          ) : (
-            'Sign In'
-          )}
+          {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Sign In'}
         </Button>
       </Stack>
     </>

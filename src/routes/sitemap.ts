@@ -1,4 +1,5 @@
 import paths from './paths';
+import { ClientRegistry, ClientConfig, TableConfig } from 'config/clients';
 
 export interface SubMenuItem {
   name: string;
@@ -21,134 +22,64 @@ export interface MenuItem {
   items?: SubMenuItem[];
 }
 
-const sitemap: MenuItem[] = [
+// Base hardcoded menus (like Dashboard and User Management)
+const baseSitemap: MenuItem[] = [
   {
     id: 'dashboard',
-    subheader: 'Overview',
+    subheader: 'Dashboard',
     path: '/',
     icon: 'hugeicons:grid-view',
     active: true,
   },
-  {
-    id: 'invictus',
-    subheader: 'Invictus',
-    icon: 'mynaui:user-hexagon',
-    clientKey: 'invictus',
-    items: [
-      {
-        name: 'Invictus Leads',
-        pathName: paths.invictusLeads,
-        path: paths.invictusLeads,
-      },
-      {
-        name: 'Invictus Meta',
-        pathName: paths.invictusMeta,
-        path: paths.invictusMeta,
-      },
-    ],
-  },
-  {
-    id: 'vls',
-    subheader: 'Vls',
-    icon: 'hugeicons:court-law',
-    clientKey: 'vls_law',
-    items: [
-      {
-        name: 'Vls Law Practice',
-        pathName: paths.vlsLawPractice,
-        path: paths.vlsLawPractice,
-      },
-      {
-        name: 'Vls AIBE',
-        pathName: paths.vlsAibe,
-        path: paths.vlsAibe,
-      },
-      {
-        name: 'Vls Academy',
-        pathName: paths.vlsAcademy,
-        path: paths.vlsAcademy,
-      },
-    ],
-  },
-  {
-    id: 'pixel-eye',
-    path: paths.pixelEye,
-    subheader: 'Pixel Eye',
-    icon: 'mynaui:eye',
-    active: true,
-    clientKey: 'pixel_eye',
-  },
-  {
-    id: 'mirra-builders',
-    path: paths.mirraBuilders,
-    subheader: 'Mirra Builders',
-    icon: 'hugeicons:building-05',
-    active: true,
-    clientKey: 'mirra_builders',
-  },
-  {
-    id: 'kr-institute',
-    path: paths.krInstitute,
-    subheader: 'KR Institute',
-    icon: 'hugeicons:school',
-    active: true,
-    clientKey: 'kr_institute',
-  },
-  {
-    id: 'ramanans-financial',
-    path: paths.ramananFinancial,
-    subheader: 'RV Financial',
-    icon: 'mdi:finance',
-    active: true,
-    clientKey: 'ramanan_financial',
-  },
-  {
-    id: 'naitrika',
-    path: paths.naitrika,
-    subheader: 'Naitrika',
-    icon: 'mdi:eye-circle',
-    active: true,
-    clientKey: 'naitrika',
-  },
-  {
-    id: 'antardrashtinetralaya',
-    path: paths.netralaya,
-    subheader: 'Netralaya',
-    icon: 'hugeicons:eye',
-    active: true,
-    clientKey: 'netralaya',
-  },
-  {
-    id: 'wellinit',
-    path: paths.wellinit,
-    subheader: 'Wellinit',
-    icon: 'mdi:phone-plus',
-    active: true,
-    clientKey: 'wellinit',
-  },
-  {
-    id: 'mahimmy-foods',
-    path: paths.mahimmyFoods,
-    subheader: 'Mahimmy Foods',
-    icon: 'mdi:bread-slice',
-    active: true,
-    clientKey: 'mahimmy_foods',
-  },
-  {
-    id: 'ophthall-webinar',
-    path: paths.ophthallWebinar,
-    subheader: 'Ophthall Webinar',
-    icon: 'hugeicons:eye',
-    active: true,
-    clientKey: 'ophthall_webinar',
-  },
-  {
-    id: 'user-management',
-    path: paths.management,
-    subheader: 'User Management',
-    icon: 'hugeicons:user-group-active',
-    active: true,
-  },
+];
+
+const managementSitemap: MenuItem = {
+  id: 'user-management',
+  path: paths.management,
+  subheader: 'User Management',
+  icon: 'hugeicons:user-group-active',
+  active: true,
+};
+
+const clientManagementSitemap: MenuItem = {
+  id: 'client-management',
+  path: paths.clients,
+  subheader: 'Client Management',
+  icon: 'hugeicons:building-03',
+  active: true,
+};
+
+// Dynamically generate client menus from the Registry
+const generateDynamicClientMenus = (): MenuItem[] => {
+  return Object.entries(ClientRegistry).map(([clientKey, config]: [string, ClientConfig]) => {
+    const overviewItem: SubMenuItem = {
+      name: 'Overview',
+      pathName: `/pages/d/${clientKey}/overview`,
+      path: `/pages/d/${clientKey}/overview`,
+    };
+
+    const tableItems: SubMenuItem[] = config.tables.map((table: TableConfig) => ({
+      name: table.title,
+      pathName: `/pages/d/${clientKey}/${table.id}`,
+      path: `/pages/d/${clientKey}/${table.id}`,
+    }));
+
+    return {
+      id: clientKey,
+      subheader: config.appName,
+      icon: 'hugeicons:database',
+      clientKey: clientKey,
+      active: true,
+      items: [overviewItem, ...tableItems],
+    };
+  });
+};
+
+const sitemap: MenuItem[] = [
+  ...baseSitemap,
+  ...generateDynamicClientMenus(),
+  clientManagementSitemap,
+  managementSitemap,
 ];
 
 export default sitemap;

@@ -54,7 +54,6 @@ const ActionMenu = ({ onRemove, onView, onEdit }: ActionMenuProps) => {
           if (a.title === 'Edit' && !onEdit) return null;
           if (a.title === 'Remove' && !onRemove) return null;
           if (a.title === 'View' && !onView) return null;
-
           return (
             <MenuItem
               key={a.id}

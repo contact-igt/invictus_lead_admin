@@ -3,9 +3,6 @@ import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 
 export const handleXlsxDownloadData = (data: any, fileName: string) => {
-  // Convert JSON to worksheet
-  console.log(data);
-
   const worksheet = XLSX.utils.json_to_sheet(data);
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
@@ -17,8 +14,6 @@ export const handleXlsxDownloadData = (data: any, fileName: string) => {
 };
 
 export const handleCSVDownloadData = (data: any, fileName: string) => {
-  console.log(data);
-
   const worksheet = XLSX.utils.json_to_sheet(data);
   const csv = XLSX.utils.sheet_to_csv(worksheet);
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });

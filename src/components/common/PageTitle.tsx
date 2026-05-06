@@ -25,7 +25,12 @@ const PageTitle = ({
       flexWrap="wrap"
       mb={2}
     >
-      <Typography variant="h4" component="h2" minWidth={200}>
+      <Typography 
+        variant="h4" 
+        component="h2" 
+        minWidth={200}
+        sx={{ mb: { xs: 1, sm: 0 }, fontSize: { xs: '1.5rem', sm: '2.125rem' } }}
+      >
         {title}
       </Typography>
 
@@ -113,7 +118,7 @@ const PageTitle = ({
                 '& .MuiButton-startIcon': { mr: 0, pointerEvents: 'none' },
               }}
             >
-              {`Add ${btnText}`}
+              {`${btnText}`}
             </Button>
           </CardActions>
         )}

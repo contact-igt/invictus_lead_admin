@@ -43,6 +43,15 @@ export const theme = createTheme({
   typography,
   palette,
   customShadows,
+
+  shape: {
+    // Base unit = 4px. Component overrides apply multipliers:
+    // inputs/buttons: borderRadius * 2.5 = 10px
+    // cards/Paper:    16px explicit
+    // XL sections:    24px explicit
+    borderRadius: 4,
+  },
+
   components: {
     MuiStack: Stack,
     MuiDrawer: Drawer,

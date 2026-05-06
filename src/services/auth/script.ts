@@ -14,4 +14,6 @@ export interface User {
     phone_number: string;
     profile_types: [];
     username: string;
+    clientId: number | null;
+    clientName?: string;
   }

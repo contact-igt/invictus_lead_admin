@@ -1,189 +1,208 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, ChangeEvent } from 'react';
-import Stack from '@mui/material/Stack';
+
+import {
+    usePixelEyeQuery,
+    useCreatePixelEyeMutation,
+    useUpdatePixelEyeMutation,
+    useDeletePixelEyeMutation,
+    CreatePixelEyePayload,
+    UpdatePixelEyePayload,
+} from 'components/hooks/usePixelEyeQuery';
+import PixelEyeTable, { PixelEyeRow } from './pixelEyeTable';
+import PixelEyeForm, { PixelEyeFormValues } from './PixelEyeForm';
 import Paper from '@mui/material/Paper';
 import PageTitle from 'components/common/PageTitle';
 import PageLoader from 'components/loader/PageLoader';
-import { deletePixelEyeByIdQuery, usePixelEyeQuery } from 'components/hooks/usePixelEyeQuery';
-import PixelEyeTable from './pixelEyeTable';
-import { handleCSVDownloadData, handleXlsxDownloadData } from 'components/hooks/useExportDataToExcel';
-import ConfirmAlert from 'components/common/ConfirmAlert';
 import { Popup } from 'components/common/Popup';
-import { Typography, Box, Divider, Button } from '@mui/material';
-import IconifyIcon from 'components/base/IconifyIcon';
-import dayjs from 'dayjs';
+import ConfirmAlert from 'components/common/ConfirmAlert';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
+import { useState, useMemo } from 'react';
+import { Box, Grid, Typography, Paper as MuiPaper, TextField, MenuItem } from '@mui/material';
+import { ALL_STATUSES } from './pixelEyeStatuses';
+import { useAuth } from 'redux/selectors/auth/authSelector';
+import { useParams } from 'react-router-dom';
+import { normalizeClientKey } from 'utils/clientKey';
 
 
 const PixelEyeSection = () => {
-    const { data: usersData, isLoading } = usePixelEyeQuery();
-    const [searchText, setSearchText] = useState('');
-    const { mutate: deletePixelEyeUserMutate, isLoading: deleteLoading } = deletePixelEyeByIdQuery();
-    const [openConfirmAlertModal, setOpenConfirmAlertModal] = useState(false);
-    const [selectedUserId, setSelectedUserId] = useState<number>(0);
-    const [viewModal, setviewModal] = useState(false);
-    const [selectedUser, setSelectedUser] = useState<any>(null);
-    const [copied, setcopied] = useState(false);
+    const { user } = useAuth();
+    const { clientKey: urlClientKey } = useParams<{ clientKey?: string }>();
+    const { data: leads = [], isLoading } = usePixelEyeQuery();
+    const createMutation = useCreatePixelEyeMutation();
+    const updateMutation = useUpdatePixelEyeMutation();
+    const deleteMutation = useDeletePixelEyeMutation();
 
-    const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-        setSearchText(e.target.value);
+    const activeClientKey = normalizeClientKey(
+        user?.role === 'super-admin' ? (urlClientKey || 'pixeleye') : user?.clientKey,
+    );
+
+    const [formOpen, setFormOpen] = useState(false);
+    const [editRow, setEditRow] = useState<PixelEyeRow | null>(null);
+    const [openConfirmAlertModal, setOpenConfirmAlertModal] = useState(false);
+    const [selectedLeadId, setSelectedLeadId] = useState<number | null>(null);
+
+    const handleAdd = () => {
+        setEditRow(null);
+        setFormOpen(true);
     };
 
+    const handleEdit = (row: PixelEyeRow) => {
+        setEditRow(row);
+        setFormOpen(true);
+    };
 
     const handleOpenConfirmAlertModal = (id: number) => {
-        setSelectedUserId(id);
+        setSelectedLeadId(id);
         setOpenConfirmAlertModal(true);
-
-
-    }
-    const handleRemoveTip = () => {
-        deletePixelEyeUserMutate({
-            id: selectedUserId
-        }, {
-            onSuccess: () => {
-                setOpenConfirmAlertModal(false)
-            }
-        })
-
-        console.log("hh", selectedUserId)
-    }
-
-
-    const handleOpenViewModal = (id: number) => {
-        const user = usersData?.data?.find((user: any) => user.id === id);
-        setviewModal(!viewModal);
-        setviewModal(!viewModal);
-        setSelectedUser(user);
-    }
-
-
-    const handleCloseViewModal = () => {
-        setviewModal(false);
-        setSelectedUser(null);
-    }
-
-
-    const shareurl: any = [
-        `Name : ${selectedUser?.name ?? '---'} `,
-        `Mobile : ${selectedUser?.mobile ?? '---'} `,
-        `Age: ${selectedUser?.age ?? '---'}`,
-        `City : ${selectedUser?.city ?? '---'}`,
-        `Page Name : ${selectedUser?.page_name ?? '---'} `,
-        `Enquiry Count : ${selectedUser?.enquiry_count ?? '---'}`,
-        `Enquiry Date : ${dayjs(selectedUser?.registered_date).format("YYYY-MMM-DD") ?? '---'}`,
-
-    ]
-
-    const handleurl = async () => {
-        try {
-            await navigator.clipboard.writeText(shareurl);
-            setcopied(true);
-            setTimeout(() => {
-                setcopied(false);
-            }, 2000);
-        } catch (err) {
-            console.log(err);
-        }
     };
+
+    const handleDelete = () => {
+        if (!selectedLeadId) return;
+
+        deleteMutation.mutate(selectedLeadId, {
+            onSuccess: () => {
+                setOpenConfirmAlertModal(false);
+                setSelectedLeadId(null);
+            },
+        });
+    };
+
+    const handleFormSubmit = (values: PixelEyeFormValues) => {
+        if (editRow && editRow.id) {
+            updateMutation.mutate({ id: editRow.id, ...values } as UpdatePixelEyePayload);
+        } else {
+            const payload: CreatePixelEyePayload = activeClientKey
+                ? { ...values, _client_key: activeClientKey }
+                : values;
+            createMutation.mutate(payload);
+        }
+        setFormOpen(false);
+        setEditRow(null);
+    };
+
+    const handleFormCancel = () => {
+        setFormOpen(false);
+        setEditRow(null);
+    };
+
+
+    // --- Summary Bar ---
+    const today = new Date().toISOString().slice(0, 10);
+    const summary = useMemo(() => {
+        let total = leads.length;
+        let todayCount = leads.filter((l: PixelEyeRow) => l.date === today).length;
+        let followUp = leads.filter((l: PixelEyeRow) => l.status === 'Follow-up Required' || l.status === 'Hot Follow-up').length;
+        let appointments = leads.filter((l: PixelEyeRow) => l.status === 'Appointment Fixed').length;
+        let closed = leads.filter((l: PixelEyeRow) => l.status === 'Closed').length;
+        return { total, todayCount, followUp, appointments, closed };
+    }, [leads, today]);
+
+    // --- Filtering ---
+    const [search, setSearch] = useState('');
+    const [statusFilter, setStatusFilter] = useState('');
+    const filteredLeads = useMemo(() => {
+        return leads.filter((l: PixelEyeRow) =>
+            (!search || l.customer_name?.toLowerCase().includes(search.toLowerCase()) || l.phone_number?.includes(search)) &&
+            (!statusFilter || l.status === statusFilter)
+        );
+    }, [leads, search, statusFilter]);
 
     if (isLoading) return <PageLoader />;
 
     return (
-        <>
-            <Stack direction="column" spacing={1} width={1}>
-                <PageTitle
-                    title="Pixel Eye Users"
-                    btnText="Pixel Eye Users"
-                    searchText={searchText}
-                    handleInputChange={handleInputChange}
-                    isCsvExportEnable={usersData?.data?.length > 0}
-                    isXslxExportEnable={usersData?.data?.length > 0}
-                    handleXslxExportData={() => handleXlsxDownloadData(usersData?.data, "Pixel eye")}
-                    handleCsvExportData={() => handleCSVDownloadData(usersData?.data, "Pixel eye")}
+        <Paper sx={{ p: 2, width: '100%' }}>
+            <PageTitle title="PixelEye Dashboard" />
+            {/* --- Summary Bar --- */}
+            <MuiPaper elevation={2} sx={{ mb: 3, p: 2, background: '#f8fafc' }}>
+                <Grid container spacing={2} justifyContent="space-between">
+                    <Grid item xs={6} sm={2}><Typography variant="subtitle2">Total</Typography><Typography variant="h5">{summary.total}</Typography></Grid>
+                    <Grid item xs={6} sm={2}><Typography variant="subtitle2">Today</Typography><Typography variant="h5">{summary.todayCount}</Typography></Grid>
+                    <Grid item xs={6} sm={2}><Typography variant="subtitle2">Follow-up</Typography><Typography variant="h5">{summary.followUp}</Typography></Grid>
+                    <Grid item xs={6} sm={2}><Typography variant="subtitle2">Appointments</Typography><Typography variant="h5">{summary.appointments}</Typography></Grid>
+                    <Grid item xs={6} sm={2}><Typography variant="subtitle2">Closed</Typography><Typography variant="h5">{summary.closed}</Typography></Grid>
+                </Grid>
+            </MuiPaper>
+
+            {/* --- Filters --- */}
+            <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap', alignItems: 'center' }}>
+                <TextField
+                    label="Search by Name or Phone"
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                    size="small"
+                    sx={{ minWidth: 220 }}
                 />
-                <Paper sx={{ mt: 1.5, p: 0, pb: 0.75, minHeight: 411, width: 1 }}>
-                    <PixelEyeTable
-                        searchText={searchText}
-                        usersData={usersData?.data}
-                        handleRemove={(id) => handleOpenConfirmAlertModal(id)}
-                        handleView={(id) => handleOpenViewModal(id)}
-                    />
-                </Paper>
+                <TextField
+                    select
+                    label="Status"
+                    value={statusFilter}
+                    onChange={e => setStatusFilter(e.target.value)}
+                    size="small"
+                    sx={{ minWidth: 180 }}
+                >
+                    <MenuItem value="">All Statuses</MenuItem>
+                    {ALL_STATUSES.map(s => <MenuItem key={s} value={s}>{s}</MenuItem>)}
+                </TextField>
+                <Box sx={{ flex: 1 }} />
+                <Button variant="contained" onClick={handleAdd}>Add Lead</Button>
+            </Box>
 
-            </Stack>
-
-
+            {/* --- Table --- */}
+            <PixelEyeTable
+                rows={filteredLeads}
+                onEdit={handleEdit}
+                onDelete={handleOpenConfirmAlertModal}
+                onStatusChange={(id, value) => updateMutation.mutate({ id, status: value })}
+                onDayChange={(id, day, value) => updateMutation.mutate({
+                    id,
+                    [day]: value,
+                })}
+                onFollowUpDateChange={(id, value) =>
+                    updateMutation.mutate({
+                        id,
+                        follow_up_date: value,
+                    })
+                }
+            />
 
             <Popup
                 open={openConfirmAlertModal}
-                onClose={() => setOpenConfirmAlertModal(false)}
+                onClose={() => {
+                    setOpenConfirmAlertModal(false);
+                    setSelectedLeadId(null);
+                }}
                 showOnClose={false}
             >
                 <ConfirmAlert
-                    title={`Are you sure you want to delete this user ?`}
-                    onConfirm={handleRemoveTip}
-                    onCancel={() => setOpenConfirmAlertModal(false)}
-                    isLoading={deleteLoading}
+                    title="Are you sure you want to delete this lead?"
+                    onConfirm={handleDelete}
+                    onCancel={() => {
+                        setOpenConfirmAlertModal(false);
+                        setSelectedLeadId(null);
+                    }}
+                    isLoading={deleteMutation.isLoading}
                 />
             </Popup>
 
-            <Popup open={viewModal} onClose={handleCloseViewModal}>
-                <Box sx={{ p: 4, width: { xs: '100%', sm: 400, md: 450 } }}>
-                    <Typography variant="h5" mb={4} sx={{ fontWeight: 700, color: 'text.primary' }}>
-                        Pixel Eye User
-                    </Typography>
-
-                    <Stack direction="column" spacing={3} mb={4} alignItems="flex-start">
-                        {[
-                            { label: 'Name', value: selectedUser?.name },
-                            { label: 'Mobile', value: selectedUser?.mobile },
-                            { label: 'Age', value: selectedUser?.age },
-                            { label: 'City', value: selectedUser?.city },
-                            { label: 'Page Name', value: selectedUser?.page_name },
-                            { label: 'Enquiry Count', value: selectedUser?.enquiry_count },
-                            { label: 'Enquiry Date', value: selectedUser?.registered_date ? dayjs(selectedUser.registered_date).format("DD MMM YYYY") : null },
-                        ].map((detail, index) => (
-                            detail.value && (
-                                <Stack key={index} direction="column" spacing={0.5} width="100%">
-                                    <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 500, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                                        {detail.label}
-                                    </Typography>
-                                    <Typography variant="body1" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                                        {detail.value || '---'}
-                                    </Typography>
-                                </Stack>
-                            )
-                        ))}
-                    </Stack>
-
-                    <Divider sx={{ mb: 3 }} />
-
-                    <Button
-                        fullWidth
-                        variant="outlined"
-                        startIcon={<IconifyIcon icon={copied ? "mingcute:check-fill" : "hugeicons:copy-01"} />}
-                        onClick={handleurl}
-                        sx={{
-                            textTransform: 'none',
-                            fontWeight: 600,
-                            py: 1.2,
-                            borderRadius: '8px',
-                            borderColor: copied ? 'success.main' : 'divider',
-                            color: copied ? 'success.main' : 'text.primary',
-                            '&:hover': {
-                                borderColor: copied ? 'success.dark' : 'text.primary',
-                                backgroundColor: 'transparent'
-                            }
-                        }}
-                    >
-                        {copied ? 'Details Copied' : 'Copy All Details'}
-                    </Button>
-                </Box>
-            </Popup>
-
-
-
-
-        </>
+            {/* --- Dialog --- */}
+            <Dialog open={formOpen} onClose={handleFormCancel} maxWidth="sm" fullWidth>
+                <DialogTitle>{editRow ? 'Edit Lead' : 'Add Lead'}</DialogTitle>
+                <DialogContent>
+                    <PixelEyeForm
+                        initialValues={editRow || undefined}
+                        onSubmit={handleFormSubmit}
+                        onCancel={handleFormCancel}
+                        isLoading={createMutation.isLoading || updateMutation.isLoading}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleFormCancel}>Cancel</Button>
+                </DialogActions>
+            </Dialog>
+        </Paper>
     );
 };
 

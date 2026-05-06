@@ -1,95 +1,120 @@
+// ── Invictus Global Tech Brand Colors ────────────────────────────────────────
+
+export const green = {
+  tint:    '#E8F5EE',  // card fills, chip bg
+  pale:    '#C3E6D3',  // subtle borders, hover bg
+  light:   '#7ECBA5',  // icons, highlights
+  mid:     '#3DAA6B',  // badges, left-border accents
+  primary: '#2E8B57',  // buttons, active states
+  dark:    '#1F6B40',  // hover states, sidebar active bg
+  deeper:  '#145C30',  // pressed states
+  900:     '#0D3D20',  // darkest green
+};
+
+export const dark = {
+  base:    '#111714',  // sidebar background
+  surface: '#1C2320',  // sidebar hover bg
+  muted:   '#2A3330',  // sidebar section labels
+};
+
+export const surface = {
+  page:    '#F4F6F5',  // page/body background
+  card:    '#FFFFFF',  // card/panel background
+  overlay: '#FCFCFC',  // nested surfaces
+};
+
+export const text = {
+  primary:   '#111714',
+  secondary:  '#4A5C4D',
+  muted:      '#8A9C8D',
+  inverse:    '#FFFFFF',
+};
+
+export const status = {
+  successBg:  '#E8F5EE',
+  successFg:  '#2E8B57',
+  warningBg:  '#FFF8E8',
+  warningFg:  '#C47A15',
+  dangerBg:   '#FFF0F0',
+  dangerFg:   '#E04444',
+  infoBg:     '#EEF3FF',
+  infoFg:     '#3B78E0',
+  neutralBg:  '#F4F6F5',
+  neutralFg:  '#8A9C8D',
+};
+
+export const border = {
+  default:  '#E8EDE9',
+  subtle:   '#F0F3F1',
+  focus:    '#2E8B57',
+};
+
+// Legacy exports kept for any remaining references
 export const gray = {
-  100: '#DFE1F3',
-  200: '#C2C6E8',
-  300: '#8E92BC',
-  400: '#54577A',
-  500: '#4c4e6e',
-  600: '#434662',
-  700: '#3b3d55',
-  800: '#323449',
-  900: '#2a2c3d',
+  100: '#F4F6F5',
+  200: '#E8EDE9',
+  300: '#C2CCC4',
+  400: '#8A9C8D',
+  500: '#4A5C4D',
+  900: '#111714',
 };
 
 export const darkGray = {
-  100: '#72737A',
-  200: '#5B5B64',
-  300: '#43444E',
-  400: '#2C2C38',
-  500: '#141522',
-  600: '#0E0F1D',
-  700: '#0A0A18',
-  800: '#060713',
-  900: '#030410',
-};
-
-export const blue = {
-  100: '#DCE4FF',
-  200: '#BAC8FF',
-  300: '#98ABFF',
-  400: '#7E95FF',
-  500: '#2ab181',
-  600: '#3D53DB',
-  700: '#2A3BB7',
-  800: '#1A2793',
-  900: '#10197A',
-};
-
-export const sky = {
-  100: '#DCF3FF',
-  200: '#BAE5FF',
-  300: '#98D3FF',
-  400: '#7EC2FF',
-  500: '#54A6FF',
-  600: '#3D81DB',
-  700: '#2A60B7',
-  800: '#1A4393',
-  900: '#102E7A',
+  100: '#8A9C8D',
+  200: '#4A5C4D',
+  300: '#2A3330',
+  400: '#1C2320',
+  500: '#111714',
+  600: '#0D1410',
+  700: '#090F0B',
+  800: '#060A07',
+  900: '#030503',
 };
 
 export const red = {
-  100: '#FFDFE2',
-  200: '#FFBFC5',
-  300: '#FF949E',
-  400: '#FF5F6E',
-  500: '#FF4D5E',
-  600: '#E64555',
-  700: '#CC3E4B',
-  800: '#B33642',
-  900: '#992E38',
+  100: '#FFF0F0',
+  200: '#FFD5D5',
+  300: '#FFA8A8',
+  400: '#FF7070',
+  500: '#E04444',
+  600: '#C43535',
+  700: '#A82929',
+  800: '#8C2020',
+  900: '#701818',
 };
 
-export const green = {
-  100: '#D5E8DD',
-  200: '#97C5AB',
-  300: '#6DAE89',
-  400: '#439768',
-  500: '#2E8B57',
-  600: '#297D4E',
-  700: '#20613D',
-  800: '#1C5334',
-  900: '#17462C',
+export const blue = {
+  100: '#EEF3FF',
+  200: '#D5E2FF',
+  300: '#AABEFF',
+  400: '#7E9EFF',
+  500: '#3B78E0',
+  600: '#2D5DB8',
+  700: '#204590',
+  800: '#153068',
+  900: '#0C1E45',
 };
 
 export const yellow = {
-  100: '#FFFFCC',
-  200: '#FFC887',
-  300: '#FFC076',
-  400: '#FFB865',
-  500: '#FFB054',
-  600: '#FFB054',
-  700: '#E69E4C',
-  800: '#CC8D43',
-  900: '#B37B3B',
+  100: '#FFF8E8',
+  200: '#FFE9B0',
+  300: '#FFCF6B',
+  400: '#F5B030',
+  500: '#F59E3A',
+  600: '#C47A15',
+  700: '#9A5D0E',
+  800: '#704208',
+  900: '#4A2B04',
 };
 
 export const white = {
   100: '#FFFFFF',
   200: '#FCFCFC',
-  300: '#F5F5F7',
-  400: '#EBEDF7',
-  500: '#D4D5DE',
+  300: '#F4F6F5',
+  400: '#E8EDE9',
+  500: '#C2CCC4',
 };
 
 export const transparentGray = {
-  500: '#e1801c14',
+  500: 'rgba(17,23,20,0.06)',
 };

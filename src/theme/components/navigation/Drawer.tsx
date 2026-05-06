@@ -3,25 +3,33 @@ import { Components } from '@mui/material/styles/components';
 
 const Drawer: Components<Omit<Theme, 'components'>>['MuiDrawer'] = {
   styleOverrides: {
-    root: ({ theme }) => ({
+    root: {
       '&:hover, &:focus': {
         '*::-webkit-scrollbar, *::-webkit-scrollbar-thumb': {
           visibility: 'visible',
         },
       },
       '*::-webkit-scrollbar-track': {
-        marginTop: theme.spacing(11.25),
+        marginTop: 0,
       },
-    }),
-    paper: ({ theme }) => ({
-      padding: theme.spacing(0, 3.5),
+      // Override scrollbar thumb inside dark sidebar
+      '*::-webkit-scrollbar-thumb': {
+        backgroundColor: 'rgba(195,230,211,0.3)',
+      },
+      '*::-webkit-scrollbar-thumb:hover': {
+        backgroundColor: 'rgba(195,230,211,0.6)',
+      },
+    },
+    paper: {
+      padding: 0,
       height: '100vh',
-      width: 252,
+      width: 240,
       border: 0,
       borderRadius: 0,
-      backgroundColor: theme.palette.info.lighter,
+      backgroundColor: '#FFFFFF',
       boxSizing: 'border-box',
-    }),
+      overflowX: 'hidden',
+    },
   },
 };
 

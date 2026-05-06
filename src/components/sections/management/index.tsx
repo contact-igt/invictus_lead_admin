@@ -15,7 +15,7 @@ import { useAuth } from 'redux/selectors/auth/authSelector';
 import { Popup } from 'components/common/Popup';
 import ConfirmAlert from 'components/common/ConfirmAlert';
 import UserForm from './UserForm';
-import { Box, Button } from '@mui/material';
+import { Box, Button, Drawer } from '@mui/material';
 import IconifyIcon from 'components/base/IconifyIcon';
 
 const ManagementSection = () => {
@@ -50,7 +50,14 @@ const ManagementSection = () => {
     };
 
     const handleOpenFormModal = (user?: any, viewOnly: boolean = false) => {
-        setSelectedUser(user || null);
+        if (user) {
+            setSelectedUser({
+                ...user,
+                client_key: user.client?.client_key || user.client_key || '',
+            });
+        } else {
+            setSelectedUser(null);
+        }
         setIsReadOnly(viewOnly);
         setOpenFormModal(true);
     };
@@ -115,7 +122,14 @@ const ManagementSection = () => {
                 />
             </Popup>
 
-            <Popup open={openFormModal} onClose={handleCloseFormModal}>
+            <Drawer
+                anchor="right"
+                open={openFormModal}
+                onClose={handleCloseFormModal}
+                PaperProps={{
+                    sx: { width: { xs: '100vw', sm: 500 }, borderLeft: 0 }
+                }}
+            >
                 <UserForm
                     initialValues={selectedUser}
                     onSubmit={handleFormSubmit}
@@ -123,7 +137,7 @@ const ManagementSection = () => {
                     isLoading={createMutation.isLoading || updateMutation.isLoading}
                     isReadOnly={isReadOnly}
                 />
-            </Popup>
+            </Drawer>
         </>
     );
 };
