@@ -4,7 +4,8 @@ import Stack from '@mui/material/Stack';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Image from 'components/base/Image';
-import LogoImg from '/assets/brand-logo.png';
+
+const LogoImg = '/assets/brand-logo.png';
 
 const AuthLayout = ({ children }: PropsWithChildren) => {
   return (

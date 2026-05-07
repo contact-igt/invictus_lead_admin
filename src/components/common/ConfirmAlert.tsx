@@ -1,6 +1,6 @@
-import { Stack, Typography } from '@mui/material';
+import { Stack, Typography, Box } from '@mui/material';
+import IconifyIcon from 'components/base/IconifyIcon';
 import AppFormButton from './Forms/AppFormButton';
-import Remove from "assets/images/remove.svg"
 
 interface ConfirmAlertProps {
   title: string;
@@ -19,11 +19,9 @@ const ConfirmAlert = ({ title, message, isLoading, onConfirm, onCancel }: Confir
       spacing={2}
       sx={{ padding: 4 }}
     >
-      <img
-          src={Remove}
-          alt="Restricted Device"
-          style={{ width: '350px', marginBottom: '1.5rem' }}
-        />
+      <Box sx={{ color: 'error.main', mb: 1, fontSize: 72 }}>
+        <IconifyIcon icon="hugeicons:alert-02" width={72} height={72} />
+      </Box>
      <Typography textAlign={'center'} variant="h4" sx={{width: '100%', maxWidth: "300px"}}>
         {title}
       </Typography>
