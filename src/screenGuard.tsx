@@ -1,5 +1,4 @@
 import React from 'react';
-import secureGuard from "/assets/brand-logo.png"
 
 const ScreenGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAllowed, setIsAllowed] = React.useState(window.innerWidth >= 600);
@@ -27,7 +26,7 @@ const ScreenGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         fontFamily: 'sans-serif'
       }}>
         <img
-          src={secureGuard}
+          src="/assets/brand-logo.png"
           alt="Restricted Device"
           style={{ width: '150px', marginBottom: '1.5rem' }}
         />
