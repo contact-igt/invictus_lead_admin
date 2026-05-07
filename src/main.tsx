@@ -14,11 +14,13 @@ import { PersistGate } from 'redux-persist/integration/react';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import ScreenGuard from 'screenGuard';
+import ErrorBoundary from 'components/common/ErrorBoundary';
 
 const queryClient = new QueryClient();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
+    <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
@@ -38,5 +40,6 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         </PersistGate>
       </Provider>
     </QueryClientProvider>
+    </ErrorBoundary>
   </React.StrictMode>,
 );
