@@ -20,7 +20,7 @@ export const useVlsLawpracticeQuery = () => {
     return { data, isLoading, isError };
 };
 
-export const deleteVlsLawPracticeByIdMutation = () => {
+export const useDeleteVlsLawPracticeByIdMutation = () => {
     const queryClient = useQueryClient();
     const { enqueueSnackbar } = useSnackbar();
 
@@ -54,7 +54,7 @@ export const useVlsLawAcademyQuery = () => {
     return { data, isLoading, isError };
 };
 
-export const deleteVlsLawAcademyByIdMutation = () => {
+export const useDeleteVlsLawAcademyByIdMutation = () => {
     const queryClient = useQueryClient();
     const { enqueueSnackbar } = useSnackbar();
 
@@ -89,11 +89,10 @@ export const useVlsLawAibeQuery = () => {
             enqueueSnackbar(error.message || 'Failed to load data', { variant: 'error' });
         },
     });
-    console.log("data",data);
     return { data, isLoading, isError };
 };
 
-export const deleteVlsLawAibeByIdMutation = () => {
+export const useDeleteVlsLawAibeByIdMutation = () => {
     const queryClient = useQueryClient();
     const { enqueueSnackbar } = useSnackbar();
 

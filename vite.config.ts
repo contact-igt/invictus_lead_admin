@@ -6,8 +6,6 @@ export default defineConfig({
   plugins: [react(), tsconfigPaths()],
 
   resolve: {
-    // Force single instances of emotion so MUI's internal circular deps
-    // don't create duplicate module graphs that trigger TDZ crashes.
     dedupe: ['react', 'react-dom', '@emotion/react', '@emotion/styled'],
   },
 
@@ -28,54 +26,12 @@ export default defineConfig({
   },
 
   build: {
+    sourcemap: true,
     rollupOptions: {
       output: {
-        hoistTransitiveImports: false,
-        manualChunks(id) {
-          // x-date-pickers is in its own chunk — bundling it with emotion
-          // core creates a three-way MUI→emotion→MUI cycle that Rollup
-          // linearises in the wrong order, causing TDZ in production.
-          if (id.includes('node_modules/@mui/x-date-pickers')) {
-            return 'mui-pickers';
-          }
-
-          // emotion + MUI core stay together to avoid cross-chunk cycles.
-          if (
-            id.includes('node_modules/@emotion') ||
-            id.includes('node_modules/@mui/material') ||
-            id.includes('node_modules/@mui/system') ||
-            id.includes('node_modules/@mui/base') ||
-            id.includes('node_modules/@mui/utils') ||
-            id.includes('node_modules/@mui/styled-engine') ||
-            id.includes('node_modules/@mui/private-theming')
-          ) {
-            return 'mui-vendor';
-          }
-
-          if (id.includes('node_modules/@mui/x-data-grid')) {
-            return 'mui-data-grid';
-          }
-
-          if (
-            id.includes('node_modules/xlsx') ||
-            id.includes('node_modules/file-saver')
-          ) {
-            return 'export-tools';
-          }
-
-          if (
-            id.includes('node_modules/react-query') ||
-            id.includes('node_modules/notistack')
-          ) {
-            return 'query-vendor';
-          }
-
-          if (id.includes('node_modules')) {
-            return 'vendor';
-          }
-
-          return undefined;
-        },
+        // No manualChunks — letting Rollup resolve dependency order
+        // automatically prevents circular chunk references that cause
+        // "Cannot access 'X' before initialization" TDZ errors in production.
       },
     },
   },

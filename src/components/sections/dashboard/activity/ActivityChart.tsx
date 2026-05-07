@@ -4,7 +4,6 @@ import * as echarts from 'echarts/core';
 import ReactEchart from 'components/base/ReactEchart';
 import { CanvasRenderer } from 'echarts/renderers';
 import { LineChart } from 'echarts/charts';
-import { EChartOption } from 'echarts';
 import {
   TitleComponent,
   TooltipComponent,
@@ -59,7 +58,7 @@ const ActivityChart = ({ data, ...rest }: ActivityChartProps) => {
         confine: true,
         position: (
           point: [number, number],
-          _params: EChartOption.Tooltip.Format[],
+          _params: unknown[],
           _dom: HTMLElement,
           _rect: unknown,
           size: { contentSize: [number, number]; viewSize: [number, number] },
@@ -77,7 +76,7 @@ const ActivityChart = ({ data, ...rest }: ActivityChartProps) => {
             return [x - size.contentSize[0] / 2, bottomOffset];
           }
         },
-        formatter: (params: EChartOption.Tooltip.Format | EChartOption.Tooltip.Format[]) => {
+        formatter: (params: { data: number }[] | { data: number }) => {
           if (Array.isArray(params)) {
             const dataValue = Math.round(params[0].data);
             const arrowPosition = isTopOffset ? 'bottom:-14px;' : 'top:-14px;';
