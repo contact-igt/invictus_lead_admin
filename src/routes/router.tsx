@@ -83,7 +83,9 @@ const router = createBrowserRouter(
           path: rootPaths.authRoot,
           element: (
             <AuthLayout>
-              <Outlet />
+              <Suspense fallback={<PageLoader />}>
+                <Outlet />
+              </Suspense>
             </AuthLayout>
           ),
           children: [
