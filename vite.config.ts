@@ -6,8 +6,6 @@ export default defineConfig({
   plugins: [react(), tsconfigPaths()],
 
   resolve: {
-    // Force single instances of emotion so MUI's internal circular deps
-    // don't create duplicate module graphs that trigger TDZ crashes.
     dedupe: ['react', 'react-dom', '@emotion/react', '@emotion/styled'],
   },
 

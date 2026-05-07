@@ -4,7 +4,7 @@ import Stack from '@mui/material/Stack';
 import Paper from '@mui/material/Paper';
 import PageTitle from 'components/common/PageTitle';
 import PageLoader from 'components/loader/PageLoader';
-import { deleteVlsLawAcademyByIdMutation, useVlsLawAcademyQuery } from 'components/hooks/useVlsQuery';
+import { useDeleteVlsLawAcademyByIdMutation, useVlsLawAcademyQuery } from 'components/hooks/useVlsQuery';
 import VlsLawAcademyTable from './vlsTable';
 import { handleCSVDownloadData, handleXlsxDownloadData } from 'components/hooks/useExportDataToExcel';
 import { Popup } from 'components/common/Popup';
@@ -13,7 +13,7 @@ import VlsAcademyView from './vlsAcademyView';
 
 const VlsLawAcademySection = () => {
     const { data: usersData, isLoading } = useVlsLawAcademyQuery();
-    const { mutate: deleteVlsLawAcademyUserMutate, isLoading: deleteLoading } = deleteVlsLawAcademyByIdMutation();
+    const { mutate: deleteVlsLawAcademyUserMutate, isLoading: deleteLoading } = useDeleteVlsLawAcademyByIdMutation();
     const [searchText, setSearchText] = useState('');
     const [openConfirmAlertModal, setOpenConfirmAlertModal] = useState(false);
     const [selectedUserId, setSelectedUserId] = useState<number>(0);

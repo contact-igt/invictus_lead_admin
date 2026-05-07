@@ -5,7 +5,6 @@ import ReactEchart from 'components/base/ReactEchart';
 import { TooltipComponent } from 'echarts/components';
 import { SVGRenderer } from 'echarts/renderers';
 import { GaugeChart } from 'echarts/charts';
-import { EChartOption } from 'echarts';
 
 echarts.use([TooltipComponent, GaugeChart, SVGRenderer]);
 
@@ -34,7 +33,7 @@ const RunningTaskChart = ({ data, ...rest }: RunningTaskChartProps) => {
           color: theme.palette.text.primary,
           fontFamily: theme.typography.fontFamily,
         },
-        formatter: (params: EChartOption.Tooltip.Format) => {
+        formatter: (params: { value: number }) => {
           return `<div style="display:flex; align-items:center; justify-content:center; gap:0.35rem">
             <div style="height:0.625rem; width:0.625rem; background:${theme.palette.primary.main}; border-radius:50%"></div>
             <p style="font-size:${theme.typography.body1.fontSize}; font-weight:800">${params.value}%</p>

@@ -4,7 +4,7 @@ import Stack from '@mui/material/Stack';
 import Paper from '@mui/material/Paper';
 import PageTitle from 'components/common/PageTitle';
 import PageLoader from 'components/loader/PageLoader';
-import { deleteVlsLawAibeByIdMutation, useVlsLawAibeQuery } from 'components/hooks/useVlsQuery';
+import { useDeleteVlsLawAibeByIdMutation, useVlsLawAibeQuery } from 'components/hooks/useVlsQuery';
 import { handleCSVDownloadData, handleXlsxDownloadData } from 'components/hooks/useExportDataToExcel';
 import { Popup } from 'components/common/Popup';
 import ConfirmAlert from 'components/common/ConfirmAlert';
@@ -13,7 +13,7 @@ import VlsAibeView from './vlsAibeView';
 
 const VlsAibeSection = () => {
     const { data: usersData, isLoading } = useVlsLawAibeQuery();
-    const { mutate: deleteVlsLawAcademyUserMutate, isLoading: deleteLoading } = deleteVlsLawAibeByIdMutation();
+    const { mutate: deleteVlsLawAcademyUserMutate, isLoading: deleteLoading } = useDeleteVlsLawAibeByIdMutation();
     const [searchText, setSearchText] = useState('');
     const [openConfirmAlertModal, setOpenConfirmAlertModal] = useState(false);
     const [selectedUserId, setSelectedUserId] = useState<number>(0);

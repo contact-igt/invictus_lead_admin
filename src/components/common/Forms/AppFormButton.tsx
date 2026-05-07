@@ -20,7 +20,7 @@ const AppFormButton: React.FC<AppFormButtonProps> = ({
   fullWidth = false,
   variant = 'contained',
   size = 'medium',
-  bg = 'primary.main',
+  bg = '#1976d2',
   onClick,
 }) => {
   return (
@@ -38,7 +38,7 @@ const AppFormButton: React.FC<AppFormButtonProps> = ({
         <ThreeDots
           height="30"
           width="30"
-          color='primary.main'
+          color='#ffffff'
           radius="9"
           ariaLabel="three-dots-loading"
         />

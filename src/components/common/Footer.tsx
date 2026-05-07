@@ -1,5 +1,4 @@
 import Typography from '@mui/material/Typography';
-import Link from '@mui/material/Link';
 
 const Footer = () => {
   return (
@@ -13,10 +12,7 @@ const Footer = () => {
       letterSpacing={0.5}
       fontWeight={500}
     >
-      Made with ❤️ by{' '}
-      <Link href="https://themewagon.com/" target="_blank" rel="noreferrer">
-        {'ThemeWagon'}
-      </Link>
+      {'© 2024 Invictus Global Tech'}
     </Typography>
   );
 };
