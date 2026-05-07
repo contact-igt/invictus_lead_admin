@@ -9,8 +9,6 @@ export interface ColumnConfig {
   minWidth?: number;
   required?: boolean;
 }
-
-
 export interface DashboardMetricConfig {
   key: string;
   label: string;
