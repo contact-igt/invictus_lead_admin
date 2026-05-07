@@ -24,15 +24,12 @@ export const _axios = async (
   options?: AxiosHelperOptions,
 ) => {
   const APIURL =
-    import.meta.env.VITE_SERVER_PORT === 'production'
+    import.meta.env.VITE_MODE === 'production'
       ? import.meta.env.VITE_PRODUCTION_API_URL
-      : import.meta.env.VITE_SERVER_PORT === 'development'
-        ? import.meta.env.VITE_DEVELOPMENT_API_URL
-        : import.meta.env.VITE_LOCALHOST_API_URL;
+      : import.meta.env.VITE_LOCALHOST_API_URL;
 
   const normalizedApiUrl = APIURL?.trim();
   const endpoint = `${normalizedApiUrl}${url}`;
-  const isNgrokUrl = normalizedApiUrl?.includes('ngrok-free.dev');
   const lowerMethod = (method || '').toLowerCase();
   const isGetRequest = lowerMethod === 'get';
   const state: RootState = store.getState();
@@ -70,8 +67,7 @@ export const _axios = async (
             Expires: '0',
           }
           : {}),
-        ...(isNgrokUrl ? { 'ngrok-skip-browser-warning': 'true' } : {}),
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       method: method,
       url: endpoint,
