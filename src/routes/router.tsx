@@ -2,12 +2,15 @@
 import { Suspense, lazy } from 'react';
 import { Outlet, createBrowserRouter } from 'react-router-dom';
 import paths, { rootPaths } from './paths';
-import MainLayout from 'layouts/main-layout';
-import AuthLayout from 'layouts/auth-layout';
-import Splash from 'components/loader/Splash';
-import PageLoader from 'components/loader/PageLoader';
-import ProtectedRoute from './security';
-import ErrorPage from 'components/common/ErrorPage';
+
+// CRITICAL: Lazy-load all MUI/Emotion-using components to prevent initialization issues
+const MainLayout = lazy(() => import('layouts/main-layout'));
+const AuthLayout = lazy(() => import('layouts/auth-layout'));
+const ProtectedRoute = lazy(async () => {
+  const mod = await import('./security');
+  return { default: mod.default };
+});
+const ErrorPage = lazy(() => import('components/common/ErrorPage'));
 
 const App = lazy(() => import('App'));
 const Dashboard = lazy(() => import('pages/dashboard'));
@@ -21,7 +24,7 @@ const router = createBrowserRouter(
   [
     {
       element: (
-        <Suspense fallback={<Splash />}>
+        <Suspense fallback={<div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>}>
           <App />
         </Suspense>
       ),
@@ -32,7 +35,7 @@ const router = createBrowserRouter(
           path: '/',
           element: (
             <MainLayout>
-              <Suspense fallback={<PageLoader />}>
+              <Suspense fallback={<div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>}>
                 <ProtectedRoute>
                   <Outlet />
                 </ProtectedRoute>
@@ -51,13 +54,15 @@ const router = createBrowserRouter(
         {
           path: rootPaths.pageRoot,
           element: (
-            <MainLayout>
-              <Suspense fallback={<PageLoader />}>
-                <ProtectedRoute>
-                  <Outlet />
-                </ProtectedRoute>
-              </Suspense>
-            </MainLayout>
+            <Suspense fallback={<div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>}>
+              <MainLayout>
+                <Suspense fallback={<div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>}>
+                  <ProtectedRoute>
+                    <Outlet />
+                  </ProtectedRoute>
+                </Suspense>
+              </MainLayout>
+            </Suspense>
           ),
           children: [
             {
@@ -82,11 +87,13 @@ const router = createBrowserRouter(
         {
           path: rootPaths.authRoot,
           element: (
-            <AuthLayout>
-              <Suspense fallback={<PageLoader />}>
-                <Outlet />
-              </Suspense>
-            </AuthLayout>
+            <Suspense fallback={<div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>}>
+              <AuthLayout>
+                <Suspense fallback={<div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>}>
+                  <Outlet />
+                </Suspense>
+              </AuthLayout>
+            </Suspense>
           ),
           children: [
             {
