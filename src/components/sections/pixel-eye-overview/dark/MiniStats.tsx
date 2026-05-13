@@ -2,7 +2,7 @@ import React from 'react';
 import IconifyIcon from 'components/base/IconifyIcon';
 import useColorMode from 'hooks/useColorMode';
 
-const MiniStats: React.FC<{ metrics?: any; loading?: boolean }> = ({ metrics = {}, loading = false }) => {
+const MiniStats: React.FC<{ metrics?: any; loading?: boolean }> = ({ metrics = {}}) => {
   const { mode } = useColorMode();
   const todayFollowUps = metrics.actions?.todayFollowUps ?? 0;
   const notAnswering = metrics.actions?.notAnswering ?? 0;

@@ -12,7 +12,6 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import ScreenGuard from 'screenGuard';
 import ErrorBoundary from 'components/common/ErrorBoundary';
-import useColorMode from 'hooks/useColorMode';
 
 const queryClient = new QueryClient();
 
