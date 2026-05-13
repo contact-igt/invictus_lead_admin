@@ -48,7 +48,7 @@ export interface FunnelStageItem {
 }
 
 export interface TrendPoint {
-    day: 'Day 1' | 'Day 2' | 'Day 3' | 'Day 4' | 'Day 5';
+    day: string; // ISO date 'YYYY-MM-DD'
     contacted: number;
     converted: number;
 }
@@ -81,6 +81,13 @@ export interface FollowUpMetrics {
     upcomingLeads: FollowUpReminder[];
 }
 
+export interface SourceBreakdownItem {
+    source: string;
+    count: number;
+    percent: number;
+    color: string;
+}
+
 export interface DashboardMetrics {
     kpis: {
         totalLeads: number;
@@ -89,6 +96,7 @@ export interface DashboardMetrics {
         lostLeads: number;
     };
     statusBreakdown: StatusCategoryItem[];
+    sourceBreakdown: SourceBreakdownItem[];
     funnel: FunnelStageItem[];
     trend: TrendPoint[];
     actions: {

@@ -8,7 +8,12 @@ const Paper: Components<Omit<Theme, 'components'>>['MuiPaper'] = {
       backgroundColor: theme.palette.info.lighter,  // #FFFFFF
       borderRadius: 16,
       overflow: 'hidden',
-      boxShadow: 'none',
+      boxShadow: theme.customShadows[0],
+      transition: 'background-color 200ms ease, box-shadow 200ms ease',
+
+      '&:hover': {
+        boxShadow: theme.customShadows[1],
+      },
 
       '&.MuiMenu-paper': {
         padding: 0,

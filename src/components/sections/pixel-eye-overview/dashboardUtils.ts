@@ -5,14 +5,16 @@ import {
   FollowUpReminder,
   HighPriorityLead,
   LeadRecord,
+  SourceBreakdownItem,
   StatusCategoryItem,
   TrendPoint,
 } from './types';
 
-const CONTACT_EXCLUDED = new Set(['Not Answering', 'Switched Off']);
-const APPOINTMENT_KPI_SET = new Set(['Appointment Fixed', 'Visited', 'Walk-in']);
+// Normalize all known status lists to lowercase to allow case-insensitive matching
+const CONTACT_EXCLUDED = new Set(['Not Answering', 'Switched Off'].map((s) => s.toLowerCase()));
+const APPOINTMENT_KPI_SET = new Set(['Appointment Fixed', 'Visited', 'Walk-in'].map((s) => s.toLowerCase()));
 
-const CONVERTED_SET = new Set(['Appointment Fixed', 'Visited', 'Walk-in', 'Closed']);
+const CONVERTED_SET = new Set(['Appointment Fixed', 'Visited', 'Walk-in', 'Closed'].map((s) => s.toLowerCase()));
 const FOLLOW_UP_SET = new Set([
   'Enquiry',
   'Hot Follow-up',
@@ -23,7 +25,7 @@ const FOLLOW_UP_SET = new Set([
   'Follow-up Post Appointment',
   'Want to Speak With Doctor',
   'Address Requested',
-]);
+].map((s) => s.toLowerCase()));
 const LOST_SET = new Set([
   'Not Interested',
   'Not Willing to Come Now',
@@ -32,7 +34,7 @@ const LOST_SET = new Set([
   'Not in Hyderabad',
   'Long Distance',
   'Appointment Cancelled',
-]);
+].map((s) => s.toLowerCase()));
 const INVALID_SET = new Set([
   'Wrong Number',
   'Wrongly Dialed',
@@ -41,7 +43,7 @@ const INVALID_SET = new Set([
   'Incoming Call Not Available',
   'Number Not in Service',
   'DND',
-]);
+].map((s) => s.toLowerCase()));
 
 const INTERESTED_SET = new Set([
   ...Array.from(FOLLOW_UP_SET),
@@ -50,9 +52,9 @@ const INTERESTED_SET = new Set([
   'Visited',
   'Walk-in',
   'Closed',
-]);
+].map((s) => s.toLowerCase()));
 
-const HIGH_PRIORITY_SET = new Set(['Hot Follow-up', 'Follow-up Required', 'Appointment Fixed']);
+const HIGH_PRIORITY_SET = new Set(['Hot Follow-up', 'Follow-up Required', 'Appointment Fixed'].map((s) => s.toLowerCase()));
 const DAY_FIELDS: Array<keyof LeadRecord> = ['day_1', 'day_2', 'day_3', 'day_4', 'day_5'];
 
 const normalizeDate = (value?: string | null): string => {
@@ -76,6 +78,7 @@ const normalizeDate = (value?: string | null): string => {
 };
 
 const normalizeText = (value?: string | null): string => (value || '').trim();
+const normalizeStatus = (value?: string | null): string => normalizeText(value).toLowerCase();
 
 const todayIso = (): string => {
   const now = new Date();
@@ -112,7 +115,7 @@ export const applyDashboardFilters = (leads: LeadRecord[], filters: DashboardFil
 };
 
 const countByStatus = (leads: LeadRecord[], statuses: Set<string>): number => {
-  return leads.filter((lead) => statuses.has(normalizeText(lead.status))).length;
+  return leads.filter((lead) => statuses.has(normalizeStatus(lead.status))).length;
 };
 
 const buildStatusBreakdown = (leads: LeadRecord[]): StatusCategoryItem[] => {
@@ -134,15 +137,15 @@ const buildStatusBreakdown = (leads: LeadRecord[]): StatusCategoryItem[] => {
 const buildFunnel = (leads: LeadRecord[]) => {
   const total = leads.length;
   const contacted = leads.filter((lead) => {
-    const status = normalizeText(lead.status);
+    const status = normalizeStatus(lead.status);
     return Boolean(status) && !CONTACT_EXCLUDED.has(status);
   }).length;
 
   const interested = countByStatus(leads, INTERESTED_SET);
-  const appointment = leads.filter((lead) => normalizeText(lead.status) === 'Appointment Fixed').length;
+  const appointment = leads.filter((lead) => normalizeStatus(lead.status) === 'appointment fixed').length;
   const visited = leads.filter((lead) => {
-    const status = normalizeText(lead.status);
-    return status === 'Visited' || status === 'Walk-in' || status === 'Closed';
+    const status = normalizeStatus(lead.status);
+    return status === 'visited' || status === 'walk-in' || status === 'closed';
   }).length;
 
   const asPercent = (count: number) => (total > 0 ? Math.round((count / total) * 100) : 0);
@@ -164,12 +167,13 @@ const buildTrend = (leads: LeadRecord[]): TrendPoint[] => {
     leads.forEach((lead) => {
       const value = normalizeText(lead[field] as string | null);
       if (!value) return;
+      const val = value.toLowerCase();
 
-      if (!CONTACT_EXCLUDED.has(value)) {
+      if (!CONTACT_EXCLUDED.has(val)) {
         contacted += 1;
       }
 
-      if (CONVERTED_SET.has(value)) {
+      if (CONVERTED_SET.has(val)) {
         converted += 1;
       }
     });
@@ -189,7 +193,7 @@ const buildHighPriorityLeads = (
 
   const prioritized = leads
     .filter((lead) => {
-      const status = normalizeText(lead.status);
+      const status = normalizeStatus(lead.status);
       const followUp = normalizeDate(lead.follow_up_date);
       const isUrgentFollowUp = Boolean(followUp) && followUp <= today;
       return HIGH_PRIORITY_SET.has(status) || isUrgentFollowUp;
@@ -271,10 +275,33 @@ const buildFollowUpReminders = (leads: LeadRecord[]): FollowUpMetrics => {
   };
 };
 
-export const buildDashboardMetrics = (leads: LeadRecord[]): DashboardMetrics => {
-  const totalLeads = leads.length;
+const SOURCE_COLORS = [
+  '#0288D1', '#7C3AED', '#ED6C02', '#2E7D32', '#D32F2F',
+  '#0D9488', '#C2185B', '#F57C00', '#1565C0', '#558B2F',
+];
+
+const buildSourceBreakdown = (leads: LeadRecord[]): SourceBreakdownItem[] => {
+  const total = leads.length;
+  const counts = new Map<string, number>();
+
+  leads.forEach((lead) => {
+    const src = normalizeText(lead.source) || 'Unknown';
+    counts.set(src, (counts.get(src) ?? 0) + 1);
+  });
+
+  return Array.from(counts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .map(([source, count], index) => ({
+      source,
+      count,
+      percent: total > 0 ? Math.round((count / total) * 100) : 0,
+      color: SOURCE_COLORS[index % SOURCE_COLORS.length],
+    }));
+};
+
+export const buildDashboardMetrics = (leads: LeadRecord[]): DashboardMetrics => {  const totalLeads = leads.length;
   const contactedLeads = leads.filter((lead) => {
-    const status = normalizeText(lead.status);
+    const status = normalizeStatus(lead.status);
     return Boolean(status) && !CONTACT_EXCLUDED.has(status);
   }).length;
   const appointments = countByStatus(leads, APPOINTMENT_KPI_SET);
@@ -284,10 +311,10 @@ export const buildDashboardMetrics = (leads: LeadRecord[]): DashboardMetrics => 
   const todayFollowUps = leads.filter((lead) => normalizeDate(lead.follow_up_date) === today).length;
 
   const notAnswering = leads.filter((lead) => {
-    const status = normalizeText(lead.status);
-    if (status === 'Not Answering') return true;
+    const status = normalizeStatus(lead.status);
+    if (status === 'not answering') return true;
 
-    return DAY_FIELDS.some((field) => normalizeText(lead[field] as string | null) === 'Not Answering');
+    return DAY_FIELDS.some((field) => normalizeStatus(lead[field] as string | null) === 'not answering');
   }).length;
 
   const highPriority = buildHighPriorityLeads(leads);
@@ -300,6 +327,7 @@ export const buildDashboardMetrics = (leads: LeadRecord[]): DashboardMetrics => 
       lostLeads,
     },
     statusBreakdown: buildStatusBreakdown(leads),
+    sourceBreakdown: buildSourceBreakdown(leads),
     funnel: buildFunnel(leads),
     trend: buildTrend(leads),
     actions: {

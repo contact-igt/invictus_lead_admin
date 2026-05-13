@@ -1,3 +1,4 @@
+import './styles/tailwind.css';
 import { lazy, Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 

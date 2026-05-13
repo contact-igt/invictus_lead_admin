@@ -1,4 +1,6 @@
 import { PropsWithChildren } from 'react';
+import { useLocation } from 'react-router-dom';
+import paths from 'routes/paths';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Paper from '@mui/material/Paper';
@@ -8,6 +10,9 @@ import Image from 'components/base/Image';
 const LogoImg = '/assets/brand-logo.png';
 
 const AuthLayout = ({ children }: PropsWithChildren) => {
+  const location = useLocation();
+  const isSignin = location.pathname === paths.signin;
+
   return (
     <Box
       component="main"
@@ -129,6 +134,7 @@ const AuthLayout = ({ children }: PropsWithChildren) => {
             borderRadius: 4,
             boxShadow: '0 8px 32px rgba(15,23,42,0.10)',
             border: '1px solid rgba(15,23,42,0.07)',
+            bgcolor: isSignin ? '#ffffff' : undefined,
           }}
         >
           {children}
