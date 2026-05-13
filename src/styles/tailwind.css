@@ -1,0 +1,132 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Dark mode overrides for Material UI components to match dashboard look */
+html.dark body {
+	background: radial-gradient(circle at 10% 20%, rgba(34,197,94,0.06), rgba(34,197,94,0.02) 10%, transparent 30%), #050B07;
+	color: #EAF7EE;
+}
+
+html.dark .MuiPaper-root,
+html.dark .MuiCard-root {
+	background-color: #0D1410 !important;
+	color: #EAF7EE !important;
+	border: 1px solid rgba(255,255,255,0.04) !important;
+	box-shadow: 0 8px 24px rgba(0,0,0,0.65), 0 2px 6px rgba(46,139,87,0.04) !important;
+}
+
+html.dark .MuiCard-root {
+	/* slightly tighter padding for compact dashboard cards */
+	padding: 16px !important;
+}
+
+html.dark .MuiPaper-root.MuiPaper-elevation0,
+html.dark .MuiCard-root.MuiPaper-elevation0 {
+	box-shadow: 0 6px 18px rgba(0,0,0,0.6) !important;
+}
+
+html.dark .MuiBadge-badge {
+	background-color: #3DAA6B !important;
+	color: #fff !important;
+}
+
+/* Ensure Topbar/Stack surfaces look consistent in dark */
+html.dark .MuiStack-root.MuiToolbar-root,
+html.dark .MuiToolbar-root {
+	background-color: transparent !important;
+}
+
+/* Accent card (green promotional) — keep strong green gradient */
+html.dark .px-4.bg-green-500,
+html.dark .PromoCard,
+html.dark .prominent-card {
+	background: linear-gradient(135deg,#103822 0%,#164d2a 100%) !important;
+	box-shadow: 0 8px 30px rgba(19,86,55,0.35) !important;
+}
+
+/* Prominent promo card specific tweaks */
+.prominent-card {
+	background: linear-gradient(135deg,#0a2d13 0%,#1b5c2b 100%);
+	border-radius: 16px;
+	border: 1px solid rgba(255,255,255,0.04);
+}
+
+.prominent-card .shadow-lg {
+	box-shadow: 0 10px 30px rgba(16,185,129,0.18) !important;
+}
+
+/* Dashboard shell to give central rounded panel look */
+.dashboard-shell {
+	max-width: 1280px;
+	margin: 28px auto;
+	padding: 18px;
+	border-radius: 18px;
+	background: rgba(3,7,5,0.45);
+	box-shadow: 0 40px 90px rgba(2,6,6,0.7);
+	backdrop-filter: blur(6px);
+}
+
+/* Smooth fade-in animations for list items */
+@keyframes fadeInUp {
+	from {
+		opacity: 0;
+		transform: translateY(10px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+/* Enhanced card hover effects */
+html.dark .MuiCard-root:hover {
+	transform: translateY(-2px);
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Custom scrollbar for priority lead queue */
+.custom-scrollbar {
+	scrollbar-width: thin;
+}
+
+html.dark .custom-scrollbar {
+	scrollbar-color: #1E2E25 #0A0F0D;
+}
+
+html:not(.dark) .custom-scrollbar {
+	scrollbar-color: #d1d5db #f3f4f6;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+	width: 6px;
+}
+
+html.dark .custom-scrollbar::-webkit-scrollbar-track {
+	background: #0A0F0D;
+	border-radius: 3px;
+}
+
+html:not(.dark) .custom-scrollbar::-webkit-scrollbar-track {
+	background: #f3f4f6;
+	border-radius: 3px;
+}
+
+html.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+	background: #1E2E25;
+	border-radius: 3px;
+}
+
+html:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
+	background: #d1d5db;
+	border-radius: 3px;
+}
+
+html.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+	background: #16A34A;
+}
+
+html:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+	background: #16A34A;
+}
+

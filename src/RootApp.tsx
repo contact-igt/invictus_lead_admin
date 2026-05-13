@@ -1,9 +1,7 @@
 import React from 'react';
 import router from 'routes/router';
 import { RouterProvider } from 'react-router-dom';
-import { ThemeProvider } from '@mui/material/styles';
-import { CssBaseline } from '@mui/material';
-import { theme } from 'theme/theme.ts';
+import { ColorModeProvider } from 'hooks/useColorMode';
 import { Provider } from 'react-redux';
 import { store, persistor } from './redux/store';
 import { QueryClientProvider, QueryClient } from 'react-query';
@@ -14,32 +12,34 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import ScreenGuard from 'screenGuard';
 import ErrorBoundary from 'components/common/ErrorBoundary';
+import useColorMode from 'hooks/useColorMode';
 
 const queryClient = new QueryClient();
+
+// ColorModeProvider handles theme selection and provides `useColorMode` hook
 
 const RootApp = () => {
   return (
     <React.StrictMode>
       <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <Provider store={store}>
-          <PersistGate loading={null} persistor={persistor}>
-            <SnackbarProvider maxSnack={3}>
-              <ThemeProvider theme={theme}>
-                <CssBaseline />
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <ScreenGuard>
-                    <RouterProvider router={router} />
-                  </ScreenGuard>
-                </LocalizationProvider>
-                {import.meta.env.MODE === 'development' && (
-                  <ReactQueryDevtools initialIsOpen={false} />
-                )}
-              </ThemeProvider>
-            </SnackbarProvider>
-          </PersistGate>
-        </Provider>
-      </QueryClientProvider>
+        <QueryClientProvider client={queryClient}>
+          <Provider store={store}>
+            <PersistGate loading={null} persistor={persistor}>
+              <SnackbarProvider maxSnack={3}>
+                <ColorModeProvider>
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <ScreenGuard>
+                      <RouterProvider router={router} />
+                    </ScreenGuard>
+                  </LocalizationProvider>
+                  {import.meta.env.MODE === 'development' && (
+                    <ReactQueryDevtools initialIsOpen={false} />
+                  )}
+                </ColorModeProvider>
+              </SnackbarProvider>
+            </PersistGate>
+          </Provider>
+        </QueryClientProvider>
       </ErrorBoundary>
     </React.StrictMode>
   );
