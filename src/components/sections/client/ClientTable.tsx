@@ -56,7 +56,7 @@ const ClientTable = ({ rows, searchText, isLoading, onEdit, onDelete }: ClientTa
             sx={{ fontFamily: 'monospace', fontSize: '0.78rem', borderRadius: 1.5 }}
           />
         ) : (
-          <span style={{ color: 'rgba(0,0,0,0.3)' }}>—</span>
+          <span style={{ color: 'var(--mui-palette-text-disabled, rgba(0,0,0,0.38))' }}>—</span>
         ),
     },
     {
@@ -77,7 +77,7 @@ const ClientTable = ({ rows, searchText, isLoading, onEdit, onDelete }: ClientTa
             sx={{ fontSize: '0.72rem', borderRadius: 1.5 }}
           />
         ) : (
-          <span style={{ color: 'rgba(0,0,0,0.3)' }}>—</span>
+          <span style={{ color: 'var(--mui-palette-text-disabled, rgba(0,0,0,0.38))' }}>—</span>
         ),
     },
     {
@@ -113,6 +113,7 @@ const ClientTable = ({ rows, searchText, isLoading, onEdit, onDelete }: ClientTa
       rows={rows}
       columns={columns}
       loading={isLoading}
+      autoHeight
       rowHeight={60}
       pageSizeOptions={[5, 10, 20]}
       initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}

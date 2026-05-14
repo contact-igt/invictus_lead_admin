@@ -3,7 +3,7 @@ import IconButton from '@mui/material/IconButton';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { ALL_STATUSES } from './pixelEyeStatuses';
 import IconifyIcon from 'components/base/IconifyIcon';
 
@@ -209,11 +209,16 @@ const getColumns = (
 
 
 const PixelEyeTable = ({ rows, onEdit, onDelete, onStatusChange, onDayChange, onFollowUpDateChange }: PixelEyeTableProps) => {
+    const columns = useMemo(
+        () => getColumns(onEdit, onDelete, onStatusChange, onDayChange, onFollowUpDateChange),
+        [onEdit, onDelete, onStatusChange, onDayChange, onFollowUpDateChange],
+    );
+
     return (
         <DataGrid
             autoHeight
             rows={rows}
-            columns={getColumns(onEdit, onDelete, onStatusChange, onDayChange, onFollowUpDateChange)}
+            columns={columns}
             initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
             pageSizeOptions={[10, 20, 50]}
             disableRowSelectionOnClick

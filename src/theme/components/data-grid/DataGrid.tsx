@@ -25,13 +25,15 @@ const DataGrid: Components<Omit<Theme, 'components'>>['MuiDataGrid'] = {
     row: ({ theme }) => ({
       transition: 'background-color 0.15s ease',
       '&:hover': {
-        backgroundColor: theme.palette.primary.lighter,  // #E8F5EE
+        backgroundColor: theme.palette.mode === 'dark'
+          ? 'rgba(46,139,87,0.10)'
+          : 'rgba(46,139,87,0.06)',
       },
       '&.Mui-selected': {
-        backgroundColor: '#C3E6D3',
+        backgroundColor: theme.palette.mode === 'dark' ? 'rgba(46,139,87,0.18)' : '#C3E6D3',
         borderLeft: `2px solid ${theme.palette.primary.main}`,
         '&:hover': {
-          backgroundColor: '#B8E0CA',
+          backgroundColor: theme.palette.mode === 'dark' ? 'rgba(46,139,87,0.24)' : '#B8E0CA',
         },
       },
     }),

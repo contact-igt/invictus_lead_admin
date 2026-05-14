@@ -107,7 +107,6 @@ const ClientForm = ({
           error={isError}
           helperText={isError ? formik.errors[name] : helperExtra}
           disabled={isReadOnly}
-          InputProps={{ sx: { borderRadius: 2 } }}
         />
       </Box>
     );
@@ -199,7 +198,7 @@ const ClientForm = ({
             fullWidth
             label="Generated Client Key"
             value={generatedClientKey}
-            InputProps={{ readOnly: true, sx: { borderRadius: 2 } }}
+            InputProps={{ readOnly: true }}
             helperText="This key is saved in backend and used for auth + sidebar mapping"
           />
 

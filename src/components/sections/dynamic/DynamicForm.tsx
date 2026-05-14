@@ -111,7 +111,6 @@ const DynamicForm = ({
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
                 displayEmpty
-                sx={{ borderRadius: 2 }}
               >
                 <MenuItem value="" disabled>
                   Select {col.header}
@@ -143,7 +142,6 @@ const DynamicForm = ({
               helperText={errorText}
               autoFocus={autoFocus}
               disabled={isReadOnly}
-              InputProps={{ sx: { borderRadius: 2 } }}
               InputLabelProps={{ shrink: true }}
             />
           </Box>
@@ -165,7 +163,6 @@ const DynamicForm = ({
               helperText={errorText}
               autoFocus={autoFocus}
               disabled={isReadOnly}
-              InputProps={{ sx: { borderRadius: 2 } }}
               InputLabelProps={{ shrink: true }}
             />
           </Box>
@@ -189,7 +186,6 @@ const DynamicForm = ({
               error={isError}
               helperText={errorText}
               disabled={isReadOnly}
-              InputProps={{ sx: { borderRadius: 2 } }}
             />
           </Box>
         );
@@ -211,7 +207,6 @@ const DynamicForm = ({
               helperText={errorText}
               autoFocus={autoFocus}
               disabled={isReadOnly}
-              InputProps={{ sx: { borderRadius: 2 } }}
             />
           </Box>
         );
@@ -233,7 +228,6 @@ const DynamicForm = ({
               helperText={errorText}
               autoFocus={autoFocus}
               disabled={isReadOnly}
-              InputProps={{ sx: { borderRadius: 2 } }}
               inputProps={{ inputMode: 'tel' }}
             />
           </Box>
@@ -256,7 +250,6 @@ const DynamicForm = ({
               helperText={errorText}
               autoFocus={autoFocus}
               disabled={isReadOnly}
-              InputProps={{ sx: { borderRadius: 2 } }}
             />
           </Box>
         );

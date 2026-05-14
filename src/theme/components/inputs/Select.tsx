@@ -6,7 +6,8 @@ const Select: Components<Omit<Theme, 'components'>>['MuiSelect'] = {
     root: ({ theme }) => ({
       padding: 0,
       '&.MuiInputBase-root': {
-        backgroundColor: 'transparent !important',
+        // In dark mode, restore the background set by InputBase (transparent hides it)
+        backgroundColor: theme.palette.mode === 'dark' ? '#1A2420 !important' : 'transparent !important',
       },
       '& .MuiBox-root': {
         fontSize: theme.typography.h4.fontSize,
@@ -18,8 +19,11 @@ const Select: Components<Omit<Theme, 'components'>>['MuiSelect'] = {
       paddingRight: '0 !important',
       backgroundColor: 'transparent !important',
       fontSize: theme.typography.caption.fontSize,
-      color: theme.palette.text.primary,
+      color: theme.palette.mode === 'dark' ? '#EAF7EE' : theme.palette.text.primary,
       fontWeight: 600,
+    }),
+    icon: ({ theme }) => ({
+      color: theme.palette.mode === 'dark' ? '#8A9C8D' : undefined,
     }),
   },
 };
