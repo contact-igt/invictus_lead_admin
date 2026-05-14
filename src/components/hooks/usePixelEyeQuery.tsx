@@ -53,15 +53,16 @@ export interface UpdatePixelEyePayload {
     day_5?: string;
 }
 
-export const usePixelEyeQuery = () =>
-    useQuery<PixelEyeLead[]>(['pixelEyeLeads'], async () => {
-        const res = await _axios('get', '/pixeleye');
+// clientKey is included in the query key so super-admin switching between clients
+// gets a fresh fetch instead of returning the previous client's cached data.
+export const usePixelEyeQuery = (clientKey?: string) =>
+    useQuery<PixelEyeLead[]>(['pixelEyeLeads', clientKey ?? null], async () => {
+        const params = clientKey ? { _client_key: clientKey } : undefined;
+        const res = await _axios('get', '/pixeleye', undefined, 'application/json', params);
         if (process.env.NODE_ENV !== 'production') {
             // eslint-disable-next-line no-console
             console.debug('usePixelEyeQuery - raw response', res);
         }
-        // _axios returns res.data (already unwrapped) in normal usage,
-        // but some older callers expect an object with `data` property.
         if (Array.isArray(res)) {
             if (process.env.NODE_ENV !== 'production') {
                 // eslint-disable-next-line no-console

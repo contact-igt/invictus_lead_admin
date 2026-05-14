@@ -9,6 +9,7 @@ import {
 } from 'components/hooks/usePixelEyeQuery';
 import PixelEyeTable, { PixelEyeRow } from './pixelEyeTable';
 import PixelEyeForm, { PixelEyeFormValues } from './PixelEyeForm';
+import NotificationTracker from './NotificationTracker';
 import Paper from '@mui/material/Paper';
 import PageTitle from 'components/common/PageTitle';
 import PageLoader from 'components/loader/PageLoader';
@@ -17,8 +18,9 @@ import ConfirmAlert from 'components/common/ConfirmAlert';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
 import { useState, useMemo } from 'react';
 import { Box, Grid, Typography, Paper as MuiPaper, TextField, MenuItem } from '@mui/material';
 import { ALL_STATUSES } from './pixelEyeStatuses';
@@ -30,7 +32,6 @@ import { normalizeClientKey } from 'utils/clientKey';
 const PixelEyeSection = () => {
     const { user } = useAuth();
     const { clientKey: urlClientKey } = useParams<{ clientKey?: string }>();
-    const { data: leads = [], isLoading } = usePixelEyeQuery();
     const createMutation = useCreatePixelEyeMutation();
     const updateMutation = useUpdatePixelEyeMutation();
     const deleteMutation = useDeletePixelEyeMutation();
@@ -39,6 +40,11 @@ const PixelEyeSection = () => {
         user?.role === 'super-admin' ? (urlClientKey || 'pixeleye') : user?.clientKey,
     );
 
+    const { data: leads = [], isLoading } = usePixelEyeQuery(
+        user?.role === 'super-admin' ? activeClientKey : undefined,
+    );
+
+    const [activeTab, setActiveTab] = useState<'leads' | 'notifications'>('leads');
     const [formOpen, setFormOpen] = useState(false);
     const [editRow, setEditRow] = useState<PixelEyeRow | null>(null);
     const [openConfirmAlertModal, setOpenConfirmAlertModal] = useState(false);
@@ -70,23 +76,27 @@ const PixelEyeSection = () => {
         });
     };
 
-    const handleFormSubmit = (values: PixelEyeFormValues) => {
-        if (editRow && editRow.id) {
-            updateMutation.mutate({ id: editRow.id, ...values } as UpdatePixelEyePayload);
-        } else {
-            const payload: CreatePixelEyePayload = activeClientKey
-                ? { ...values, _client_key: activeClientKey }
-                : values;
-            createMutation.mutate(payload);
-        }
+    const closeForm = () => {
         setFormOpen(false);
         setEditRow(null);
     };
 
-    const handleFormCancel = () => {
-        setFormOpen(false);
-        setEditRow(null);
+    const handleFormSubmit = (values: PixelEyeFormValues) => {
+        if (editRow && editRow.id) {
+            // Close only after the API call succeeds so the user sees errors if it fails.
+            updateMutation.mutate(
+                { id: editRow.id, ...values } as UpdatePixelEyePayload,
+                { onSuccess: closeForm },
+            );
+        } else {
+            const payload: CreatePixelEyePayload = activeClientKey
+                ? { ...values, _client_key: activeClientKey }
+                : values;
+            createMutation.mutate(payload, { onSuccess: closeForm });
+        }
     };
+
+    const handleFormCancel = closeForm;
 
 
     // --- Summary Bar ---
@@ -115,6 +125,24 @@ const PixelEyeSection = () => {
     return (
         <Paper sx={{ p: 2, width: '100%' }}>
             <PageTitle title="PixelEye Dashboard" />
+
+            {/* --- Tab Switcher --- */}
+            <Tabs
+                value={activeTab}
+                onChange={(_e, v) => setActiveTab(v)}
+                sx={{ mb: 3, borderBottom: '1px solid', borderColor: 'divider' }}
+            >
+                <Tab label="Leads" value="leads" />
+                <Tab label="Notification Tracker" value="notifications" />
+            </Tabs>
+
+            {/* --- Notification Tracker View --- */}
+            {activeTab === 'notifications' && (
+                <NotificationTracker clientKey={user?.role === 'super-admin' ? activeClientKey : undefined} />
+            )}
+
+            {/* --- Leads View --- */}
+            {activeTab === 'leads' && <>
             {/* --- Summary Bar --- */}
             <MuiPaper elevation={2} sx={{ mb: 3, p: 2, background: '#f8fafc' }}>
                 <Grid container spacing={2} justifyContent="space-between">
@@ -188,6 +216,7 @@ const PixelEyeSection = () => {
             </Popup>
 
             {/* --- Dialog --- */}
+            </>}
             <Dialog open={formOpen} onClose={handleFormCancel} maxWidth="sm" fullWidth>
                 <DialogTitle>{editRow ? 'Edit Lead' : 'Add Lead'}</DialogTitle>
                 <DialogContent>
@@ -198,9 +227,6 @@ const PixelEyeSection = () => {
                         isLoading={createMutation.isLoading || updateMutation.isLoading}
                     />
                 </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleFormCancel}>Cancel</Button>
-                </DialogActions>
             </Dialog>
         </Paper>
     );

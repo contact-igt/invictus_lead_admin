@@ -190,15 +190,6 @@ const DynamicTable = ({ config, data, searchText, isLoading, onInlineUpdate, onE
             onUpdate={onInlineUpdate}
           />
         );
-      } else if (col.type === 'status_chip') {
-        baseCol.renderCell = (params) => (
-          <Chip
-            label={params.value || 'Set Status'}
-            size="small"
-            color={params.value ? 'primary' : 'default'}
-            variant={params.value ? 'filled' : 'outlined'}
-          />
-        );
       } else if (col.type === 'date') {
         if (col.field === 'follow_up_date') {
           baseCol.renderCell = (params) => (
@@ -261,12 +252,13 @@ const DynamicTable = ({ config, data, searchText, isLoading, onInlineUpdate, onE
   }, [config.columns, onEdit, onView, onDelete, onInlineUpdate]);
 
   return (
-    <Box sx={{ width: '100%', height: 500 }}>
+    <Box sx={{ width: '100%' }}>
       <DataGrid
         apiRef={apiRef}
         rows={data || []}
         columns={columns}
         loading={isLoading}
+        autoHeight
         pageSizeOptions={[10, 25, 50]}
         initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
         rowHeight={60}

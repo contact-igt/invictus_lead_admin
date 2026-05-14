@@ -6,11 +6,15 @@ const InputBase: Components<Omit<Theme, 'components'>>['MuiInputBase'] = {
     root: ({ theme }) => ({
       border: 1,
       borderStyle: 'solid',
-      borderColor: theme.palette.info.main,
+      borderColor: theme.palette.mode === 'dark'
+        ? 'rgba(255,255,255,0.12)'
+        : theme.palette.info.main,
       borderRadius: theme.shape.borderRadius,
-      backgroundColor: `${theme.palette.info.lighter} !important`,
+      backgroundColor: theme.palette.mode === 'dark'
+        ? '#1A2420 !important'
+        : `${theme.palette.info.lighter} !important`,
       fontSize: theme.typography.subtitle2.fontSize,
-      color: theme.palette.text.secondary,
+      color: theme.palette.mode === 'dark' ? '#EAF7EE' : theme.palette.text.secondary,
       padding: theme.spacing(1.25, 2.5),
       letterSpacing: 0.5,
 
@@ -33,7 +37,7 @@ const InputBase: Components<Omit<Theme, 'components'>>['MuiInputBase'] = {
     }),
     input: ({ theme }) => ({
       '&::placeholder': {
-        color: theme.palette.text.secondary,
+        color: theme.palette.mode === 'dark' ? '#8A9C8D' : theme.palette.text.secondary,
         opacity: 1,
       },
     }),
