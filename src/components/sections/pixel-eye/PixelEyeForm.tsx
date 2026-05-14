@@ -94,8 +94,27 @@ const PixelEyeForm = ({ initialValues, onSubmit, onCancel, isLoading }: PixelEye
         },
         validationSchema,
         enableReinitialize: true,
-        onSubmit,
+        onSubmit: (values) => {
+            const trimmed = {
+                ...values,
+                call_id: values.call_id.trim(),
+                customer_name: values.customer_name.trim(),
+                phone_number: values.phone_number.trim(),
+            };
+            onSubmit(trimmed);
+        },
     });
+
+    const handleTrimmedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        e.target.value = e.target.value.trimStart();
+        formik.handleChange(e);
+    };
+
+    const handleTrimBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        formik.setFieldValue(name, value.trim());
+        formik.handleBlur(e);
+    };
 
     return (
         <Box
@@ -161,8 +180,8 @@ const PixelEyeForm = ({ initialValues, onSubmit, onCancel, isLoading }: PixelEye
                                     required
                                     placeholder="Enter call ID"
                                     value={formik.values.call_id}
-                                    onChange={formik.handleChange}
-                                    onBlur={formik.handleBlur}
+                                    onChange={handleTrimmedChange}
+                                    onBlur={handleTrimBlur}
                                     error={formik.touched.call_id && Boolean(formik.errors.call_id)}
                                     helperText={formik.touched.call_id && formik.errors.call_id}
                                 />
@@ -182,8 +201,8 @@ const PixelEyeForm = ({ initialValues, onSubmit, onCancel, isLoading }: PixelEye
                                     required
                                     placeholder="Full name"
                                     value={formik.values.customer_name}
-                                    onChange={formik.handleChange}
-                                    onBlur={formik.handleBlur}
+                                    onChange={handleTrimmedChange}
+                                    onBlur={handleTrimBlur}
                                     error={formik.touched.customer_name && Boolean(formik.errors.customer_name)}
                                     helperText={formik.touched.customer_name && formik.errors.customer_name}
                                 />
@@ -196,8 +215,8 @@ const PixelEyeForm = ({ initialValues, onSubmit, onCancel, isLoading }: PixelEye
                                     required
                                     placeholder="+91 00000 00000"
                                     value={formik.values.phone_number}
-                                    onChange={formik.handleChange}
-                                    onBlur={formik.handleBlur}
+                                    onChange={handleTrimmedChange}
+                                    onBlur={handleTrimBlur}
                                     error={formik.touched.phone_number && Boolean(formik.errors.phone_number)}
                                     helperText={formik.touched.phone_number && formik.errors.phone_number}
                                     inputProps={{ inputMode: 'tel' }}

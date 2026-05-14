@@ -78,8 +78,24 @@ const DynamicForm = ({
     initialValues: defaultValues,
     validationSchema,
     enableReinitialize: true,
-    onSubmit: (values) => onSubmit(values),
+    onSubmit: (values) => {
+      const trimmed = Object.fromEntries(
+        Object.entries(values).map(([k, v]) => [k, typeof v === 'string' ? v.trim() : v]),
+      );
+      onSubmit(trimmed);
+    },
   });
+
+  const handleTrimmedChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    e.target.value = e.target.value.trimStart();
+    formik.handleChange(e);
+  };
+
+  const handleTrimBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    formik.setFieldValue(name, value.trim());
+    formik.handleBlur(e);
+  };
 
   const renderField = (col: ColumnConfig, index: number) => {
     const isError = formik.touched[col.field] && Boolean(formik.errors[col.field]);
@@ -181,8 +197,8 @@ const DynamicForm = ({
               name={col.field}
               placeholder={`Enter ${col.header}`}
               value={formik.values[col.field]}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
+              onChange={handleTrimmedChange}
+              onBlur={handleTrimBlur}
               error={isError}
               helperText={errorText}
               disabled={isReadOnly}
@@ -201,8 +217,8 @@ const DynamicForm = ({
               type="email"
               placeholder={`Enter ${col.header}`}
               value={formik.values[col.field]}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
+              onChange={handleTrimmedChange}
+              onBlur={handleTrimBlur}
               error={isError}
               helperText={errorText}
               autoFocus={autoFocus}
@@ -222,8 +238,8 @@ const DynamicForm = ({
               type="tel"
               placeholder={`Enter ${col.header}`}
               value={formik.values[col.field]}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
+              onChange={handleTrimmedChange}
+              onBlur={handleTrimBlur}
               error={isError}
               helperText={errorText}
               autoFocus={autoFocus}
@@ -244,8 +260,8 @@ const DynamicForm = ({
               name={col.field}
               placeholder={`Enter ${col.header}`}
               value={formik.values[col.field]}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
+              onChange={handleTrimmedChange}
+              onBlur={handleTrimBlur}
               error={isError}
               helperText={errorText}
               autoFocus={autoFocus}

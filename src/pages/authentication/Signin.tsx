@@ -44,9 +44,20 @@ const Signin = () => {
     },
     validationSchema: loginSchema,
     onSubmit: (values) => {
-      mutate(values as any);
+      mutate({ email: values.email.trim(), password: values.password.trim() } as any);
     },
   });
+
+  const handleTrimmedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.target.value = e.target.value.trimStart();
+    formik.handleChange(e);
+  };
+
+  const handleTrimBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    formik.setFieldValue(name, value.trim());
+    formik.handleBlur(e);
+  };
 
   return (
     <>
@@ -63,8 +74,8 @@ const Signin = () => {
           name="email"
           type="email"
           value={formik.values.email}
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
+          onChange={handleTrimmedChange}
+          onBlur={handleTrimBlur}
           error={formik.touched.email && Boolean(formik.errors.email)}
           helperText={formik.touched.email && formik.errors.email}
           variant="outlined"
@@ -86,8 +97,8 @@ const Signin = () => {
           name="password"
           type={showPassword ? 'text' : 'password'}
           value={formik.values.password}
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
+          onChange={handleTrimmedChange}
+          onBlur={handleTrimBlur}
           error={formik.touched.password && Boolean(formik.errors.password)}
           helperText={formik.touched.password && formik.errors.password}
           variant="outlined"

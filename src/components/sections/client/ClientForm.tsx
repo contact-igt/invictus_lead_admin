@@ -68,6 +68,7 @@ const ClientForm = ({
     onSubmit: (values) => {
       const payload: { name: string; client_key?: string } = {
         name: values.name.trim(),
+        // tenant_key trimmed via trimStart/trimBlur; buildClientKey normalizes it
       };
 
       payload.client_key = buildClientKey(values.module_key, values.tenant_key);
@@ -75,6 +76,17 @@ const ClientForm = ({
       onSubmit(payload);
     },
   });
+
+  const handleTrimmedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.target.value = e.target.value.trimStart();
+    formik.handleChange(e);
+  };
+
+  const handleTrimBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    formik.setFieldValue(name, value.trim());
+    formik.handleBlur(e);
+  };
 
   const generatedClientKey = buildClientKey(formik.values.module_key, formik.values.tenant_key);
 
@@ -102,8 +114,8 @@ const ClientForm = ({
           name={name}
           placeholder={placeholder}
           value={formik.values[name]}
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
+          onChange={handleTrimmedChange}
+          onBlur={handleTrimBlur}
           error={isError}
           helperText={isError ? formik.errors[name] : helperExtra}
           disabled={isReadOnly}
