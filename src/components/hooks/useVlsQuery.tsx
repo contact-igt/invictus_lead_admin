@@ -112,3 +112,39 @@ export const useDeleteVlsLawAibeByIdMutation = () => {
         },
     );
 }
+
+// Admin hooks for dedicated /vls-aibe endpoints
+export const useVlsAibeAdminQuery = () => {
+    const { enqueueSnackbar } = useSnackbar();
+
+    const { data, isLoading, isError } = useQuery(['vls-aibe-admin'], () => VlsApis.getAllVlsAibeAdmin(), {
+        staleTime: 2 * 60 * 1000,
+        onError: (error: Error) => {
+            enqueueSnackbar(error.message || 'Failed to load data', { variant: 'error' });
+        },
+    });
+
+    return { data, isLoading, isError };
+};
+
+export const useDeleteVlsAibeByIdMutation = () => {
+    const queryClient = useQueryClient();
+    const { enqueueSnackbar } = useSnackbar();
+
+    return useMutation<void, Error, { id: number }>(
+        ({ id }) => VlsApis.deleteVlsAibeById(id),
+        {
+            onSuccess: () => {
+                enqueueSnackbar('Vls AIBE User deleted successfully', { variant: 'success' });
+                queryClient.invalidateQueries(['vls-aibe-admin']);
+                queryClient.invalidateQueries(['vls-aibe']);
+            },
+            onError: (error) => {
+                const err = error as AxiosError<any>;
+                enqueueSnackbar(err.response?.data?.message || 'Something went wrong', {
+                    variant: 'error',
+                });
+            },
+        },
+    );
+}

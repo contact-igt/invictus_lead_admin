@@ -1,5 +1,5 @@
 import { _axios } from 'helper/axios';
-import { VlsPropertyLaw } from './script';
+import { VlsPropertyLaw, VlsAibe } from './script';
 
 export class VlsApiData {
   getAllVlsLawPractice = async () => {
@@ -12,6 +12,23 @@ export class VlsApiData {
 
   getAllVlsAibe = async () => {
     return await _axios('get', '/dynamic/vlslaw_aibe');
+  };
+
+  // Dedicated admin endpoints (Option A): vls-aibe
+  getAllVlsAibeAdmin = async () => {
+    return await _axios('get', '/vls-aibe');
+  };
+
+  createVlsAibeAdmin = async (payload: Partial<VlsAibe>) => {
+    return await _axios('post', '/vls-aibe', payload);
+  };
+
+  updateVlsAibeById = async (id: number | string, payload: Partial<VlsAibe>) => {
+    return await _axios('patch', `/vls-aibe/${id}`, payload);
+  };
+
+  deleteVlsAibeById = async (id: number | string) => {
+    return await _axios('delete', `/vls-aibe/${id}`);
   };
 
   deleteVlsLawPracticeById = async (id: number | string) => {
