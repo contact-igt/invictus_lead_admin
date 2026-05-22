@@ -3,8 +3,11 @@ import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import LinearProgress from '@mui/material/LinearProgress';
+import { useTheme } from '@mui/material/styles';
 
 const PageLoader = () => {
+  const theme = useTheme();
+  const logoFilter = theme.palette.mode === 'light' ? 'none' : 'invert(1) hue-rotate(180deg)';
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
@@ -47,6 +50,7 @@ const PageLoader = () => {
             transformOrigin: 'center center',
             mb: 3,
             animation: 'igt-logo-pulse 2s ease-in-out infinite',
+            filter: logoFilter,
           }}
         />
 

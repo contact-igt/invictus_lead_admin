@@ -51,7 +51,7 @@ const AppLoader = () => {
           className="_igt_logo"
           src="/assets/brand-logo.png"
           alt="Invictus"
-          style={{ width: 200, height: 'auto', display: 'block', transform: 'scale(1.8)', transformOrigin: 'center center', marginBottom: 24 }}
+          style={{ width: 200, height: 'auto', display: 'block', transform: 'scale(1.8)', transformOrigin: 'center center', marginBottom: 24, filter: isDark ? 'invert(1) hue-rotate(180deg)' : 'none' }}
         />
 
         {/* Progress bar + percentage */}

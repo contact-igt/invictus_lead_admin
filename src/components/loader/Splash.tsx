@@ -3,8 +3,11 @@ import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import LinearProgress from '@mui/material/LinearProgress';
+import { useTheme } from '@mui/material/styles';
 
 const Splash = () => {
+  const theme = useTheme();
+  const logoFilter = theme.palette.mode === 'light' ? 'none' : 'invert(1) hue-rotate(180deg)';
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
@@ -56,6 +59,7 @@ const Splash = () => {
             transformOrigin: 'center center',
             mb: 3,
             animation: 'igt-logo-pulse 2s ease-in-out infinite',
+            filter: logoFilter,
           }}
         />
 
@@ -87,68 +91,6 @@ const Splash = () => {
             }}
           />
         </Box>
-
-      </Stack>
-    </Stack>
-  );
-};
-
-export default Splash;
-      <Stack
-        direction="column"
-        alignItems="center"
-        spacing={3}
-        sx={{ animation: 'igt-fade-in 0.5s ease-out' }}
-      >
-
-        {/* Logo */}
-        <Box
-          component="img"
-          src="/assets/brand-logo.png"
-          alt="Invictus Global Tech"
-          sx={{ width: 120, height: 120, objectFit: 'contain' }}
-        />
-
-        {/* Brand name */}
-        <Stack direction="column" alignItems="center" spacing={0.5}>
-          <Typography
-            sx={{
-              fontFamily: '"Space Grotesk", sans-serif',
-              fontWeight: 700,
-              fontSize: '1.05rem',
-              letterSpacing: '0.15em',
-              color: 'text.primary',
-              userSelect: 'none',
-            }}
-          >
-            INVICTUS
-          </Typography>
-          <Typography
-            sx={{
-              fontFamily: '"Space Grotesk", sans-serif',
-              fontWeight: 500,
-              fontSize: '0.65rem',
-              letterSpacing: '0.28em',
-              color: 'text.secondary',
-              userSelect: 'none',
-            }}
-          >
-            GLOBAL TECH
-          </Typography>
-        </Stack>
-
-        {/* Ring spinner */}
-        <Box
-          sx={{
-            width: 44,
-            height: 44,
-            borderRadius: '50%',
-            border: '3px solid',
-            borderColor: 'divider',
-            borderTopColor: 'primary.main',
-            animation: 'igt-spin 0.75s linear infinite',
-          }}
-        />
 
       </Stack>
     </Stack>
