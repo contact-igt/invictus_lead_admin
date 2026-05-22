@@ -123,7 +123,7 @@ const DynamicSection = ({ config, clientKey }: DynamicSectionProps) => {
   if (isLoading) return <PageLoader />;
 
   return (
-    <Stack direction="column" spacing={1.5} width="100%">
+    <Stack direction="column" spacing={1.5} width="100%" p={3.5}>
       <PageTitle
         title={config.title}
         btnText={` ${config.title}`}

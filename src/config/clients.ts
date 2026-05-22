@@ -192,6 +192,46 @@ export const ClientRegistry: Record<string, ClientConfig> = {
         ],
       },
 
+      // ── TABLE 4: PROPERTY LAW ──────────────────────────────────────────────
+      {
+        id: "property-law",
+        title: "Property Law Masterclass",
+        endpoint: "/property-law",
+        columns: [
+          { field: "name", header: "Name", type: "text", flex: 1.3, minWidth: 150, required: true },
+          { field: "mobile", header: "Mobile", type: "phone", flex: 1.1, minWidth: 130 },
+          { field: "email", header: "Email", type: "email", flex: 1.3, minWidth: 160 },
+          { field: "years_of_practice", header: "Years of Practice", type: "text", flex: 1, minWidth: 130 },
+          { field: "amount", header: "Amount (₹)", type: "text", flex: 0.9, minWidth: 110 },
+          { field: "registered_date", header: "Registered On", type: "date", flex: 1, minWidth: 130 },
+          { field: "programm_date", header: "Program Date", type: "date", flex: 1, minWidth: 130 },
+          {
+            field: "payment_status",
+            header: "Payment",
+            type: "status_chip",
+            flex: 1.1,
+            minWidth: 130,
+            required: true,
+            options: ["paid", "attempted", "failed", "cancelled"],
+          },
+          { field: "page_name", header: "Page Name", type: "text", flex: 1.3, minWidth: 180 },
+          { field: "razorpay_order_id", header: "Order ID", type: "text", flex: 1.2, minWidth: 160 },
+          { field: "razorpay_payment_id", header: "Payment ID", type: "text", flex: 1.2, minWidth: 160 },
+          { field: "ip_address", header: "IP Address", type: "text", flex: 1, minWidth: 120 },
+          { field: "utm_source", header: "UTM Source", type: "text", flex: 1, minWidth: 120 },
+          { field: "utm_medium", header: "UTM Medium", type: "text", flex: 1, minWidth: 120 },
+          { field: "utm_campaign", header: "UTM Campaign", type: "text", flex: 1, minWidth: 130 },
+        ],
+        metrics: [
+          { key: "property_total", label: "Total Registrations", type: "count", color: "primary", icon: "mingcute:home-2-line" },
+          { key: "property_today", label: "Today's Registrations", type: "today_count", filterField: "registered_date", color: "info", icon: "mingcute:calendar-2-line" },
+          { key: "property_month", label: "This Month", type: "this_month_count", filterField: "registered_date", color: "secondary", icon: "mingcute:calendar-month-line" },
+          { key: "property_paid", label: "Paid", type: "filter_count", filterField: "payment_status", filterValue: "paid", color: "success", icon: "mingcute:currency-rupee-line" },
+          { key: "property_attempted", label: "Attempted", type: "filter_count", filterField: "payment_status", filterValue: "attempted", color: "warning", icon: "mingcute:time-line" },
+          { key: "property_failed", label: "Failed", type: "filter_count", filterField: "payment_status", filterValue: "failed", color: "error", icon: "mingcute:close-circle-line" },
+        ],
+      },
+
     ]
   }
 };
