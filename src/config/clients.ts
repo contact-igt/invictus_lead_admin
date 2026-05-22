@@ -159,7 +159,7 @@ export const ClientRegistry: Record<string, ClientConfig> = {
       {
         id: "aibe",
         title: "AIBE Exam Registrations",
-        endpoint: "/dynamic/vlslaw_aibe",
+        endpoint: "/vls-aibe",
         columns: [
           { field: "name", header: "Name", type: "text", flex: 1.3, minWidth: 150 },
           { field: "mobile", header: "Mobile", type: "phone", flex: 1.1, minWidth: 130 },
