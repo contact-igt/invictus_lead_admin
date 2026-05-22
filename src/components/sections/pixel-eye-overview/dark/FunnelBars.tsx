@@ -25,7 +25,7 @@ const FunnelBars: React.FC<FunnelBarsProps> = ({ funnel = [], onStageClick, acti
             type="button"
             onClick={() => onStageClick?.(f.stage)}
             aria-pressed={isActive}
-            className={`w-full flex items-center gap-4 p-3 rounded-xl border transition-all duration-200 group h-[44px] ${
+            className={`grid min-h-[48px] w-full grid-cols-[minmax(92px,0.9fr)_minmax(72px,1fr)_auto] items-center gap-3 rounded-xl border p-3 transition-all duration-200 group ${
               mode === 'dark'
                 ? 'bg-[#0B1410] border-[#0F1B16] hover:bg-[#0F1714] hover:border-[#16A34A]/30'
                 : 'bg-gray-50 border-gray-200 hover:bg-green-50 hover:border-green-300'
@@ -44,7 +44,7 @@ const FunnelBars: React.FC<FunnelBarsProps> = ({ funnel = [], onStageClick, acti
               animation: `fadeInUp 0.3s ease ${i * 0.05}s both`
             }}
           >
-            <div className="flex items-center gap-3 min-w-[140px]">
+            <div className="flex min-w-0 items-center gap-3">
               <div 
                 className="w-3 h-3 rounded flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform" 
                 style={{ 
@@ -56,10 +56,10 @@ const FunnelBars: React.FC<FunnelBarsProps> = ({ funnel = [], onStageClick, acti
                 mode === 'dark'
                   ? 'text-white group-hover:text-[#DFFFE3]'
                   : 'text-gray-900 group-hover:text-green-700'
-              }`}>{f.stage}</div>
+              } truncate`}>{f.stage}</div>
             </div>
 
-            <div className="flex-1">
+            <div className="min-w-0">
               <div className={`w-full h-2.5 rounded-full overflow-hidden shadow-inner ${
                 mode === 'dark' ? 'bg-[#072015]' : 'bg-gray-200'
               }`}>
@@ -74,7 +74,7 @@ const FunnelBars: React.FC<FunnelBarsProps> = ({ funnel = [], onStageClick, acti
               </div>
             </div>
 
-            <div className="text-right min-w-[100px]">
+            <div className="min-w-[74px] text-right tabular-nums">
               <div className={`text-sm font-bold ${
                 mode === 'dark' ? 'text-white' : 'text-gray-900'
               }`}>{f.count} <span className={`text-xs font-semibold ${

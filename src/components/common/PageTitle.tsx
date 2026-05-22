@@ -105,7 +105,7 @@ const PageTitle = ({
         {isAddEnable && (
           <CardActions
             disableSpacing
-            sx={{ p: 0, width: { xs: '100%', sm: 210 } }}
+            sx={{ p: 0, width: { xs: '100%', sm: 'auto' } }}
             onClick={openModal}
           >
             <Button
@@ -114,8 +114,10 @@ const PageTitle = ({
               startIcon={<IconifyIcon icon="gridicons:plus-small" />}
               fullWidth
               sx={{
+                px: 2.5,
                 color: 'primary.info',
-                '& .MuiButton-startIcon': { mr: 0, pointerEvents: 'none' },
+                whiteSpace: 'nowrap',
+                '& .MuiButton-startIcon': { mr: 0.8, pointerEvents: 'none' },
               }}
             >
               {`${btnText}`}

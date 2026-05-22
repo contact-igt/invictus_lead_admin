@@ -2,6 +2,7 @@
 import { Suspense, lazy } from 'react';
 import { Outlet, createBrowserRouter } from 'react-router-dom';
 import paths, { rootPaths } from './paths';
+import PageLoader from 'components/loader/PageLoader';
 
 // CRITICAL: Lazy-load all MUI/Emotion-using components to prevent initialization issues
 const MainLayout = lazy(() => import('layouts/main-layout'));
@@ -24,7 +25,7 @@ const router = createBrowserRouter(
   [
     {
       element: (
-        <Suspense fallback={<div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>}>
+        <Suspense fallback={<PageLoader />}>
           <App />
         </Suspense>
       ),
@@ -35,7 +36,7 @@ const router = createBrowserRouter(
           path: '/',
           element: (
             <MainLayout>
-              <Suspense fallback={<div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>}>
+              <Suspense fallback={<PageLoader />}>
                 <ProtectedRoute>
                   <Outlet />
                 </ProtectedRoute>
@@ -54,9 +55,9 @@ const router = createBrowserRouter(
         {
           path: rootPaths.pageRoot,
           element: (
-            <Suspense fallback={<div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>}>
+            <Suspense fallback={<PageLoader />}>
               <MainLayout>
-                <Suspense fallback={<div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>}>
+                <Suspense fallback={<PageLoader />}>
                   <ProtectedRoute>
                     <Outlet />
                   </ProtectedRoute>
@@ -87,9 +88,9 @@ const router = createBrowserRouter(
         {
           path: rootPaths.authRoot,
           element: (
-            <Suspense fallback={<div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>}>
+            <Suspense fallback={<PageLoader />}>
               <AuthLayout>
-                <Suspense fallback={<div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>}>
+                <Suspense fallback={<PageLoader />}>
                   <Outlet />
                 </Suspense>
               </AuthLayout>

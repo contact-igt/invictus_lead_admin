@@ -19,7 +19,7 @@ const TotalProfitChart = ({ points = [], funnel = [], loading = false, onStageCl
 
   return (
     <Card 
-      className={`rounded-2xl border p-5 ${
+      className={`w-full overflow-hidden rounded-2xl border p-5 ${
         mode === 'dark'
           ? 'bg-gradient-to-br from-[#111714] to-[#0D1310] border-[#1E2E25] shadow-xl'
           : 'bg-white border-gray-200 shadow-sm'
@@ -33,23 +33,23 @@ const TotalProfitChart = ({ points = [], funnel = [], loading = false, onStageCl
         }
       } : {}}
     >
-      <CardContent className="p-0">
-        <div className={`mb-4 pb-3 border-b flex items-start justify-between ${
+      <CardContent sx={{ p: 0, '&:last-child': { pb: 0 } }}>
+        <div className={`mb-4 flex min-w-0 items-start justify-between gap-3 border-b pb-3 ${
           mode === 'dark' ? 'border-[#1E2E25]/50' : 'border-gray-200'
         }`}>
-          <div>
+          <div className="min-w-0">
             <div className={`text-[11px] font-extrabold tracking-[0.15em] uppercase mb-1 ${
               mode === 'dark' ? 'text-[#94A3B8]' : 'text-gray-500'
             }`}>CONVERSION</div>
-            <div className={`text-xl font-bold ${
+            <div className={`truncate text-xl font-bold ${
               mode === 'dark' ? 'text-white' : 'text-gray-900'
             }`}>Conversion Funnel</div>
           </div>
-          <div className="text-right">
+          <div className="shrink-0 text-right">
             <div className={`text-xs uppercase tracking-wider font-semibold mb-1 ${
               mode === 'dark' ? 'text-[#94A3B8]' : 'text-gray-500'
             }`}>Total</div>
-            <div className="text-3xl font-extrabold bg-gradient-to-r from-[#22C55E] to-[#16A34A] bg-clip-text text-transparent">{funnelTotal}</div>
+            <div className="bg-gradient-to-r from-[#22C55E] to-[#16A34A] bg-clip-text text-3xl font-extrabold tabular-nums text-transparent">{funnelTotal}</div>
           </div>
         </div>
 

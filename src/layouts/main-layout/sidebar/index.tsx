@@ -42,6 +42,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen, setIsClosing }: SidebarProps) => {
         variant="permanent"
         sx={{ display: { xs: 'none', lg: 'block' } }}
         PaperProps={{ sx: { backgroundColor: '#111714' } }}
+        
         open
       >
         <DrawerItems />
