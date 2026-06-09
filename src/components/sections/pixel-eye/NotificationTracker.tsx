@@ -24,6 +24,7 @@ import DataGridFooter from 'components/common/DataGridFooter';
 
 interface NotificationTrackerProps {
   clientKey?: string;
+  searchText?: string;
 }
 
 const STATE_COLORS: Record<string, 'default' | 'warning' | 'success' | 'error' | 'info'> = {
@@ -70,7 +71,7 @@ const SummaryCard = ({
   </Paper>
 );
 
-const NotificationTracker = ({ clientKey }: NotificationTrackerProps) => {
+const NotificationTracker = ({ clientKey, searchText }: NotificationTrackerProps) => {
   const [stateFilter, setStateFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
 
@@ -90,9 +91,31 @@ const NotificationTracker = ({ clientKey }: NotificationTrackerProps) => {
     return notifications.filter((n) => {
       if (stateFilter && n.state !== stateFilter) return false;
       if (typeFilter && n.schedule_type !== typeFilter) return false;
+
+      if (searchText) {
+        const query = searchText.toLowerCase();
+        const callId = String(n.call_id || '').toLowerCase();
+        const customerName = String(n.customer_name || '').toLowerCase();
+        const agentName = String(n.agent_name || '').toLowerCase();
+        const lastStatus = String(n.last_status || '').toLowerCase();
+        const cancelReason = String(n.cancel_reason || '').toLowerCase();
+        const state = String(n.state || '').toLowerCase();
+        const scheduleType = String(n.schedule_type || '').toLowerCase();
+
+        return (
+          callId.includes(query) ||
+          customerName.includes(query) ||
+          agentName.includes(query) ||
+          lastStatus.includes(query) ||
+          cancelReason.includes(query) ||
+          state.includes(query) ||
+          scheduleType.includes(query)
+        );
+      }
+
       return true;
     });
-  }, [notifications, stateFilter, typeFilter]);
+  }, [notifications, stateFilter, typeFilter, searchText]);
 
   const columns: GridColDef[] = [
     {
@@ -125,6 +148,23 @@ const NotificationTracker = ({ clientKey }: NotificationTrackerProps) => {
       align: 'center',
       headerAlign: 'center',
       renderCell: (p) => <Typography variant="body2">{p.value || '—'}</Typography>,
+    },
+    {
+      field: 'current_day',
+      headerName: 'Day',
+      flex: 0.6,
+      minWidth: 80,
+      align: 'center',
+      headerAlign: 'center',
+      renderCell: (p) => (
+        <Chip
+          label={p.value > 0 ? `Day ${p.value}` : 'Initial'}
+          size="small"
+          color={p.value > 0 ? 'primary' : 'default'}
+          variant="outlined"
+          sx={{ fontSize: '0.72rem' }}
+        />
+      ),
     },
     {
       field: 'last_status',

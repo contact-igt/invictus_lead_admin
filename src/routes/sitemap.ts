@@ -64,13 +64,23 @@ const generateDynamicClientMenus = (): MenuItem[] => {
       path: `/pages/d/${clientKey}/${table.id}`,
     }));
 
+    const items: SubMenuItem[] = [overviewItem];
+    if (clientKey === 'pixeleye') {
+      items.push({
+        name: 'Notification Tracker',
+        pathName: `/pages/d/${clientKey}/notification-tracker`,
+        path: `/pages/d/${clientKey}/notification-tracker`,
+      });
+    }
+    items.push(...tableItems);
+
     return {
       id: clientKey,
       subheader: config.appName,
       icon: 'hugeicons:database',
       clientKey: clientKey,
       active: true,
-      items: [overviewItem, ...tableItems],
+      items,
     };
   });
 };
