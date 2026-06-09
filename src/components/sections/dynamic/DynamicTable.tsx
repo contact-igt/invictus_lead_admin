@@ -6,6 +6,7 @@ import DataGridFooter from 'components/common/DataGridFooter';
 import ActionMenu from 'components/sections/ActionMenu';
 import dayjs from 'dayjs';
 import { TableConfig, ColumnConfig } from 'config/clients';
+import { getDayDropdownStatuses, isStatusTerminalForDays } from 'components/sections/pixel-eye/pixelEyeStatuses';
 
 interface DynamicTableProps {
   config: TableConfig;
@@ -25,6 +26,7 @@ const InlineEnumCell = ({
   header,
   options,
   onUpdate,
+  disabled,
 }: {
   value: string | null | undefined;
   rowId: number | string;
@@ -32,8 +34,13 @@ const InlineEnumCell = ({
   header: string;
   options: string[];
   onUpdate: (id: number | string, field: string, value: string) => void;
+  disabled?: boolean;
 }) => {
   const [anchor, setAnchor] = useState<null | HTMLElement>(null);
+
+  if (disabled) {
+    return <span style={{ color: '#aaa', cursor: 'not-allowed' }}>{value || '—'}</span>;
+  }
 
   return (
     <>
@@ -180,16 +187,43 @@ const DynamicTable = ({ config, data, searchText, isLoading, onInlineUpdate, onE
 
       // Handle custom renderers based on field type
       if ((col.type === 'status_chip' || col.type === 'select') && col.options?.length) {
-        baseCol.renderCell = (params) => (
-          <InlineEnumCell
-            value={params.value}
-            rowId={params.row.id}
-            field={col.field}
-            header={col.header}
-            options={col.options || []}
-            onUpdate={onInlineUpdate}
-          />
-        );
+        baseCol.renderCell = (params) => {
+          let options = col.options || [];
+          const isDayField = /^day_[1-5]$/.test(col.field);
+          if (isDayField) {
+            const dayNumber = parseInt(col.field.replace('day_', ''), 10);
+            options = getDayDropdownStatuses(dayNumber);
+          }
+
+          let isParentTerminal = false;
+          if (isDayField) {
+            const dayIdx = parseInt(col.field.replace('day_', ''), 10) - 1;
+            const DAY_FIELDS = ['day_1', 'day_2', 'day_3', 'day_4', 'day_5'];
+
+            if (isStatusTerminalForDays(params.row.status)) {
+              isParentTerminal = true;
+            }
+            for (let i = 0; i < dayIdx; i++) {
+              const priorDayField = DAY_FIELDS[i];
+              const priorValue = params.row[priorDayField];
+              if (isStatusTerminalForDays(priorValue)) {
+                isParentTerminal = true;
+              }
+            }
+          }
+
+          return (
+            <InlineEnumCell
+              value={params.value}
+              rowId={params.row.id}
+              field={col.field}
+              header={col.header}
+              options={options}
+              onUpdate={onInlineUpdate}
+              disabled={isParentTerminal}
+            />
+          );
+        };
       } else if (col.type === 'date') {
         if (col.field === 'follow_up_date') {
           baseCol.renderCell = (params) => (

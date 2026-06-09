@@ -4,7 +4,10 @@ export const ONGOING_STATUSES = [
     'On Another Call',
     'Switched Off',
     'Missed Call',
+    'Dnp 1',
     'Dnp 2',
+    'Dnp 3',
+    'Dnp 4',
     'Not Speaking',
     'Disconnecting',
     'Not in Network',
@@ -59,7 +62,50 @@ export const THIRTY_MIN_STATUSES_TO_EXCLUDE = [
     'Incoming Call Not Available',
 ] as const;
 
+export const TWENTY_FOUR_HR_STATUSES = [
+    'Enquiry',
+    'Hot Follow-up',
+    'Follow-up Required',
+    'Will Call Later',
+    'Rescheduling',
+    'Doctor Time',
+    'Follow-up Post Appointment',
+    'Want to Speak With Doctor',
+    'Address Requested',
+    'Others',
+] as const;
+
 export const ALL_STATUSES = [...ONGOING_STATUSES, ...FINAL_STATUSES] as const;
+
+// Helper to filter and return the correct dropdown statuses for each day
+export const getDayDropdownStatuses = (dayNumber: number): string[] => {
+    const nonThirtyMin = ALL_STATUSES.filter(
+        status => !(THIRTY_MIN_STATUSES_TO_EXCLUDE as readonly string[]).includes(status)
+    );
+
+    const otherStatuses = nonThirtyMin.filter(
+        status =>
+            !(TWENTY_FOUR_HR_STATUSES as readonly string[]).includes(status) &&
+            !['Dnp 1', 'Dnp 2', 'Dnp 3', 'Dnp 4'].includes(status)
+    );
+
+    if (dayNumber === 1) {
+        return ['Dnp 1', ...TWENTY_FOUR_HR_STATUSES, ...otherStatuses];
+    }
+    if (dayNumber === 2) {
+        return ['Dnp 2', ...TWENTY_FOUR_HR_STATUSES, ...otherStatuses];
+    }
+    if (dayNumber === 3) {
+        return ['Dnp 3', ...TWENTY_FOUR_HR_STATUSES, ...otherStatuses];
+    }
+    if (dayNumber === 4) {
+        return ['Dnp 4', ...TWENTY_FOUR_HR_STATUSES, ...otherStatuses];
+    }
+    if (dayNumber === 5) {
+        return otherStatuses;
+    }
+    return nonThirtyMin;
+};
 
 export const DAY_STATUSES = ALL_STATUSES.filter(
     status => !(THIRTY_MIN_STATUSES_TO_EXCLUDE as readonly string[]).includes(status)
@@ -81,3 +127,13 @@ export const getStatusChipColor = (
     if ((FINAL_STATUSES as readonly string[]).includes(status)) return 'error';
     return 'default';
 };
+
+export const isStatusTerminalForDays = (status: string | null | undefined): boolean => {
+    if (!status) return false;
+    const s = status.trim().toLowerCase();
+    const is30Min = (THIRTY_MIN_STATUSES_TO_EXCLUDE as readonly string[]).map(v => v.toLowerCase()).includes(s);
+    const is24Hr = (TWENTY_FOUR_HR_STATUSES as readonly string[]).map(v => v.toLowerCase()).includes(s);
+    const isDnp = ['dnp 1', 'dnp 2', 'dnp 3', 'dnp 4'].includes(s);
+    return !is30Min && !is24Hr && !isDnp;
+};
+
