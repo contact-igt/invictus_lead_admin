@@ -144,7 +144,7 @@ const PixelEyeSection = () => {
             {/* --- Leads View --- */}
             {activeTab === 'leads' && <>
             {/* --- Summary Bar --- */}
-            <MuiPaper elevation={2} sx={{ mb: 3, p: 2, background: '#f8fafc' }}>
+            <MuiPaper elevation={2} sx={{ mb: 3, p: 2, background: '#6a6d70ff' }}>
                 <Grid container spacing={2} justifyContent="space-between">
                     <Grid item xs={6} sm={2}><Typography variant="subtitle2">Total</Typography><Typography variant="h5">{summary.total}</Typography></Grid>
                     <Grid item xs={6} sm={2}><Typography variant="subtitle2">Today</Typography><Typography variant="h5">{summary.todayCount}</Typography></Grid>

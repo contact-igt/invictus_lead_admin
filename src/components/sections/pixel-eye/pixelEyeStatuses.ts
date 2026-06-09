@@ -46,7 +46,24 @@ export const SUCCESS_STATUSES = [
     'Walk-in',
 ] as const;
 
+export const THIRTY_MIN_STATUSES_TO_EXCLUDE = [
+    'Busy',
+    'Not Answering',
+    'Switched Off',
+    'Missed Call',
+    'On Another Call',
+    'DND',
+    'Not Speaking',
+    'Disconnecting',
+    'Not in Network',
+    'Incoming Call Not Available',
+] as const;
+
 export const ALL_STATUSES = [...ONGOING_STATUSES, ...FINAL_STATUSES] as const;
+
+export const DAY_STATUSES = ALL_STATUSES.filter(
+    status => !(THIRTY_MIN_STATUSES_TO_EXCLUDE as readonly string[]).includes(status)
+);
 
 export type PixelEyeStatus = typeof ALL_STATUSES[number];
 

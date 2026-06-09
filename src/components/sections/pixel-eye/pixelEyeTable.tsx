@@ -4,7 +4,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import { useState, useMemo } from 'react';
-import { ALL_STATUSES } from './pixelEyeStatuses';
+import { ALL_STATUSES, DAY_STATUSES } from './pixelEyeStatuses';
 import IconifyIcon from 'components/base/IconifyIcon';
 
 const DAY_FIELDS = ['day_1', 'day_2', 'day_3', 'day_4', 'day_5'] as const;
@@ -84,7 +84,7 @@ const DayCell = ({ value, onChange }: { value: string; onChange: (val: string) =
             size="medium"
             sx={{ minWidth: 120, minHeight: 48 }}
         >
-            {ALL_STATUSES.map(status => (
+            {DAY_STATUSES.map(status => (
                 <MenuItem key={status} value={status}>{status}</MenuItem>
             ))}
         </Select>
