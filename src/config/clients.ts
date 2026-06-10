@@ -54,7 +54,7 @@ export const ClientRegistry: Record<string, ClientConfig> = {
           { field: "follow_up_date", header: "Follow Up Date", type: "date", required: false },
           {
             field: "status", header: "Status", type: "status_chip", required: true, options: [
-              "Busy", "Not Answering", "Switched Off", "Missed Call", "On Another Call", "DND", "Dnp 2", "Not Speaking", "Disconnecting", "Not in Network", "Incoming Call Not Available", "Number Not in Service", "Wrong Number", "Wrongly Dialed", "Fraud Call", "Enquiry", "Hot Follow-up", "Follow-up Required", "Will Call Later", "Rescheduling", "Doctor Time", "Follow-up Post Appointment", "Want to Speak With Doctor", "Appointment Fixed", "Appointment Cancelled", "Visited", "Walk-in", "Not Interested", "Not Willing to Come Now", "Searching for Specific Hospital", "Going to Other Hospital", "Not in Hyderabad", "Long Distance", "Address Requested", "Closed", "Others"
+              "Busy", "Not Answering", "Switched Off", "Missed Call", "On Another Call", "DND", "Dnp 1", "Not Speaking", "Disconnecting", "Not in Network", "Incoming Call Not Available", "Number Not in Service", "Wrong Number", "Wrongly Dialed", "Fraud Call", "Enquiry", "Hot Follow-up", "Follow-up Required", "Will Call Later", "Rescheduling", "Doctor Time", "Follow-up Post Appointment", "Want to Speak With Doctor", "Appointment Fixed", "Appointment Cancelled", "Visited", "Walk-in", "Not Interested", "Not Willing to Come Now", "Searching for Specific Hospital", "Going to Other Hospital", "Not in Hyderabad", "Long Distance", "Address Requested", "Closed", "Others"
             ]
           },
           {
