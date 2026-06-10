@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { DataGrid, GridColDef, useGridApiRef, GridApi } from '@mui/x-data-grid';
-import { Chip, Box, Typography, Menu, MenuItem } from '@mui/material';
+import { Chip, Box, Typography, Menu, MenuItem, Tooltip } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import DataGridFooter from 'components/common/DataGridFooter';
 import ActionMenu from 'components/sections/ActionMenu';
@@ -37,29 +37,40 @@ const InlineEnumCell = ({
   disabled?: boolean;
 }) => {
   const [anchor, setAnchor] = useState<null | HTMLElement>(null);
+  const isBlockedEmpty = disabled && !value;
+  const label = isBlockedEmpty ? '-' : value || `Set ${header}`;
 
-  if (disabled) {
-    return <span style={{ color: '#aaa', cursor: 'not-allowed' }}>{value || '—'}</span>;
-  }
+  const chip = (
+    <Chip
+      label={label}
+      size="small"
+      color={disabled ? 'default' : value ? 'primary' : 'default'}
+      variant={isBlockedEmpty ? 'filled' : value ? 'filled' : 'outlined'}
+      onClick={(e) => {
+        e.stopPropagation();
+        if (disabled) return;
+        setAnchor(e.currentTarget);
+      }}
+      sx={{
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        fontWeight: 600,
+        fontSize: isBlockedEmpty ? '0.8rem' : '0.72rem',
+        maxWidth: 220,
+        opacity: disabled ? 0.65 : 1,
+        ...(isBlockedEmpty && { minWidth: 28, px: 0 }),
+      }}
+    />
+  );
 
   return (
     <>
-      <Chip
-        label={value || `Set ${header}`}
-        size="small"
-        color={value ? 'primary' : 'default'}
-        variant={value ? 'filled' : 'outlined'}
-        onClick={(e) => {
-          e.stopPropagation();
-          setAnchor(e.currentTarget);
-        }}
-        sx={{
-          cursor: 'pointer',
-          fontWeight: 600,
-          fontSize: '0.72rem',
-          maxWidth: 170,
-        }}
-      />
+      {isBlockedEmpty ? (
+        <Tooltip title="No next follow-up needed" arrow>
+          {chip}
+        </Tooltip>
+      ) : (
+        chip
+      )}
       <Menu
         anchorEl={anchor}
         open={Boolean(anchor)}
@@ -107,6 +118,27 @@ const normalizeInlineDate = (value: unknown) => {
 
   const parsed = dayjs(text);
   return parsed.isValid() ? parsed.format('YYYY-MM-DD') : '';
+};
+
+const DAY_FIELDS = ['day_1', 'day_2', 'day_3', 'day_4', 'day_5'];
+
+const getDayIndex = (field: string) => DAY_FIELDS.indexOf(field);
+
+const isDayFieldLocked = (row: Record<string, any>, field: string) => {
+  const dayIndex = getDayIndex(field);
+  if (dayIndex < 0) return false;
+
+  if (isStatusTerminalForDays(row.status)) {
+    return true;
+  }
+
+  for (let i = 0; i < dayIndex; i++) {
+    if (isStatusTerminalForDays(row[DAY_FIELDS[i]])) {
+      return true;
+    }
+  }
+
+  return false;
 };
 
 const InlineDateCell = ({
@@ -194,23 +226,7 @@ const DynamicTable = ({ config, data, searchText, isLoading, onInlineUpdate, onE
             const dayNumber = parseInt(col.field.replace('day_', ''), 10);
             options = getDayDropdownStatuses(dayNumber);
           }
-
-          let isParentTerminal = false;
-          if (isDayField) {
-            const dayIdx = parseInt(col.field.replace('day_', ''), 10) - 1;
-            const DAY_FIELDS = ['day_1', 'day_2', 'day_3', 'day_4', 'day_5'];
-
-            if (isStatusTerminalForDays(params.row.status)) {
-              isParentTerminal = true;
-            }
-            for (let i = 0; i < dayIdx; i++) {
-              const priorDayField = DAY_FIELDS[i];
-              const priorValue = params.row[priorDayField];
-              if (isStatusTerminalForDays(priorValue)) {
-                isParentTerminal = true;
-              }
-            }
-          }
+          const disabled = isDayFieldLocked(params.row, col.field);
 
           return (
             <InlineEnumCell
@@ -220,7 +236,7 @@ const DynamicTable = ({ config, data, searchText, isLoading, onInlineUpdate, onE
               header={col.header}
               options={options}
               onUpdate={onInlineUpdate}
-              disabled={isParentTerminal}
+              disabled={disabled}
             />
           );
         };

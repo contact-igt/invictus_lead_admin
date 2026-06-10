@@ -19,6 +19,7 @@ import {
 import IconifyIcon from 'components/base/IconifyIcon';
 import { ColumnConfig } from 'config/clients';
 import dayjs from 'dayjs';
+import { getDayDropdownStatuses, isStatusTerminalForDays } from 'components/sections/pixel-eye/pixelEyeStatuses';
 
 interface DynamicFormProps {
   title: string;
@@ -51,6 +52,27 @@ const isFullWidth = (col: ColumnConfig) =>
 
 // Day fields get 4-column spans (3 per row)
 const isDayField = (field: string) => /^day_[1-5]$/.test(field);
+
+const DAY_FIELDS = ['day_1', 'day_2', 'day_3', 'day_4', 'day_5'];
+
+const getDayIndex = (field: string) => DAY_FIELDS.indexOf(field);
+
+const isDayFieldLocked = (values: Record<string, any>, field: string) => {
+  const dayIndex = getDayIndex(field);
+  if (dayIndex < 0) return false;
+
+  if (isStatusTerminalForDays(values.status)) {
+    return true;
+  }
+
+  for (let i = 0; i < dayIndex; i++) {
+    if (isStatusTerminalForDays(values[DAY_FIELDS[i]])) {
+      return true;
+    }
+  }
+
+  return false;
+};
 
 const DynamicForm = ({
   title,
@@ -101,6 +123,14 @@ const DynamicForm = ({
     const isError = formik.touched[col.field] && Boolean(formik.errors[col.field]);
     const errorText = formik.touched[col.field] ? String(formik.errors[col.field] || '') : '';
     const autoFocus = index === 0;
+    const fieldDisabled = isReadOnly || isDayFieldLocked(formik.values, col.field);
+    const options = isDayField(col.field)
+      ? getDayDropdownStatuses(parseInt(col.field.replace('day_', ''), 10))
+      : col.options;
+    const lockedHelpText =
+      !isReadOnly && isDayFieldLocked(formik.values, col.field)
+        ? 'Closed - no next follow-up needed'
+        : '';
 
     const label = (
       <Typography variant="body2" fontWeight={600} color="text.primary" mb={0.5}>
@@ -119,7 +149,7 @@ const DynamicForm = ({
         return (
           <Box key={col.field}>
             {label}
-            <FormControl fullWidth error={isError} disabled={isReadOnly}>
+            <FormControl fullWidth error={isError} disabled={fieldDisabled}>
               <Select
                 id={col.field}
                 name={col.field}
@@ -131,13 +161,14 @@ const DynamicForm = ({
                 <MenuItem value="" disabled>
                   Select {col.header}
                 </MenuItem>
-                {col.options?.map((opt) => (
+                {options?.map((opt) => (
                   <MenuItem key={opt} value={opt}>
                     {opt}
                   </MenuItem>
                 ))}
               </Select>
               {isError && <FormHelperText>{errorText}</FormHelperText>}
+              {!isError && lockedHelpText && <FormHelperText>{lockedHelpText}</FormHelperText>}
             </FormControl>
           </Box>
         );
@@ -157,7 +188,7 @@ const DynamicForm = ({
               error={isError}
               helperText={errorText}
               autoFocus={autoFocus}
-              disabled={isReadOnly}
+              disabled={fieldDisabled}
               InputLabelProps={{ shrink: true }}
             />
           </Box>
@@ -178,7 +209,7 @@ const DynamicForm = ({
               error={isError}
               helperText={errorText}
               autoFocus={autoFocus}
-              disabled={isReadOnly}
+              disabled={fieldDisabled}
               InputLabelProps={{ shrink: true }}
             />
           </Box>
@@ -201,7 +232,7 @@ const DynamicForm = ({
               onBlur={handleTrimBlur}
               error={isError}
               helperText={errorText}
-              disabled={isReadOnly}
+              disabled={fieldDisabled}
             />
           </Box>
         );
@@ -222,7 +253,7 @@ const DynamicForm = ({
               error={isError}
               helperText={errorText}
               autoFocus={autoFocus}
-              disabled={isReadOnly}
+              disabled={fieldDisabled}
             />
           </Box>
         );
@@ -243,7 +274,7 @@ const DynamicForm = ({
               error={isError}
               helperText={errorText}
               autoFocus={autoFocus}
-              disabled={isReadOnly}
+              disabled={fieldDisabled}
               inputProps={{ inputMode: 'tel' }}
             />
           </Box>

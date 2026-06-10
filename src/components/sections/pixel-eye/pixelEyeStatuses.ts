@@ -71,8 +71,29 @@ export const TWENTY_FOUR_HR_STATUSES = [
     'Doctor Time',
     'Follow-up Post Appointment',
     'Want to Speak With Doctor',
+    'Appointment Cancelled',
     'Address Requested',
+    'Searching for Specific Hospital',
     'Others',
+] as const;
+
+export const TERMINATION_STATUSES = [
+    'Wrong Number',
+    'Wrongly Dialed',
+    'Fraud Call',
+    'Not Interested',
+    'Not Willing to Come Now',
+    'Going to Other Hospital',
+    'Not in Hyderabad',
+    'Long Distance',
+    'Number Not in Service',
+    'Walk-in',
+    'Closed',
+] as const;
+
+export const NO_ACTION_STATUSES = [
+    'Appointment Fixed',
+    'Visited',
 ] as const;
 
 export const ALL_STATUSES = [...ONGOING_STATUSES, ...FINAL_STATUSES] as const;
@@ -131,9 +152,14 @@ export const getStatusChipColor = (
 export const isStatusTerminalForDays = (status: string | null | undefined): boolean => {
     if (!status) return false;
     const s = status.trim().toLowerCase();
-    const is30Min = (THIRTY_MIN_STATUSES_TO_EXCLUDE as readonly string[]).map(v => v.toLowerCase()).includes(s);
-    const is24Hr = (TWENTY_FOUR_HR_STATUSES as readonly string[]).map(v => v.toLowerCase()).includes(s);
-    const isDnp = ['dnp 1', 'dnp 2', 'dnp 3', 'dnp 4'].includes(s);
-    return !is30Min && !is24Hr && !isDnp;
+    const terminalStatuses = [
+        ...TERMINATION_STATUSES,
+        ...NO_ACTION_STATUSES,
+        'Converted',
+        'Invalid Number',
+        'Patient not required',
+    ].map(v => v.toLowerCase());
+
+    return terminalStatuses.includes(s);
 };
 

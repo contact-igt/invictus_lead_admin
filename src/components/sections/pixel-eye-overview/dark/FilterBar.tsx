@@ -12,6 +12,19 @@ interface FilterBarProps {
 
 type QuickSelectOption = 'today' | 'yesterday' | 'last7' | 'last30' | 'lastWeek' | 'lastMonth' | 'allTime';
 
+const toLocalDateString = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const formatFilterDate = (value: string, options: Intl.DateTimeFormatOptions): string => {
+  const [year, month, day] = value.split('-').map(Number);
+  const localDate = new Date(year, (month || 1) - 1, day || 1);
+  return localDate.toLocaleDateString('en-US', options);
+};
+
 const FilterBar: React.FC<FilterBarProps> = ({ agents, filters, onApplyFilters, onReset }) => {
   const { mode } = useColorMode();
   const [isOpen, setIsOpen] = useState(false);
@@ -29,7 +42,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ agents, filters, onApplyFilters, 
 
   const getDateRange = (option: QuickSelectOption): { dateFrom: string; dateTo: string } => {
     const today = new Date();
-    const todayStr = today.toISOString().split('T')[0];
+    const todayStr = toLocalDateString(today);
     
     switch (option) {
       case 'today':
@@ -37,30 +50,30 @@ const FilterBar: React.FC<FilterBarProps> = ({ agents, filters, onApplyFilters, 
       case 'yesterday': {
         const yesterday = new Date(today);
         yesterday.setDate(yesterday.getDate() - 1);
-        const yesterdayStr = yesterday.toISOString().split('T')[0];
+        const yesterdayStr = toLocalDateString(yesterday);
         return { dateFrom: yesterdayStr, dateTo: yesterdayStr };
       }
       case 'last7': {
         const last7 = new Date(today);
         last7.setDate(last7.getDate() - 6);
-        return { dateFrom: last7.toISOString().split('T')[0], dateTo: todayStr };
+        return { dateFrom: toLocalDateString(last7), dateTo: todayStr };
       }
       case 'last30': {
         const last30 = new Date(today);
         last30.setDate(last30.getDate() - 29);
-        return { dateFrom: last30.toISOString().split('T')[0], dateTo: todayStr };
+        return { dateFrom: toLocalDateString(last30), dateTo: todayStr };
       }
       case 'lastWeek': {
         const lastWeekStart = new Date(today);
         lastWeekStart.setDate(lastWeekStart.getDate() - lastWeekStart.getDay() - 7);
         const lastWeekEnd = new Date(lastWeekStart);
         lastWeekEnd.setDate(lastWeekEnd.getDate() + 6);
-        return { dateFrom: lastWeekStart.toISOString().split('T')[0], dateTo: lastWeekEnd.toISOString().split('T')[0] };
+        return { dateFrom: toLocalDateString(lastWeekStart), dateTo: toLocalDateString(lastWeekEnd) };
       }
       case 'lastMonth': {
         const lastMonthStart = new Date(today.getFullYear(), today.getMonth() - 1, 1);
         const lastMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0);
-        return { dateFrom: lastMonthStart.toISOString().split('T')[0], dateTo: lastMonthEnd.toISOString().split('T')[0] };
+        return { dateFrom: toLocalDateString(lastMonthStart), dateTo: toLocalDateString(lastMonthEnd) };
       }
       case 'allTime':
       default:
@@ -76,7 +89,18 @@ const FilterBar: React.FC<FilterBarProps> = ({ agents, filters, onApplyFilters, 
   };
 
   const handleApply = () => {
-    onApplyFilters(localFilters);
+    const nextFilters = { ...localFilters };
+    if (
+      nextFilters.dateFrom &&
+      nextFilters.dateTo &&
+      nextFilters.dateFrom > nextFilters.dateTo
+    ) {
+      const originalFrom = nextFilters.dateFrom;
+      nextFilters.dateFrom = nextFilters.dateTo;
+      nextFilters.dateTo = originalFrom;
+    }
+
+    onApplyFilters(nextFilters);
     setIsOpen(false);
   };
 
@@ -91,10 +115,10 @@ const FilterBar: React.FC<FilterBarProps> = ({ agents, filters, onApplyFilters, 
   const formatDateRange = () => {
     if (!filters.dateFrom && !filters.dateTo) return 'All Time';
     if (filters.dateFrom === filters.dateTo) {
-      return new Date(filters.dateFrom).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      return formatFilterDate(filters.dateFrom, { month: 'short', day: 'numeric', year: 'numeric' });
     }
-    const from = filters.dateFrom ? new Date(filters.dateFrom).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Start';
-    const to = filters.dateTo ? new Date(filters.dateTo).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'End';
+    const from = filters.dateFrom ? formatFilterDate(filters.dateFrom, { month: 'short', day: 'numeric' }) : 'Start';
+    const to = filters.dateTo ? formatFilterDate(filters.dateTo, { month: 'short', day: 'numeric' }) : 'End';
     return `${from} - ${to}`;
   };
 
@@ -196,8 +220,8 @@ const FilterBar: React.FC<FilterBarProps> = ({ agents, filters, onApplyFilters, 
                       {!localFilters.dateFrom && !localFilters.dateTo 
                         ? 'All Time' 
                         : localFilters.dateFrom === localFilters.dateTo
-                        ? new Date(localFilters.dateFrom).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-                        : `${localFilters.dateFrom ? new Date(localFilters.dateFrom).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Start'} - ${localFilters.dateTo ? new Date(localFilters.dateTo).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'End'}`
+                        ? formatFilterDate(localFilters.dateFrom, { month: 'short', day: 'numeric', year: 'numeric' })
+                        : `${localFilters.dateFrom ? formatFilterDate(localFilters.dateFrom, { month: 'short', day: 'numeric' }) : 'Start'} - ${localFilters.dateTo ? formatFilterDate(localFilters.dateTo, { month: 'short', day: 'numeric' }) : 'End'}`
                       }
                     </div>
                   </div>

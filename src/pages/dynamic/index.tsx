@@ -63,7 +63,7 @@ const DynamicPage = () => {
           }}
         >
           <NotificationTracker
-            clientKey={user?.role === 'super-admin' ? activeClientKey : undefined}
+            clientKey={user?.role === 'super-admin' ? tenantClientKey : undefined}
             searchText={searchText}
           />
         </Paper>

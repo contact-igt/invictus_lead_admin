@@ -17,6 +17,8 @@ export interface PixelEyeRow {
     customer_name?: string;
     phone_number?: string;
     agent_name?: string;
+    source?: string;
+    type_of_enquiry?: string;
     follow_up_date?: string;
     status?: string;
     day_1?: string;
@@ -24,6 +26,10 @@ export interface PixelEyeRow {
     day_3?: string;
     day_4?: string;
     day_5?: string;
+    createdAt?: string;
+    updatedAt?: string;
+    created_at?: string;
+    updated_at?: string;
 }
 
 interface PixelEyeTableProps {

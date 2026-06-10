@@ -65,14 +65,20 @@ const generateDynamicClientMenus = (): MenuItem[] => {
     }));
 
     const items: SubMenuItem[] = [overviewItem];
+    items.push(...tableItems);
+
     if (clientKey === 'pixeleye') {
+      items.push({
+        name: 'Follow-ups',
+        pathName: '/pixel-eye/follow-ups',
+        path: '/pixel-eye/follow-ups',
+      });
       items.push({
         name: 'Notification Tracker',
         pathName: `/pages/d/${clientKey}/notification-tracker`,
         path: `/pages/d/${clientKey}/notification-tracker`,
       });
     }
-    items.push(...tableItems);
 
     return {
       id: clientKey,
