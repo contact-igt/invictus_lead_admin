@@ -7,7 +7,6 @@ import TotalProfitChart from './TotalProfitChart';
 import MiniStats from './MiniStats';
 import TrendChart from '../TrendChart';
 import PremiumPlanCard from './PremiumPlanCard';
-import FollowUpPanel from './FollowUpPanel';
 import DarkKPICards from './DarkKPICards';
 import FilterBar from './FilterBar';
 import useColorMode from 'hooks/useColorMode';
@@ -100,11 +99,6 @@ const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-5 gap-4 mt-6">
-          <div className="col-span-5">
-            <FollowUpPanel followUps={metrics.followUps} loading={loading} />
-          </div>
-        </div>
       </div>
 
       <aside className={`w-72 shrink-0 border-l ${mode === 'dark' ? 'border-[#1E2E25]' : 'border-gray-200'} px-4 py-6`}>

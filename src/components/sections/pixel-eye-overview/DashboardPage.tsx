@@ -1,15 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery } from 'react-query';
-import { Box, Tabs, Tab } from '@mui/material';
+import { Box } from '@mui/material';
 import OverviewDashboard from './dark/OverviewDashboard';
-import NotificationTracker from 'components/sections/pixel-eye/NotificationTracker';
 import type { KPIItem, DashboardFilters } from './types';
 import { _axios } from 'helper/axios';
 import { LeadRecord } from './types';
 import { buildDashboardMetrics, applyDashboardFilters, getAvailableAgents } from './dashboardUtils';
-import { useAuth } from 'redux/selectors/auth/authSelector';
-import { useParams } from 'react-router-dom';
-import { normalizeClientKey } from 'utils/clientKey';
+
 
 const fetchPixelEyeLeads = async (): Promise<LeadRecord[]> => {
   const response = await _axios('get', '/pixeleye');
@@ -19,14 +16,6 @@ const fetchPixelEyeLeads = async (): Promise<LeadRecord[]> => {
 };
 
 const DashboardPage: React.FC = () => {
-  const { user } = useAuth();
-  const { clientKey: urlClientKey } = useParams<{ clientKey?: string }>();
-
-  const activeClientKey = normalizeClientKey(
-    user?.role === 'super-admin' ? (urlClientKey || 'pixeleye') : user?.clientKey,
-  );
-
-  const [activeTab, setActiveTab] = useState<'overview' | 'notifications'>('overview');
 
   const { data: allLeads = [], isLoading, isError } = useQuery<LeadRecord[]>(
     ['pixelEyeLeads'],
@@ -78,35 +67,16 @@ const DashboardPage: React.FC = () => {
 
   return (
     <Box sx={{ width: '100%' }}>
-      <Tabs
-        value={activeTab}
-        onChange={(_e, v) => setActiveTab(v)}
-        sx={{ mb: 3, borderBottom: '1px solid', borderColor: 'divider', px: 1 }}
-      >
-        <Tab label="Overview" value="overview" />
-        <Tab label="Notification Tracker" value="notifications" />
-      </Tabs>
-
-      {activeTab === 'overview' && (
-        <OverviewDashboard
-          metrics={metrics}
-          leads={filteredLeads}
-          loading={isLoading}
-          topKpiItems={kpiItems}
-          filters={filters}
-          availableAgents={availableAgents}
-          onApplyFilters={handleApplyFilters}
-          onResetFilters={handleResetFilters}
-        />
-      )}
-
-      {activeTab === 'notifications' && (
-        <Box sx={{ px: 1 }}>
-          <NotificationTracker
-            clientKey={user?.role === 'super-admin' ? activeClientKey : undefined}
-          />
-        </Box>
-      )}
+      <OverviewDashboard
+        metrics={metrics}
+        leads={filteredLeads}
+        loading={isLoading}
+        topKpiItems={kpiItems}
+        filters={filters}
+        availableAgents={availableAgents}
+        onApplyFilters={handleApplyFilters}
+        onResetFilters={handleResetFilters}
+      />
     </Box>
   );
 };

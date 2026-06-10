@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from 'react-query';
+import { useSnackbar } from 'notistack';
 import { _axios } from 'helper/axios';
 
 export interface PixelEyeLead {
@@ -18,6 +19,14 @@ export interface PixelEyeLead {
     source?: string;
     type_of_enquiry?: string;
     follow_up_date?: string;
+    followup_state?: string | null;
+    reminder_schedule_type?: string | null;
+    reminder_scheduled_at?: string | null;
+    reminder_notification_sent?: boolean | null;
+    reminder_notification_sent_at?: string | null;
+    reminder_reason?: string | null;
+    reminder_permanently_closed?: boolean | null;
+    reminder_cancel_reason?: string | null;
 }
 
 export interface CreatePixelEyePayload {
@@ -51,6 +60,23 @@ export interface UpdatePixelEyePayload {
     day_3?: string;
     day_4?: string;
     day_5?: string;
+}
+
+export interface MarkPixelEyeFollowUpHandledPayload {
+    id: number;
+    reason?: string;
+}
+
+export interface ReschedulePixelEyeFollowUpPayload {
+    id: number;
+    follow_up_date: string;
+    reason?: string;
+}
+
+export interface CancelPixelEyeFollowUpPayload {
+    id: number;
+    status?: string;
+    reason?: string;
 }
 
 // clientKey is included in the query key so super-admin switching between clients
@@ -209,6 +235,135 @@ export const useDeletePixelEyeMutation = () => {
                     // eslint-disable-next-line no-console
                     console.debug('useDeletePixelEyeMutation - onError', err);
                 }
+            },
+        }
+    );
+};
+
+export const useMarkPixelEyeFollowUpHandledMutation = () => {
+    const queryClient = useQueryClient();
+    const { enqueueSnackbar } = useSnackbar();
+
+    return useMutation(
+        ({ id, reason }: MarkPixelEyeFollowUpHandledPayload) => {
+            if (process.env.NODE_ENV !== 'production') {
+                // eslint-disable-next-line no-console
+                console.debug('useMarkPixelEyeFollowUpHandledMutation - request', id, reason);
+            }
+            return _axios('patch', `/pixeleye/${id}/follow-up/handled`, { reason }).then((res) => {
+                if (process.env.NODE_ENV !== 'production') {
+                    // eslint-disable-next-line no-console
+                    console.debug('useMarkPixelEyeFollowUpHandledMutation - response', res);
+                }
+                return res;
+            });
+        },
+        {
+            onSuccess: (data) => {
+                if (process.env.NODE_ENV !== 'production') {
+                    // eslint-disable-next-line no-console
+                    console.debug('useMarkPixelEyeFollowUpHandledMutation - onSuccess', data);
+                }
+                enqueueSnackbar('Follow-up marked as handled', { variant: 'success' });
+                queryClient.invalidateQueries(['pixelEyeLeads']);
+                try {
+                    queryClient.refetchQueries(['pixelEyeLeads']);
+                } catch (e) {}
+            },
+            onError: (err: any) => {
+                if (process.env.NODE_ENV !== 'production') {
+                    // eslint-disable-next-line no-console
+                    console.debug('useMarkPixelEyeFollowUpHandledMutation - onError', err);
+                }
+                enqueueSnackbar(err?.response?.data?.message || err?.message || 'Failed to mark follow-up as handled', {
+                    variant: 'error',
+                });
+            },
+        }
+    );
+};
+
+export const useReschedulePixelEyeFollowUpMutation = () => {
+    const queryClient = useQueryClient();
+    const { enqueueSnackbar } = useSnackbar();
+
+    return useMutation(
+        ({ id, ...payload }: ReschedulePixelEyeFollowUpPayload) => {
+            if (process.env.NODE_ENV !== 'production') {
+                // eslint-disable-next-line no-console
+                console.debug('useReschedulePixelEyeFollowUpMutation - request', id, payload);
+            }
+            return _axios('patch', `/pixeleye/${id}/follow-up/reschedule`, payload).then((res) => {
+                if (process.env.NODE_ENV !== 'production') {
+                    // eslint-disable-next-line no-console
+                    console.debug('useReschedulePixelEyeFollowUpMutation - response', res);
+                }
+                return res;
+            });
+        },
+        {
+            onSuccess: (data) => {
+                if (process.env.NODE_ENV !== 'production') {
+                    // eslint-disable-next-line no-console
+                    console.debug('useReschedulePixelEyeFollowUpMutation - onSuccess', data);
+                }
+                enqueueSnackbar('Follow-up rescheduled', { variant: 'success' });
+                queryClient.invalidateQueries(['pixelEyeLeads']);
+                try {
+                    queryClient.refetchQueries(['pixelEyeLeads']);
+                } catch (e) {}
+            },
+            onError: (err: any) => {
+                if (process.env.NODE_ENV !== 'production') {
+                    // eslint-disable-next-line no-console
+                    console.debug('useReschedulePixelEyeFollowUpMutation - onError', err);
+                }
+                enqueueSnackbar(err?.response?.data?.message || err?.message || 'Failed to reschedule follow-up', {
+                    variant: 'error',
+                });
+            },
+        }
+    );
+};
+
+export const useCancelPixelEyeFollowUpMutation = () => {
+    const queryClient = useQueryClient();
+    const { enqueueSnackbar } = useSnackbar();
+
+    return useMutation(
+        ({ id, ...payload }: CancelPixelEyeFollowUpPayload) => {
+            if (process.env.NODE_ENV !== 'production') {
+                // eslint-disable-next-line no-console
+                console.debug('useCancelPixelEyeFollowUpMutation - request', id, payload);
+            }
+            return _axios('patch', `/pixeleye/${id}/follow-up/cancel`, payload).then((res) => {
+                if (process.env.NODE_ENV !== 'production') {
+                    // eslint-disable-next-line no-console
+                    console.debug('useCancelPixelEyeFollowUpMutation - response', res);
+                }
+                return res;
+            });
+        },
+        {
+            onSuccess: (data) => {
+                if (process.env.NODE_ENV !== 'production') {
+                    // eslint-disable-next-line no-console
+                    console.debug('useCancelPixelEyeFollowUpMutation - onSuccess', data);
+                }
+                enqueueSnackbar('Follow-up closed/cancelled', { variant: 'success' });
+                queryClient.invalidateQueries(['pixelEyeLeads']);
+                try {
+                    queryClient.refetchQueries(['pixelEyeLeads']);
+                } catch (e) {}
+            },
+            onError: (err: any) => {
+                if (process.env.NODE_ENV !== 'production') {
+                    // eslint-disable-next-line no-console
+                    console.debug('useCancelPixelEyeFollowUpMutation - onError', err);
+                }
+                enqueueSnackbar(err?.response?.data?.message || err?.message || 'Failed to cancel follow-up', {
+                    variant: 'error',
+                });
             },
         }
     );

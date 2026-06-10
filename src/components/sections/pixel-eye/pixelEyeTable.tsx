@@ -4,7 +4,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import { useState, useMemo } from 'react';
-import { ALL_STATUSES } from './pixelEyeStatuses';
+import { ALL_STATUSES, getDayDropdownStatuses, isStatusTerminalForDays } from './pixelEyeStatuses';
 import IconifyIcon from 'components/base/IconifyIcon';
 
 const DAY_FIELDS = ['day_1', 'day_2', 'day_3', 'day_4', 'day_5'] as const;
@@ -17,6 +17,8 @@ export interface PixelEyeRow {
     customer_name?: string;
     phone_number?: string;
     agent_name?: string;
+    source?: string;
+    type_of_enquiry?: string;
     follow_up_date?: string;
     status?: string;
     day_1?: string;
@@ -24,6 +26,10 @@ export interface PixelEyeRow {
     day_3?: string;
     day_4?: string;
     day_5?: string;
+    createdAt?: string;
+    updatedAt?: string;
+    created_at?: string;
+    updated_at?: string;
 }
 
 interface PixelEyeTableProps {
@@ -66,8 +72,25 @@ const StatusCell = ({ value, onChange }: { value: string; onChange: (val: string
     );
 };
 
-const DayCell = ({ value, onChange }: { value: string; onChange: (val: string) => void }) => {
+const DayCell = ({
+    value,
+    onChange,
+    dayNumber,
+    disabled,
+}: {
+    value: string;
+    onChange: (val: string) => void;
+    dayNumber: number;
+    disabled?: boolean;
+}) => {
     const [editing, setEditing] = useState(false);
+    const statuses = getDayDropdownStatuses(dayNumber);
+    console.log("DayCell rendered - dayNumber:", dayNumber, "statuses:", statuses);
+
+    if (disabled) {
+        return <span style={{ color: '#aaa', cursor: 'not-allowed' }}>{value || '—'}</span>;
+    }
+
     return editing ? (
         <Select
             value={value || ''}
@@ -84,7 +107,7 @@ const DayCell = ({ value, onChange }: { value: string; onChange: (val: string) =
             size="medium"
             sx={{ minWidth: 120, minHeight: 48 }}
         >
-            {ALL_STATUSES.map(status => (
+            {statuses.map(status => (
                 <MenuItem key={status} value={status}>{status}</MenuItem>
             ))}
         </Select>
@@ -178,13 +201,35 @@ const getColumns = (
                 <StatusCell value={params.value} onChange={val => onStatusChange(params.row.id, val)} />
             ),
         },
-        ...DAY_FIELDS.map(day => ({
+        ...DAY_FIELDS.map((day, idx) => ({
             field: day,
             headerName: day.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()),
             flex: 1,
-            renderCell: (params: any) => (
-                <DayCell value={params.value} onChange={val => onDayChange(params.row.id, day, val)} />
-            ),
+            renderCell: (params: any) => {
+                const dayNumber = idx + 1;
+                let isParentTerminal = false;
+
+                if (isStatusTerminalForDays(params.row.status)) {
+                    isParentTerminal = true;
+                }
+
+                for (let i = 0; i < idx; i++) {
+                    const priorDayField = DAY_FIELDS[i];
+                    const priorValue = params.row[priorDayField];
+                    if (isStatusTerminalForDays(priorValue)) {
+                        isParentTerminal = true;
+                    }
+                }
+
+                return (
+                    <DayCell
+                        value={params.value}
+                        onChange={val => onDayChange(params.row.id, day, val)}
+                        dayNumber={dayNumber}
+                        disabled={isParentTerminal}
+                    />
+                );
+            },
         })),
         {
             field: 'actions',

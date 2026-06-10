@@ -11,11 +11,21 @@ export interface LeadRecord {
     type_of_enquiry?: string | null;
     follow_up_date?: string | null;
     status?: string | null;
+    followup_state?: 'scheduled' | 'completed' | 'cancelled' | 'baseline' | 'new' | null;
+    reminder_schedule_type?: 'THIRTY_MIN' | 'DNP2' | 'TWENTY_FOUR_HR' | 'MANUAL' | null;
+    reminder_scheduled_at?: string | null;
+    reminder_notification_sent?: boolean | null;
+    reminder_notification_sent_at?: string | null;
+    reminder_reason?: string | null;
+    reminder_permanently_closed?: boolean | null;
+    reminder_cancel_reason?: string | null;
     day_1?: string | null;
     day_2?: string | null;
     day_3?: string | null;
     day_4?: string | null;
     day_5?: string | null;
+    createdAt?: string | null;
+    updatedAt?: string | null;
     created_at?: string | null;
     updated_at?: string | null;
 }
@@ -69,6 +79,9 @@ export interface FollowUpReminder {
     agent_name: string;
     status: string;
     follow_up_date: string;
+    followup_state?: string | null;
+    source?: string;
+    type_of_enquiry?: string;
     daysRelative: number; // negative = overdue, 0 = today, positive = upcoming
 }
 
@@ -79,6 +92,40 @@ export interface FollowUpMetrics {
     overdueLeads: FollowUpReminder[];
     todayLeads: FollowUpReminder[];
     upcomingLeads: FollowUpReminder[];
+}
+
+export interface FollowUpBuckets {
+    overdueCount: number;
+    todayCount: number;
+    tomorrowCount: number;
+    weekCount: number;
+    allCount: number;
+    overdueLeads: FollowUpReminder[];
+    todayLeads: FollowUpReminder[];
+    tomorrowLeads: FollowUpReminder[];
+    weekLeads: FollowUpReminder[];
+    allLeads: FollowUpReminder[];
+}
+
+export interface FollowUpPageBuckets {
+    overdueCount: number;
+    todayCount: number;
+    tomorrowCount: number;
+    weekCount: number;
+    allCount: number;
+    overdueLeads: FollowUpReminder[];
+    todayLeads: FollowUpReminder[];
+    tomorrowLeads: FollowUpReminder[];
+    weekLeads: FollowUpReminder[];
+    allLeads: FollowUpReminder[];
+}
+
+export interface FollowUpBucketSection {
+    key: 'overdue' | 'today' | 'tomorrow' | 'week' | 'all';
+    label: string;
+    count: number;
+    accent: string;
+    leads: FollowUpReminder[];
 }
 
 export interface SourceBreakdownItem {

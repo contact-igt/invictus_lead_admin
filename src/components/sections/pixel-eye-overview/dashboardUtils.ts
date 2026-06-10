@@ -1,7 +1,8 @@
 import {
   DashboardFilters,
   DashboardMetrics,
-  FollowUpMetrics,
+  FollowUpBuckets,
+  FollowUpPageBuckets,
   FollowUpReminder,
   HighPriorityLead,
   LeadRecord,
@@ -43,6 +44,14 @@ const INVALID_SET = new Set([
   'Incoming Call Not Available',
   'Number Not in Service',
   'DND',
+].map((s) => s.toLowerCase()));
+
+const TERMINAL_STATUS_SET = new Set([
+  ...Array.from(CONVERTED_SET),
+  ...Array.from(LOST_SET),
+  ...Array.from(INVALID_SET),
+  'converted',
+  'invalid',
 ].map((s) => s.toLowerCase()));
 
 const INTERESTED_SET = new Set([
@@ -88,6 +97,63 @@ const todayIso = (): string => {
   return `${year}-${month}-${day}`;
 };
 
+const startOfLocalDay = (isoDate: string): Date => {
+  const date = new Date(isoDate);
+  date.setHours(0, 0, 0, 0);
+  return date;
+};
+
+const endOfWeekIso = (isoDate: string): string => {
+  const date = startOfLocalDay(isoDate);
+  const day = date.getDay();
+  const deltaToSunday = 7 - day;
+  date.setDate(date.getDate() + deltaToSunday);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const dayOfMonth = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${dayOfMonth}`;
+};
+
+const parseDateTime = (value?: string | null): number => {
+  const text = normalizeText(value);
+  if (!text) return 0;
+  const parsed = new Date(text);
+  return Number.isNaN(parsed.getTime()) ? 0 : parsed.getTime();
+};
+
+const getLeadActivityTimestamp = (lead: LeadRecord): number => {
+  return (
+    parseDateTime(lead.updatedAt) ||
+    parseDateTime(lead.updated_at) ||
+    parseDateTime(lead.createdAt) ||
+    parseDateTime(lead.created_at)
+  );
+};
+
+const isValidFollowUpDate = (value?: string | null): boolean => Boolean(normalizeDate(value));
+
+const isHandledReminderState = (state?: string | null): boolean => {
+  const normalized = normalizeStatus(state);
+  return normalized === 'completed' || normalized === 'cancelled';
+};
+
+export const isTerminalFollowUpStatus = (status?: string | null): boolean => {
+  const normalized = normalizeStatus(status);
+  if (!normalized) return false;
+  return TERMINAL_STATUS_SET.has(normalized);
+};
+
+export const isFollowUpStatus = (status?: string | null): boolean => {
+  const normalized = normalizeStatus(status);
+  if (!normalized) return false;
+  return FOLLOW_UP_SET.has(normalized);
+};
+
+export const isFollowUpLead = (lead: LeadRecord): boolean => {
+  if (isHandledReminderState(lead.followup_state)) return false;
+  return !isTerminalFollowUpStatus(lead.status) && (isValidFollowUpDate(lead.follow_up_date) || isFollowUpStatus(lead.status));
+};
+
 export const getAvailableAgents = (leads: LeadRecord[]): string[] => {
   return Array.from(
     new Set(
@@ -103,7 +169,10 @@ export const applyDashboardFilters = (leads: LeadRecord[], filters: DashboardFil
   const normalizedAgent = normalizeText(agent).toLowerCase();
 
   return leads.filter((lead) => {
-    const leadDate = normalizeDate(lead.date);
+    const leadDate =
+      normalizeDate(lead.date) ||
+      normalizeDate(lead.createdAt) ||
+      normalizeDate(lead.created_at);
     const leadAgent = normalizeText(lead.agent_name).toLowerCase();
 
     const isAfterFrom = !dateFrom || (leadDate && leadDate >= dateFrom);
@@ -229,49 +298,159 @@ const addDays = (isoDate: string, days: number): string => {
 const daysBetween = (fromIso: string, toIso: string): number =>
   Math.round((new Date(toIso).getTime() - new Date(fromIso).getTime()) / 86400000);
 
-const buildFollowUpReminders = (leads: LeadRecord[]): FollowUpMetrics => {
+const buildFollowUpReminder = (lead: LeadRecord, today: string): FollowUpReminder => {
+  const followUpDate = normalizeDate(lead.follow_up_date) || '';
+
+  return {
+    id: lead.id,
+    customer_name: normalizeText(lead.customer_name) || 'Unknown',
+    phone_number: normalizeText(lead.phone_number) || 'N/A',
+    agent_name: normalizeText(lead.agent_name) || 'Unassigned',
+    status: normalizeText(lead.status) || 'N/A',
+    follow_up_date: followUpDate,
+    source: normalizeText(lead.source) || '',
+    type_of_enquiry: normalizeText(lead.type_of_enquiry) || '',
+    daysRelative: daysBetween(today, followUpDate),
+  };
+};
+
+export const buildFollowUpBuckets = (leads: LeadRecord[]): FollowUpBuckets => {
   const today = todayIso();
   const in7Days = addDays(today, 7);
+  const tomorrow = addDays(today, 1);
 
   const leadsWithDate = leads.filter((lead) => Boolean(normalizeDate(lead.follow_up_date)));
 
+  const overdue = leadsWithDate
+    .filter((lead) => normalizeDate(lead.follow_up_date)! < today)
+    .sort((a, b) => normalizeDate(a.follow_up_date)!.localeCompare(normalizeDate(b.follow_up_date)!))
+    .map((lead) => buildFollowUpReminder(lead, today));
+
+  const todayLeads = leadsWithDate
+    .filter((lead) => normalizeDate(lead.follow_up_date) === today)
+    .map((lead) => buildFollowUpReminder(lead, today));
+
+  const tomorrowLeads = leadsWithDate
+    .filter((lead) => normalizeDate(lead.follow_up_date) === tomorrow)
+    .sort((a, b) => normalizeDate(a.follow_up_date)!.localeCompare(normalizeDate(b.follow_up_date)!))
+    .map((lead) => buildFollowUpReminder(lead, today));
+
+  const upcoming = leadsWithDate
+    .filter((lead) => {
+      const fud = normalizeDate(lead.follow_up_date)!;
+      return fud > tomorrow && fud <= in7Days;
+    })
+    .sort((a, b) => normalizeDate(a.follow_up_date)!.localeCompare(normalizeDate(b.follow_up_date)!))
+    .map((lead) => buildFollowUpReminder(lead, today));
+
+  const all = leadsWithDate
+    .slice()
+    .sort((a, b) => {
+      const aDate = normalizeDate(a.follow_up_date) || '9999-12-31';
+      const bDate = normalizeDate(b.follow_up_date) || '9999-12-31';
+      return aDate.localeCompare(bDate) || normalizeText(a.customer_name).localeCompare(normalizeText(b.customer_name));
+    })
+    .map((lead) => buildFollowUpReminder(lead, today));
+
+  return {
+    overdueCount: overdue.length,
+    todayCount: todayLeads.length,
+    tomorrowCount: tomorrowLeads.length,
+    weekCount: upcoming.length,
+    allCount: all.length,
+    overdueLeads: overdue,
+    todayLeads,
+    tomorrowLeads,
+    weekLeads: upcoming,
+    allLeads: all,
+  };
+};
+
+export const buildFollowUpPageBuckets = (leads: LeadRecord[]): FollowUpPageBuckets => {
+  const today = todayIso();
+  const tomorrow = addDays(today, 1);
+  const weekEnd = endOfWeekIso(today);
+
+  const followUpLeads = leads.filter((lead) => isFollowUpLead(lead));
+  const dateBasedLeads = followUpLeads.filter((lead) => isValidFollowUpDate(lead.follow_up_date));
+
   const toReminder = (lead: LeadRecord): FollowUpReminder => {
-    const fud = normalizeDate(lead.follow_up_date) || '';
+    const followUpDate = normalizeDate(lead.follow_up_date) || '';
     return {
       id: lead.id,
       customer_name: normalizeText(lead.customer_name) || 'Unknown',
       phone_number: normalizeText(lead.phone_number) || 'N/A',
       agent_name: normalizeText(lead.agent_name) || 'Unassigned',
       status: normalizeText(lead.status) || 'N/A',
-      follow_up_date: fud,
-      daysRelative: daysBetween(today, fud),
+      follow_up_date: followUpDate,
+      followup_state: normalizeText(lead.followup_state) || '',
+      source: normalizeText(lead.source) || '',
+      type_of_enquiry: normalizeText(lead.type_of_enquiry) || '',
+      daysRelative: daysBetween(today, followUpDate || today),
     };
   };
 
-  const overdue = leadsWithDate
+  const sortByDateThenActivity = (a: LeadRecord, b: LeadRecord) => {
+    const aDate = normalizeDate(a.follow_up_date) || '9999-12-31';
+    const bDate = normalizeDate(b.follow_up_date) || '9999-12-31';
+    if (aDate !== bDate) return aDate.localeCompare(bDate);
+
+    const aTs = getLeadActivityTimestamp(a);
+    const bTs = getLeadActivityTimestamp(b);
+    if (aTs !== bTs) return bTs - aTs;
+
+    return normalizeText(a.customer_name).localeCompare(normalizeText(b.customer_name));
+  };
+
+  const overdue = dateBasedLeads
     .filter((lead) => normalizeDate(lead.follow_up_date)! < today)
-    .sort((a, b) => normalizeDate(a.follow_up_date)!.localeCompare(normalizeDate(b.follow_up_date)!))
+    .sort(sortByDateThenActivity)
     .map(toReminder);
 
-  const todayLeads = leadsWithDate
+  const todayLeads = dateBasedLeads
     .filter((lead) => normalizeDate(lead.follow_up_date) === today)
+    .sort(sortByDateThenActivity)
     .map(toReminder);
 
-  const upcoming = leadsWithDate
+  const tomorrowLeads = dateBasedLeads
+    .filter((lead) => normalizeDate(lead.follow_up_date) === tomorrow)
+    .sort(sortByDateThenActivity)
+    .map(toReminder);
+
+  const weekLeads = dateBasedLeads
     .filter((lead) => {
-      const fud = normalizeDate(lead.follow_up_date)!;
-      return fud > today && fud <= in7Days;
+      const followUpDate = normalizeDate(lead.follow_up_date)!;
+      return followUpDate > tomorrow && followUpDate <= weekEnd;
     })
-    .sort((a, b) => normalizeDate(a.follow_up_date)!.localeCompare(normalizeDate(b.follow_up_date)!))
+    .sort(sortByDateThenActivity)
+    .map(toReminder);
+
+  const allLeads = followUpLeads
+    .slice()
+    .sort((a, b) => {
+      const aTs = getLeadActivityTimestamp(a);
+      const bTs = getLeadActivityTimestamp(b);
+      if (aTs !== bTs) return bTs - aTs;
+
+      const aDate = normalizeDate(a.follow_up_date) || '9999-12-31';
+      const bDate = normalizeDate(b.follow_up_date) || '9999-12-31';
+      if (aDate !== bDate) return aDate.localeCompare(bDate);
+
+      return normalizeText(a.customer_name).localeCompare(normalizeText(b.customer_name));
+    })
     .map(toReminder);
 
   return {
     overdueCount: overdue.length,
     todayCount: todayLeads.length,
-    upcomingCount: upcoming.length,
-    overdueLeads: overdue.slice(0, 6),
-    todayLeads: todayLeads.slice(0, 6),
-    upcomingLeads: upcoming.slice(0, 6),
+    tomorrowCount: tomorrowLeads.length,
+    weekCount: weekLeads.length,
+    allCount: allLeads.length,
+    overdueLeads: overdue,
+    todayLeads,
+    tomorrowLeads,
+    weekLeads,
+    allLeads,
   };
 };
 
@@ -318,6 +497,7 @@ export const buildDashboardMetrics = (leads: LeadRecord[]): DashboardMetrics => 
   }).length;
 
   const highPriority = buildHighPriorityLeads(leads);
+  const followUpBuckets = buildFollowUpBuckets(leads);
 
   return {
     kpis: {
@@ -336,6 +516,13 @@ export const buildDashboardMetrics = (leads: LeadRecord[]): DashboardMetrics => 
       highPriorityCount: highPriority.totalCount,
       highPriorityLeads: highPriority.leads,
     },
-    followUps: buildFollowUpReminders(leads),
+    followUps: {
+      overdueCount: followUpBuckets.overdueCount,
+      todayCount: followUpBuckets.todayCount,
+      upcomingCount: followUpBuckets.weekCount,
+      overdueLeads: followUpBuckets.overdueLeads.slice(0, 6),
+      todayLeads: followUpBuckets.todayLeads.slice(0, 6),
+      upcomingLeads: followUpBuckets.weekLeads.slice(0, 6),
+    },
   };
 };

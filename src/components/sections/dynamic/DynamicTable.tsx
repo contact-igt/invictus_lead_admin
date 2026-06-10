@@ -1,11 +1,12 @@
 import { useState, useMemo, useEffect } from 'react';
 import { DataGrid, GridColDef, useGridApiRef, GridApi } from '@mui/x-data-grid';
-import { Chip, Box, Typography, Menu, MenuItem } from '@mui/material';
+import { Chip, Box, Typography, Menu, MenuItem, Tooltip } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import DataGridFooter from 'components/common/DataGridFooter';
 import ActionMenu from 'components/sections/ActionMenu';
 import dayjs from 'dayjs';
 import { TableConfig, ColumnConfig } from 'config/clients';
+import { getDayDropdownStatuses, isStatusTerminalForDays } from 'components/sections/pixel-eye/pixelEyeStatuses';
 
 interface DynamicTableProps {
   config: TableConfig;
@@ -25,6 +26,7 @@ const InlineEnumCell = ({
   header,
   options,
   onUpdate,
+  disabled,
 }: {
   value: string | null | undefined;
   rowId: number | string;
@@ -32,27 +34,43 @@ const InlineEnumCell = ({
   header: string;
   options: string[];
   onUpdate: (id: number | string, field: string, value: string) => void;
+  disabled?: boolean;
 }) => {
   const [anchor, setAnchor] = useState<null | HTMLElement>(null);
+  const isBlockedEmpty = disabled && !value;
+  const label = isBlockedEmpty ? '-' : value || `Set ${header}`;
+
+  const chip = (
+    <Chip
+      label={label}
+      size="small"
+      color={disabled ? 'default' : value ? 'primary' : 'default'}
+      variant={isBlockedEmpty ? 'filled' : value ? 'filled' : 'outlined'}
+      onClick={(e) => {
+        e.stopPropagation();
+        if (disabled) return;
+        setAnchor(e.currentTarget);
+      }}
+      sx={{
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        fontWeight: 600,
+        fontSize: isBlockedEmpty ? '0.8rem' : '0.72rem',
+        maxWidth: 220,
+        opacity: disabled ? 0.65 : 1,
+        ...(isBlockedEmpty && { minWidth: 28, px: 0 }),
+      }}
+    />
+  );
 
   return (
     <>
-      <Chip
-        label={value || `Set ${header}`}
-        size="small"
-        color={value ? 'primary' : 'default'}
-        variant={value ? 'filled' : 'outlined'}
-        onClick={(e) => {
-          e.stopPropagation();
-          setAnchor(e.currentTarget);
-        }}
-        sx={{
-          cursor: 'pointer',
-          fontWeight: 600,
-          fontSize: '0.72rem',
-          maxWidth: 170,
-        }}
-      />
+      {isBlockedEmpty ? (
+        <Tooltip title="No next follow-up needed" arrow>
+          {chip}
+        </Tooltip>
+      ) : (
+        chip
+      )}
       <Menu
         anchorEl={anchor}
         open={Boolean(anchor)}
@@ -100,6 +118,27 @@ const normalizeInlineDate = (value: unknown) => {
 
   const parsed = dayjs(text);
   return parsed.isValid() ? parsed.format('YYYY-MM-DD') : '';
+};
+
+const DAY_FIELDS = ['day_1', 'day_2', 'day_3', 'day_4', 'day_5'];
+
+const getDayIndex = (field: string) => DAY_FIELDS.indexOf(field);
+
+const isDayFieldLocked = (row: Record<string, any>, field: string) => {
+  const dayIndex = getDayIndex(field);
+  if (dayIndex < 0) return false;
+
+  if (isStatusTerminalForDays(row.status)) {
+    return true;
+  }
+
+  for (let i = 0; i < dayIndex; i++) {
+    if (isStatusTerminalForDays(row[DAY_FIELDS[i]])) {
+      return true;
+    }
+  }
+
+  return false;
 };
 
 const InlineDateCell = ({
@@ -180,16 +219,27 @@ const DynamicTable = ({ config, data, searchText, isLoading, onInlineUpdate, onE
 
       // Handle custom renderers based on field type
       if ((col.type === 'status_chip' || col.type === 'select') && col.options?.length) {
-        baseCol.renderCell = (params) => (
-          <InlineEnumCell
-            value={params.value}
-            rowId={params.row.id}
-            field={col.field}
-            header={col.header}
-            options={col.options || []}
-            onUpdate={onInlineUpdate}
-          />
-        );
+        baseCol.renderCell = (params) => {
+          let options = col.options || [];
+          const isDayField = /^day_[1-5]$/.test(col.field);
+          if (isDayField) {
+            const dayNumber = parseInt(col.field.replace('day_', ''), 10);
+            options = getDayDropdownStatuses(dayNumber);
+          }
+          const disabled = isDayFieldLocked(params.row, col.field);
+
+          return (
+            <InlineEnumCell
+              value={params.value}
+              rowId={params.row.id}
+              field={col.field}
+              header={col.header}
+              options={options}
+              onUpdate={onInlineUpdate}
+              disabled={disabled}
+            />
+          );
+        };
       } else if (col.type === 'date') {
         if (col.field === 'follow_up_date') {
           baseCol.renderCell = (params) => (

@@ -10,6 +10,7 @@ import {
   Tooltip,
   CircularProgress,
   Alert,
+  Button,
 } from '@mui/material';
 import {
   DataGrid,
@@ -24,6 +25,7 @@ import DataGridFooter from 'components/common/DataGridFooter';
 
 interface NotificationTrackerProps {
   clientKey?: string;
+  searchText?: string;
 }
 
 const STATE_COLORS: Record<string, 'default' | 'warning' | 'success' | 'error' | 'info'> = {
@@ -38,7 +40,25 @@ const SCHEDULE_TYPE_LABELS: Record<string, string> = {
   THIRTY_MIN:     '30 Min',
   DNP2:           'DNP2 24hr',
   TWENTY_FOUR_HR: '24hr Follow-up',
+  MANUAL:         'Manual Follow-up',
 };
+
+const normalizeDateForCompare = (value?: string | null): string => {
+  const text = String(value || '').trim();
+  if (!text) return '';
+
+  const directDate = text.match(/^\d{4}-\d{2}-\d{2}/);
+  if (directDate) return directDate[0];
+
+  const parsed = dayjs(text);
+  return parsed.isValid() ? parsed.format('YYYY-MM-DD') : '';
+};
+
+const getNotificationFilterDate = (notification: any): string =>
+  normalizeDateForCompare(notification.scheduled_at) ||
+  normalizeDateForCompare(notification.notification_sent_at) ||
+  normalizeDateForCompare(notification.createdAt) ||
+  normalizeDateForCompare(notification.created_at);
 
 const SummaryCard = ({
   label,
@@ -70,9 +90,11 @@ const SummaryCard = ({
   </Paper>
 );
 
-const NotificationTracker = ({ clientKey }: NotificationTrackerProps) => {
+const NotificationTracker = ({ clientKey, searchText }: NotificationTrackerProps) => {
   const [stateFilter, setStateFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
 
   const {
     data: notifications = [],
@@ -90,9 +112,43 @@ const NotificationTracker = ({ clientKey }: NotificationTrackerProps) => {
     return notifications.filter((n) => {
       if (stateFilter && n.state !== stateFilter) return false;
       if (typeFilter && n.schedule_type !== typeFilter) return false;
+
+      if (dateFrom || dateTo) {
+        const notificationDate = getNotificationFilterDate(n);
+        if (!notificationDate) return false;
+        if (dateFrom && notificationDate < dateFrom) return false;
+        if (dateTo && notificationDate > dateTo) return false;
+      }
+
+      if (searchText) {
+        const query = searchText.toLowerCase();
+        const callId = String(n.call_id || '').toLowerCase();
+        const customerName = String(n.customer_name || '').toLowerCase();
+        const agentName = String(n.agent_name || '').toLowerCase();
+        const lastStatus = String(n.last_status || '').toLowerCase();
+        const cancelReason = String(n.cancel_reason || '').toLowerCase();
+        const state = String(n.state || '').toLowerCase();
+        const scheduleType = String(n.schedule_type || '').toLowerCase();
+
+        return (
+          callId.includes(query) ||
+          customerName.includes(query) ||
+          agentName.includes(query) ||
+          lastStatus.includes(query) ||
+          cancelReason.includes(query) ||
+          state.includes(query) ||
+          scheduleType.includes(query)
+        );
+      }
+
       return true;
     });
-  }, [notifications, stateFilter, typeFilter]);
+  }, [dateFrom, dateTo, notifications, stateFilter, typeFilter, searchText]);
+
+  const handleClearDateFilter = () => {
+    setDateFrom('');
+    setDateTo('');
+  };
 
   const columns: GridColDef[] = [
     {
@@ -125,6 +181,23 @@ const NotificationTracker = ({ clientKey }: NotificationTrackerProps) => {
       align: 'center',
       headerAlign: 'center',
       renderCell: (p) => <Typography variant="body2">{p.value || '—'}</Typography>,
+    },
+    {
+      field: 'current_day',
+      headerName: 'Day',
+      flex: 0.6,
+      minWidth: 80,
+      align: 'center',
+      headerAlign: 'center',
+      renderCell: (p) => (
+        <Chip
+          label={p.value > 0 ? `Day ${p.value}` : 'Initial'}
+          size="small"
+          color={p.value > 0 ? 'primary' : 'default'}
+          variant="outlined"
+          sx={{ fontSize: '0.72rem' }}
+        />
+      ),
     },
     {
       field: 'last_status',
@@ -296,7 +369,42 @@ const NotificationTracker = ({ clientKey }: NotificationTrackerProps) => {
           <MenuItem value="THIRTY_MIN">30 Min</MenuItem>
           <MenuItem value="DNP2">DNP2 24hr</MenuItem>
           <MenuItem value="TWENTY_FOUR_HR">24hr Follow-up</MenuItem>
+          <MenuItem value="MANUAL">Manual Follow-up</MenuItem>
         </TextField>
+
+        <TextField
+          label="From Date"
+          type="date"
+          value={dateFrom}
+          onChange={(e) => setDateFrom(e.target.value)}
+          size="small"
+          InputLabelProps={{ shrink: true }}
+          sx={{ minWidth: 160 }}
+        />
+
+        <TextField
+          label="To Date"
+          type="date"
+          value={dateTo}
+          onChange={(e) => setDateTo(e.target.value)}
+          size="small"
+          InputLabelProps={{ shrink: true }}
+          sx={{ minWidth: 160 }}
+        />
+
+        {(dateFrom || dateTo) && (
+          <Button
+            variant="text"
+            onClick={handleClearDateFilter}
+            sx={{
+              borderRadius: 1,
+              textTransform: 'none',
+              fontWeight: 600,
+            }}
+          >
+            Clear Dates
+          </Button>
+        )}
 
         <Box sx={{ flex: 1 }} />
 

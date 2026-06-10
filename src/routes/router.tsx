@@ -19,6 +19,7 @@ const Signin = lazy(() => import('pages/authentication/Signin'));
 const UserManagement = lazy(() => import('pages/management'));
 const ClientManagement = lazy(() => import('pages/client'));
 const DynamicPage = lazy(() => import('pages/dynamic'));
+const PixelEyeFollowUpsPage = lazy(() => import('pages/pixel-eye/follow-ups'));
 const SettingsPage = lazy(() => import('pages/settings'));
 
 const router = createBrowserRouter(
@@ -83,6 +84,20 @@ const router = createBrowserRouter(
               element: <SettingsPage />,
             },
           ],
+        },
+        {
+          path: 'pixel-eye/follow-ups',
+          element: (
+            <Suspense fallback={<PageLoader />}>
+              <MainLayout>
+                <Suspense fallback={<PageLoader />}>
+                  <ProtectedRoute>
+                    <PixelEyeFollowUpsPage />
+                  </ProtectedRoute>
+                </Suspense>
+              </MainLayout>
+            </Suspense>
+          ),
         },
         // Auth routes
         {
