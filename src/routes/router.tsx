@@ -19,6 +19,8 @@ const Signin = lazy(() => import('pages/authentication/Signin'));
 const UserManagement = lazy(() => import('pages/management'));
 const ClientManagement = lazy(() => import('pages/client'));
 const DynamicPage = lazy(() => import('pages/dynamic'));
+const PixelEyePage = lazy(() => import('pages/pixel-eye'));
+const PixelEyeLeadDetailPage = lazy(() => import('pages/pixel-eye/lead-detail'));
 const PixelEyeFollowUpsPage = lazy(() => import('pages/pixel-eye/follow-ups'));
 const SettingsPage = lazy(() => import('pages/settings'));
 
@@ -72,6 +74,10 @@ const router = createBrowserRouter(
               element: <DynamicPage />,
             },
             {
+              path: paths.pixelEyeLeads,
+              element: <PixelEyePage />,
+            },
+            {
               path: paths.management,
               element: <UserManagement />,
             },
@@ -93,6 +99,20 @@ const router = createBrowserRouter(
                 <Suspense fallback={<PageLoader />}>
                   <ProtectedRoute>
                     <PixelEyeFollowUpsPage />
+                  </ProtectedRoute>
+                </Suspense>
+              </MainLayout>
+            </Suspense>
+          ),
+        },
+        {
+          path: paths.pixelEyeLeadDetail,
+          element: (
+            <Suspense fallback={<PageLoader />}>
+              <MainLayout>
+                <Suspense fallback={<PageLoader />}>
+                  <ProtectedRoute>
+                    <PixelEyeLeadDetailPage />
                   </ProtectedRoute>
                 </Suspense>
               </MainLayout>

@@ -8,27 +8,22 @@ import {
     UpdatePixelEyePayload,
 } from 'components/hooks/usePixelEyeQuery';
 import PixelEyeTable, { PixelEyeRow } from './pixelEyeTable';
-import PixelEyeForm, { PixelEyeFormValues } from './PixelEyeForm';
-import NotificationTracker from './NotificationTracker';
+import PixelEyeLeadDrawer, { PixelEyeLeadFormValues } from './PixelEyeLeadDrawer';
+import PixelEyeDeleteDrawer from './PixelEyeDeleteDrawer';
 import Paper from '@mui/material/Paper';
 import PageTitle from 'components/common/PageTitle';
 import PageLoader from 'components/loader/PageLoader';
-import { Popup } from 'components/common/Popup';
-import ConfirmAlert from 'components/common/ConfirmAlert';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
 import Button from '@mui/material/Button';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import { useState, useMemo } from 'react';
-import { Box, Grid, Typography, Paper as MuiPaper, TextField, MenuItem } from '@mui/material';
+import { Box, TextField, MenuItem } from '@mui/material';
 import { ALL_STATUSES } from './pixelEyeStatuses';
 import { useAuth } from 'redux/selectors/auth/authSelector';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { normalizeClientKey } from 'utils/clientKey';
 import { saveAs } from 'file-saver';
 import { useSnackbar } from 'notistack';
+
+const ENABLE_PIXEL_EYE_LEAD_DETAIL_NAVIGATION = true;
 
 const EXPORT_COLUMNS: Array<{ key: keyof PixelEyeRow; label: string; width: number }> = [
     { key: 'date', label: 'Date', width: 54 },
@@ -180,10 +175,14 @@ const buildSimplePdf = (rows: PixelEyeRow[], fromDate: string, toDate: string): 
     return new Blob([pdf], { type: 'application/pdf' });
 };
 
+const getMutationErrorMessage = (error: any, fallback: string) =>
+    error?.response?.data?.message || error?.message || fallback;
+
 
 const PixelEyeSection = () => {
     const { user } = useAuth();
     const { enqueueSnackbar } = useSnackbar();
+    const navigate = useNavigate();
     const { clientKey: urlClientKey } = useParams<{ clientKey?: string }>();
     const createMutation = useCreatePixelEyeMutation();
     const updateMutation = useUpdatePixelEyeMutation();
@@ -197,11 +196,10 @@ const PixelEyeSection = () => {
         user?.role === 'super-admin' ? activeClientKey : undefined,
     );
 
-    const [activeTab, setActiveTab] = useState<'leads' | 'notifications'>('leads');
     const [formOpen, setFormOpen] = useState(false);
     const [editRow, setEditRow] = useState<PixelEyeRow | null>(null);
-    const [openConfirmAlertModal, setOpenConfirmAlertModal] = useState(false);
-    const [selectedLeadId, setSelectedLeadId] = useState<number | null>(null);
+    const [deleteDrawerOpen, setDeleteDrawerOpen] = useState(false);
+    const [deleteRow, setDeleteRow] = useState<PixelEyeRow | null>(null);
     const [exportFromDate, setExportFromDate] = useState('');
     const [exportToDate, setExportToDate] = useState('');
     const [isExporting, setIsExporting] = useState(false);
@@ -216,18 +214,68 @@ const PixelEyeSection = () => {
         setFormOpen(true);
     };
 
-    const handleOpenConfirmAlertModal = (id: number) => {
-        setSelectedLeadId(id);
-        setOpenConfirmAlertModal(true);
+    const handleOpenLeadDetail = (row: PixelEyeRow) => {
+        navigate(`/pixel-eye/leads/${row.id}`);
+    };
+
+    const handleInlineStatusChange = (id: number, value: string) => {
+        updateMutation.mutate(
+            { id, status: value },
+            {
+                onError: (error: any) => {
+                    enqueueSnackbar(getMutationErrorMessage(error, 'Failed to update status'), { variant: 'error' });
+                },
+            },
+        );
+    };
+
+    const handleInlineDayChange = (id: number, day: string, value: string) => {
+        updateMutation.mutate(
+            {
+                id,
+                [day]: value,
+            },
+            {
+                onError: (error: any) => {
+                    enqueueSnackbar(getMutationErrorMessage(error, `Failed to update ${day.replace('_', ' ')}`), {
+                        variant: 'error',
+                    });
+                },
+            },
+        );
+    };
+
+    const handleInlineFollowUpDateChange = (id: number, value: string) => {
+        updateMutation.mutate(
+            {
+                id,
+                follow_up_date: value,
+            },
+            {
+                onError: (error: any) => {
+                    enqueueSnackbar(getMutationErrorMessage(error, 'Failed to update follow-up date'), {
+                        variant: 'error',
+                    });
+                },
+            },
+        );
+    };
+
+    const handleOpenDeleteDrawer = (row: PixelEyeRow) => {
+        setDeleteRow(row);
+        setDeleteDrawerOpen(true);
     };
 
     const handleDelete = () => {
-        if (!selectedLeadId) return;
+        if (!deleteRow?.id) return;
 
-        deleteMutation.mutate(selectedLeadId, {
+        deleteMutation.mutate(deleteRow.id, {
             onSuccess: () => {
-                setOpenConfirmAlertModal(false);
-                setSelectedLeadId(null);
+                setDeleteDrawerOpen(false);
+                setDeleteRow(null);
+            },
+            onError: (error: any) => {
+                enqueueSnackbar(getMutationErrorMessage(error, 'Failed to delete lead'), { variant: 'error' });
             },
         });
     };
@@ -237,54 +285,65 @@ const PixelEyeSection = () => {
         setEditRow(null);
     };
 
-    const buildLeadPayload = (values: PixelEyeFormValues): PixelEyeFormValues => {
+    const buildLeadPayload = (values: PixelEyeLeadFormValues): PixelEyeLeadFormValues => {
         const payload = { ...values };
         if (!String(payload.follow_up_date || '').trim()) {
             delete payload.follow_up_date;
         }
+        (['day_1', 'day_2', 'day_3', 'day_4', 'day_5'] as const).forEach((day) => {
+            if (!String(payload[day] || '').trim()) {
+                delete payload[day];
+            }
+        });
         return payload;
     };
 
-    const handleFormSubmit = (values: PixelEyeFormValues) => {
+    const handleFormSubmit = (values: PixelEyeLeadFormValues) => {
         const leadPayload = buildLeadPayload(values);
 
         if (editRow && editRow.id) {
             // Close only after the API call succeeds so the user sees errors if it fails.
             updateMutation.mutate(
                 { id: editRow.id, ...leadPayload } as UpdatePixelEyePayload,
-                { onSuccess: closeForm },
+                {
+                    onSuccess: closeForm,
+                    onError: (error: any) => {
+                        enqueueSnackbar(getMutationErrorMessage(error, 'Failed to save lead'), { variant: 'error' });
+                    },
+                },
             );
         } else {
             const payload: CreatePixelEyePayload = activeClientKey
                 ? { ...leadPayload, _client_key: activeClientKey }
                 : leadPayload;
-            createMutation.mutate(payload, { onSuccess: closeForm });
+            createMutation.mutate(payload, {
+                onSuccess: closeForm,
+                onError: (error: any) => {
+                    enqueueSnackbar(getMutationErrorMessage(error, 'Failed to create lead'), { variant: 'error' });
+                },
+            });
         }
     };
 
     const handleFormCancel = closeForm;
 
-
-    // --- Summary Bar ---
-    const today = new Date().toISOString().slice(0, 10);
-    const summary = useMemo(() => {
-        let total = leads.length;
-        let todayCount = leads.filter((l: PixelEyeRow) => l.date === today).length;
-        let followUp = leads.filter((l: PixelEyeRow) => l.status === 'Follow-up Required' || l.status === 'Hot Follow-up').length;
-        let appointments = leads.filter((l: PixelEyeRow) => l.status === 'Appointment Fixed').length;
-        let closed = leads.filter((l: PixelEyeRow) => l.status === 'Closed').length;
-        return { total, todayCount, followUp, appointments, closed };
-    }, [leads, today]);
-
     // --- Filtering ---
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
     const filteredLeads = useMemo(() => {
-        return leads.filter((l: PixelEyeRow) =>
-            (!search || l.customer_name?.toLowerCase().includes(search.toLowerCase()) || l.phone_number?.includes(search)) &&
-            (!statusFilter || l.status === statusFilter)
-        );
-    }, [leads, search, statusFilter]);
+        return leads.filter((lead: PixelEyeRow) => {
+            const matchesSearch =
+                !search ||
+                lead.customer_name?.toLowerCase().includes(search.toLowerCase()) ||
+                lead.phone_number?.includes(search);
+            const matchesStatus = !statusFilter || lead.status === statusFilter;
+            const leadDate = getLeadBusinessDate(lead);
+            const matchesDateFrom = !exportFromDate || (Boolean(leadDate) && leadDate >= exportFromDate);
+            const matchesDateTo = !exportToDate || (Boolean(leadDate) && leadDate <= exportToDate);
+
+            return matchesSearch && matchesStatus && matchesDateFrom && matchesDateTo;
+        });
+    }, [exportFromDate, exportToDate, leads, search, statusFilter]);
 
     const getExportRows = (): PixelEyeRow[] | null => {
         if (!exportFromDate || !exportToDate) {
@@ -297,10 +356,7 @@ const PixelEyeSection = () => {
             return null;
         }
 
-        const rows = filteredLeads.filter((lead: PixelEyeRow) => {
-            const leadDate = getLeadBusinessDate(lead);
-            return Boolean(leadDate) && leadDate >= exportFromDate && leadDate <= exportToDate;
-        });
+        const rows = filteredLeads;
 
         if (rows.length === 0) {
             enqueueSnackbar('No leads found for selected date range', { variant: 'info' });
@@ -345,33 +401,10 @@ const PixelEyeSection = () => {
         <Paper sx={{ p: 2, width: '100%' }}>
             <PageTitle title="PixelEye Dashboard" />
 
-            {/* --- Tab Switcher --- */}
-            <Tabs
-                value={activeTab}
-                onChange={(_e, v) => setActiveTab(v)}
-                sx={{ mb: 3, borderBottom: '1px solid', borderColor: 'divider' }}
-            >
-                <Tab label="Leads" value="leads" />
-                <Tab label="Notification Tracker" value="notifications" />
-            </Tabs>
-
-            {/* --- Notification Tracker View --- */}
-            {activeTab === 'notifications' && (
-                <NotificationTracker clientKey={user?.role === 'super-admin' ? activeClientKey : undefined} />
-            )}
 
             {/* --- Leads View --- */}
-            {activeTab === 'leads' && <>
-            {/* --- Summary Bar --- */}
-            <MuiPaper elevation={2} sx={{ mb: 3, p: 2, background: '#6a6d70ff' }}>
-                <Grid container spacing={2} justifyContent="space-between">
-                    <Grid item xs={6} sm={2}><Typography variant="subtitle2">Total</Typography><Typography variant="h5">{summary.total}</Typography></Grid>
-                    <Grid item xs={6} sm={2}><Typography variant="subtitle2">Today</Typography><Typography variant="h5">{summary.todayCount}</Typography></Grid>
-                    <Grid item xs={6} sm={2}><Typography variant="subtitle2">Follow-up</Typography><Typography variant="h5">{summary.followUp}</Typography></Grid>
-                    <Grid item xs={6} sm={2}><Typography variant="subtitle2">Appointments</Typography><Typography variant="h5">{summary.appointments}</Typography></Grid>
-                    <Grid item xs={6} sm={2}><Typography variant="subtitle2">Closed</Typography><Typography variant="h5">{summary.closed}</Typography></Grid>
-                </Grid>
-            </MuiPaper>
+            
+ 
 
             {/* --- Filters --- */}
             <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -409,6 +442,17 @@ const PixelEyeSection = () => {
                     size="small"
                     InputLabelProps={{ shrink: true }}
                 />
+                {(exportFromDate || exportToDate) && (
+                    <Button
+                        variant="text"
+                        onClick={() => {
+                            setExportFromDate('');
+                            setExportToDate('');
+                        }}
+                    >
+                        Clear Dates
+                    </Button>
+                )}
                 <Button
                     variant="outlined"
                     onClick={handleExportCsv}
@@ -431,52 +475,33 @@ const PixelEyeSection = () => {
             <PixelEyeTable
                 rows={filteredLeads}
                 onEdit={handleEdit}
-                onDelete={handleOpenConfirmAlertModal}
-                onStatusChange={(id, value) => updateMutation.mutate({ id, status: value })}
-                onDayChange={(id, day, value) => updateMutation.mutate({
-                    id,
-                    [day]: value,
-                })}
-                onFollowUpDateChange={(id, value) =>
-                    updateMutation.mutate({
-                        id,
-                        follow_up_date: value,
-                    })
-                }
+                onDelete={handleOpenDeleteDrawer}
+                onStatusChange={handleInlineStatusChange}
+                onDayChange={handleInlineDayChange}
+                onFollowUpDateChange={handleInlineFollowUpDateChange}
+                onRowClick={ENABLE_PIXEL_EYE_LEAD_DETAIL_NAVIGATION ? handleOpenLeadDetail : undefined}
             />
 
-            <Popup
-                open={openConfirmAlertModal}
-                onClose={() => {
-                    setOpenConfirmAlertModal(false);
-                    setSelectedLeadId(null);
-                }}
-                showOnClose={false}
-            >
-                <ConfirmAlert
-                    title="Are you sure you want to delete this lead?"
-                    onConfirm={handleDelete}
-                    onCancel={() => {
-                        setOpenConfirmAlertModal(false);
-                        setSelectedLeadId(null);
-                    }}
-                    isLoading={deleteMutation.isLoading}
-                />
-            </Popup>
-
             {/* --- Dialog --- */}
-            </>}
-            <Dialog open={formOpen} onClose={handleFormCancel} maxWidth="sm" fullWidth>
-                <DialogTitle>{editRow ? 'Edit Lead' : 'Add Lead'}</DialogTitle>
-                <DialogContent>
-                    <PixelEyeForm
-                        initialValues={editRow || undefined}
-                        onSubmit={handleFormSubmit}
-                        onCancel={handleFormCancel}
-                        isLoading={createMutation.isLoading || updateMutation.isLoading}
-                    />
-                </DialogContent>
-            </Dialog>
+            
+            <PixelEyeLeadDrawer
+                mode={editRow ? 'edit' : 'create'}
+                open={formOpen}
+                lead={editRow}
+                onClose={handleFormCancel}
+                onSubmit={handleFormSubmit}
+                isLoading={createMutation.isLoading || updateMutation.isLoading}
+            />
+            <PixelEyeDeleteDrawer
+                open={deleteDrawerOpen}
+                lead={deleteRow}
+                onClose={() => {
+                    setDeleteDrawerOpen(false);
+                    setDeleteRow(null);
+                }}
+                onConfirm={handleDelete}
+                isLoading={deleteMutation.isLoading}
+            />
         </Paper>
     );
 };

@@ -4,6 +4,7 @@ import { _axios } from 'helper/axios';
 
 export interface PixelEyeLead {
     id: number;
+    client_id?: number | null;
     date?: string;
     time?: string;
     call_id?: string;
@@ -19,6 +20,7 @@ export interface PixelEyeLead {
     source?: string;
     type_of_enquiry?: string;
     follow_up_date?: string;
+    follow_up_change_count?: number | string | null;
     followup_state?: string | null;
     reminder_schedule_type?: string | null;
     reminder_scheduled_at?: string | null;
@@ -27,6 +29,10 @@ export interface PixelEyeLead {
     reminder_reason?: string | null;
     reminder_permanently_closed?: boolean | null;
     reminder_cancel_reason?: string | null;
+    createdAt?: string | null;
+    updatedAt?: string | null;
+    created_at?: string | null;
+    updated_at?: string | null;
 }
 
 export interface CreatePixelEyePayload {
@@ -40,6 +46,11 @@ export interface CreatePixelEyePayload {
     source?: string;
     type_of_enquiry?: string;
     follow_up_date?: string;
+    day_1?: string;
+    day_2?: string;
+    day_3?: string;
+    day_4?: string;
+    day_5?: string;
     _client_key?: string;
 }
 
@@ -79,6 +90,27 @@ export interface CancelPixelEyeFollowUpPayload {
     reason?: string;
 }
 
+export interface PixelEyeFollowUpCallComplianceRow {
+    id: number;
+    lead_id?: number | null;
+    call_id?: string | null;
+    phone_number?: string | null;
+    normalized_phone_number?: string | null;
+    customer_name?: string | null;
+    agent_name?: string | null;
+    scheduled_follow_up_date?: string | null;
+    scheduled_follow_up_at?: string | null;
+    allowed_until?: string | null;
+    compliance_status?: string | null;
+    matched_call_log_id?: number | null;
+    matched_call_id?: string | null;
+    matched_call_started_at?: string | null;
+    reason?: string | null;
+    source?: string | null;
+    created_at?: string | null;
+    updated_at?: string | null;
+}
+
 // clientKey is included in the query key so super-admin switching between clients
 // gets a fresh fetch instead of returning the previous client's cached data.
 export const usePixelEyeQuery = (clientKey?: string) =>
@@ -109,6 +141,42 @@ export const usePixelEyeQuery = (clientKey?: string) =>
         }
         return (res ?? []) as PixelEyeLead[];
     });
+
+export const usePixelEyeMissedFollowUpsQuery = (clientKey?: string) =>
+    useQuery<PixelEyeFollowUpCallComplianceRow[]>(['pixelEyeMissedFollowUps', clientKey ?? null], async () => {
+        const params = clientKey ? { _client_key: clientKey } : undefined;
+        const res = await _axios('get', '/pixeleye/follow-ups/missed-calls', undefined, 'application/json', params);
+        if (Array.isArray(res)) {
+            return res as PixelEyeFollowUpCallComplianceRow[];
+        }
+        if (Array.isArray(res?.data)) {
+            return res.data as PixelEyeFollowUpCallComplianceRow[];
+        }
+        return (res?.data ?? res ?? []) as PixelEyeFollowUpCallComplianceRow[];
+    });
+
+export const usePixelEyeLeadQuery = (leadId?: string | number, clientKey?: string) =>
+    useQuery<PixelEyeLead | null>(
+        ['pixelEyeLead', leadId ?? null, clientKey ?? null],
+        async () => {
+            if (leadId === undefined || leadId === null || String(leadId).trim() === '') {
+                return null;
+            }
+
+            const params = clientKey ? { _client_key: clientKey } : undefined;
+            const res = await _axios('get', `/pixeleye/${leadId}`, undefined, 'application/json', params);
+            if (res?.data) {
+                return res.data as PixelEyeLead;
+            }
+            if (res && typeof res === 'object' && !Array.isArray(res)) {
+                return res as PixelEyeLead;
+            }
+            return null;
+        },
+        {
+            enabled: Boolean(leadId),
+        },
+    );
 
 export const useCreatePixelEyeMutation = () => {
     const queryClient = useQueryClient();

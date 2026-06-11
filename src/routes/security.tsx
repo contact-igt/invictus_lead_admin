@@ -28,6 +28,7 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
 
   let requiredKey = currentItem?.clientKey || '';
   const routeId = currentItem?.id;
+  const pixelEyeLeadDetailMatch = location.pathname.match(/^\/pixel-eye\/leads\/[^/]+$/);
 
   // Fallback for aliased dynamic client URLs (e.g. /pages/d/pixel_eye/overview).
   if (!requiredKey && location.pathname.startsWith('/pages/d/')) {
@@ -35,6 +36,10 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
     if (segments.length >= 3) {
       requiredKey = segments[2];
     }
+  }
+
+  if (!requiredKey && pixelEyeLeadDetailMatch) {
+    requiredKey = 'pixeleye';
   }
 
   // 1. Super-admin bypass.
