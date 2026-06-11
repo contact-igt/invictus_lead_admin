@@ -51,6 +51,7 @@ export const ClientRegistry: Record<string, ClientConfig> = {
           { field: "agent_name", header: "Agent Name", type: "text", required: false },
           { field: "source", header: "Source", type: "text", required: false },
           { field: "type_of_enquiry", header: "Type of Enquiry", type: "text", required: false },
+          { field: "follow_up_change_count", header: "Follow-up Changes", type: "text", required: false },
           { field: "follow_up_date", header: "Follow Up Date", type: "date", required: false },
           {
             field: "status", header: "Status", type: "status_chip", required: true, options: [

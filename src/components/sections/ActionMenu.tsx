@@ -36,7 +36,13 @@ const ActionMenu = ({ onRemove, onView, onEdit }: ActionMenuProps) => {
 
   return (
     <Box>
-      <IconButton size="small" onClick={handleOpen}>
+      <IconButton
+        size="small"
+        onClick={(e) => {
+          e.stopPropagation();
+          handleOpen(e);
+        }}
+      >
         <IconifyIcon icon="iconamoon:menu-kebab-horizontal-fill" />
       </IconButton>
 
@@ -57,7 +63,8 @@ const ActionMenu = ({ onRemove, onView, onEdit }: ActionMenuProps) => {
           return (
             <MenuItem
               key={a.id}
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 handleClose();
                 switch (a.title) {
                   case 'Edit':

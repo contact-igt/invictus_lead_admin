@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { DataGrid, GridColDef, useGridApiRef, GridApi } from '@mui/x-data-grid';
-import { Chip, Box, Typography, Menu, MenuItem, Tooltip } from '@mui/material';
+import { Chip, Box, Typography, Menu, MenuItem, Tooltip, Button } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import DataGridFooter from 'components/common/DataGridFooter';
 import ActionMenu from 'components/sections/ActionMenu';
@@ -17,6 +17,7 @@ interface DynamicTableProps {
   onEdit: (id: number | string) => void;
   onView: (id: number | string) => void;
   onDelete: (id: number | string) => void;
+  onFollowUpHistoryClick?: (row: any) => void;
 }
 
 const InlineEnumCell = ({
@@ -197,8 +198,19 @@ const InlineDateCell = ({
   );
 };
 
-const DynamicTable = ({ config, data, searchText, isLoading, onInlineUpdate, onEdit, onView, onDelete }: DynamicTableProps) => {
+const DynamicTable = ({
+  config,
+  data,
+  searchText,
+  isLoading,
+  onInlineUpdate,
+  onEdit,
+  onView,
+  onDelete,
+  onFollowUpHistoryClick,
+}: DynamicTableProps) => {
   const apiRef = useGridApiRef<GridApi>();
+  const isPixelEyeLeads = config.endpoint === '/pixeleye' && config.id === 'leads';
 
   useEffect(() => {
     if (apiRef.current?.setQuickFilterValues) {
@@ -270,6 +282,36 @@ const DynamicTable = ({ config, data, searchText, isLoading, onInlineUpdate, onE
             {params.value || '---'}
           </Typography>
         );
+      } else if (col.field === 'follow_up_change_count') {
+        baseCol.renderCell = (params) => {
+          const count = Number(params.value) || 0;
+          const label = count === 1 ? '1 time' : `${count} times`;
+
+          if (isPixelEyeLeads && count > 0 && onFollowUpHistoryClick) {
+            return (
+              <Button
+                variant="text"
+                size="small"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onFollowUpHistoryClick(params.row);
+                }}
+                sx={{
+                  minWidth: 0,
+                  px: 0.5,
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  textDecoration: 'underline',
+                  textUnderlineOffset: '2px',
+                }}
+              >
+                {label}
+              </Button>
+            );
+          }
+
+          return <Typography variant="body2">{label}</Typography>;
+        };
       } else {
         baseCol.renderCell = (params) => (
           <Typography variant="body2">{params.value || '---'}</Typography>
@@ -299,7 +341,7 @@ const DynamicTable = ({ config, data, searchText, isLoading, onInlineUpdate, onE
     });
 
     return cols;
-  }, [config.columns, onEdit, onView, onDelete, onInlineUpdate]);
+  }, [config.columns, isPixelEyeLeads, onEdit, onView, onDelete, onInlineUpdate, onFollowUpHistoryClick]);
 
   return (
     <Box sx={{ width: '100%' }}>

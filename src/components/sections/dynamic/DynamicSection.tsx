@@ -9,6 +9,7 @@ import { Popup } from 'components/common/Popup';
 import ConfirmAlert from 'components/common/ConfirmAlert';
 import DynamicTable from './DynamicTable';
 import DynamicForm from './DynamicForm';
+import FollowUpHistoryModal from 'components/sections/pixel-eye-follow-ups/FollowUpHistoryModal';
 import { TableConfig } from 'config/clients';
 import { _axios } from 'helper/axios';
 
@@ -69,14 +70,6 @@ const sortByLatestActivity = (records: any[]): any[] =>
     if (activityDiff !== 0) return activityDiff;
     return Number(b?.id || 0) - Number(a?.id || 0);
   });
-
-const getTodayDateString = (): string => {
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, '0');
-  const day = String(today.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-};
 
 const getLeadValue = (lead: any, key: string): string => {
   if (key === 'createdAt') return String(lead.createdAt || lead.created_at || '');
@@ -195,9 +188,11 @@ const DynamicSection = ({ config, clientKey }: DynamicSectionProps) => {
   const [selectedRecord, setSelectedRecord] = useState<any | null>(null);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [selectedDeleteId, setSelectedDeleteId] = useState<number | string | null>(null);
-  const [exportFromDate, setExportFromDate] = useState(() => getTodayDateString());
-  const [exportToDate, setExportToDate] = useState(() => getTodayDateString());
+  const [exportFromDate, setExportFromDate] = useState('');
+  const [exportToDate, setExportToDate] = useState('');
   const [isExporting, setIsExporting] = useState(false);
+  const [isFollowUpHistoryOpen, setIsFollowUpHistoryOpen] = useState(false);
+  const [selectedFollowUpHistoryLead, setSelectedFollowUpHistoryLead] = useState<any | null>(null);
 
   const isPixelEyeLeads = config.endpoint === '/pixeleye' && config.id === 'leads';
   const queryParams = isPixelEyeLeads && clientKey ? { _client_key: clientKey } : undefined;
@@ -321,6 +316,16 @@ const DynamicSection = ({ config, clientKey }: DynamicSectionProps) => {
     inlineUpdateMutation.mutate({ id, field, value });
   };
 
+  const handleOpenFollowUpHistory = (lead: any) => {
+    setSelectedFollowUpHistoryLead(lead);
+    setIsFollowUpHistoryOpen(true);
+  };
+
+  const handleCloseFollowUpHistory = () => {
+    setIsFollowUpHistoryOpen(false);
+    setSelectedFollowUpHistoryLead(null);
+  };
+
   const getExportRows = () => {
     if (!exportFromDate || !exportToDate) {
       enqueueSnackbar('Please select date range', { variant: 'warning' });
@@ -417,6 +422,17 @@ const DynamicSection = ({ config, clientKey }: DynamicSectionProps) => {
               size="small"
               InputLabelProps={{ shrink: true }}
             />
+            {(exportFromDate || exportToDate) && (
+              <Button
+                variant="text"
+                onClick={() => {
+                  setExportFromDate('');
+                  setExportToDate('');
+                }}
+              >
+                Clear Dates
+              </Button>
+            )}
             <Button variant="outlined" onClick={handleExportCsv} disabled={isLoading || isExporting}>
               Export CSV
             </Button>
@@ -434,6 +450,7 @@ const DynamicSection = ({ config, clientKey }: DynamicSectionProps) => {
           onEdit={handleEdit}
           onView={handleView}
           onDelete={handleDeletePrompt}
+          onFollowUpHistoryClick={isPixelEyeLeads ? handleOpenFollowUpHistory : undefined}
         />
       </Paper>
 
@@ -474,6 +491,14 @@ const DynamicSection = ({ config, clientKey }: DynamicSectionProps) => {
           isReadOnly={isViewOnly}
         />
       </Drawer>
+
+      <FollowUpHistoryModal
+        open={isFollowUpHistoryOpen}
+        onClose={handleCloseFollowUpHistory}
+        leadId={selectedFollowUpHistoryLead?.id ?? null}
+        customerName={selectedFollowUpHistoryLead?.customer_name}
+        phoneNumber={selectedFollowUpHistoryLead?.phone_number}
+      />
     </Stack>
   );
 };

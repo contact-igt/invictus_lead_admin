@@ -25,7 +25,29 @@ import {
   useMarkPixelEyeFollowUpHandledMutation,
   useCancelPixelEyeFollowUpMutation,
   useReschedulePixelEyeFollowUpMutation,
+  usePixelEyeMissedFollowUpsQuery,
+  type PixelEyeFollowUpCallComplianceRow,
 } from 'components/hooks/usePixelEyeQuery';
+
+type FollowUpBucketKey = FollowUpBucketSection['key'] | 'missed';
+
+type FollowUpDisplayItem = FollowUpReminder & {
+  lead_id?: number | null;
+  call_id?: string | null;
+  scheduled_follow_up_at?: string | null;
+  allowed_until?: string | null;
+  compliance_status?: string | null;
+  reason?: string | null;
+  matched_call_log_id?: number | null;
+  matched_call_id?: string | null;
+  matched_call_started_at?: string | null;
+  normalized_phone_number?: string | null;
+};
+
+type FollowUpBucketSectionView = Omit<FollowUpBucketSection, 'key' | 'leads'> & {
+  key: FollowUpBucketKey;
+  leads: FollowUpDisplayItem[];
+};
 
 const CANCEL_REASON_OPTIONS = [
   'Appointment Fixed',
@@ -45,20 +67,22 @@ const fetchPixelEyeLeads = async (): Promise<LeadRecord[]> => {
   return [];
 };
 
-const bucketAccent: Record<FollowUpBucketSection['key'], string> = {
+const bucketAccent: Record<FollowUpBucketKey, string> = {
   overdue: '#EF4444', // Red-500
   today: '#F59E0B',   // Amber-500
   tomorrow: '#3B82F6', // Blue-500
   week: '#10B981',    // Emerald-500
   all: '#06B6D4',     // Cyan-500
+  missed: '#F43F5E',  // Rose-500
 };
 
-const bucketIcons: Record<FollowUpBucketSection['key'], string> = {
+const bucketIcons: Record<FollowUpBucketKey, string> = {
   overdue: 'mdi:alert-circle-outline',
   today: 'mdi:calendar-today',
   tomorrow: 'mdi:calendar-clock',
   week: 'mdi:calendar-range',
   all: 'mdi:calendar-multiple',
+  missed: 'mdi:phone-missed',
 };
 
 const relativeLabel = (days: number): string => {
@@ -104,10 +128,91 @@ const buildNineAmISO = (dateStr: string): string => {
   return d.toISOString();
 };
 
+const getLocalTodayIso = (): string => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const daysBetweenIso = (fromIso: string, toIso: string): number => {
+  const from = new Date(`${fromIso}T00:00:00`);
+  const to = new Date(`${toIso}T00:00:00`);
+  if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime())) return 0;
+  return Math.round((to.getTime() - from.getTime()) / 86400000);
+};
+
+const formatDisplayDateTime = (value?: string | null): string => {
+  const text = String(value || '').trim();
+  if (!text) return 'N/A';
+  const parsed = new Date(text);
+  if (Number.isNaN(parsed.getTime())) return text;
+
+  try {
+    return new Intl.DateTimeFormat('en-IN', {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+      timeZone: 'Asia/Kolkata',
+    }).format(parsed);
+  } catch {
+    return parsed.toLocaleString();
+  }
+};
+
+const toFollowUpDisplayItem = (
+  row: LeadRecord | PixelEyeFollowUpCallComplianceRow,
+  todayIso: string,
+): FollowUpDisplayItem => {
+  const followUpDate = normalizeDateForCompare((row as LeadRecord).follow_up_date)
+    || normalizeDateForCompare((row as PixelEyeFollowUpCallComplianceRow).scheduled_follow_up_date)
+    || normalizeDateForCompare((row as PixelEyeFollowUpCallComplianceRow).scheduled_follow_up_at)
+    || '';
+  const leadId = typeof (row as PixelEyeFollowUpCallComplianceRow).lead_id === 'number' && Number.isFinite((row as PixelEyeFollowUpCallComplianceRow).lead_id as number)
+    ? ((row as PixelEyeFollowUpCallComplianceRow).lead_id as number)
+    : (row as LeadRecord).id;
+
+  return {
+    id: leadId,
+    lead_id: typeof (row as PixelEyeFollowUpCallComplianceRow).lead_id === 'number'
+      ? ((row as PixelEyeFollowUpCallComplianceRow).lead_id as number)
+      : null,
+    call_id: (row as PixelEyeFollowUpCallComplianceRow).call_id ?? (row as LeadRecord).call_id ?? null,
+    customer_name: (row as PixelEyeFollowUpCallComplianceRow).customer_name?.trim()
+      || (row as LeadRecord).customer_name?.trim()
+      || 'Unknown customer',
+    phone_number: (row as PixelEyeFollowUpCallComplianceRow).phone_number?.trim()
+      || (row as PixelEyeFollowUpCallComplianceRow).normalized_phone_number?.trim()
+      || (row as LeadRecord).phone_number?.trim()
+      || 'N/A',
+    agent_name: (row as PixelEyeFollowUpCallComplianceRow).agent_name?.trim()
+      || (row as LeadRecord).agent_name?.trim()
+      || 'Unassigned',
+    status: (row as PixelEyeFollowUpCallComplianceRow).compliance_status?.trim()
+      || (row as LeadRecord).status?.trim()
+      || 'N/A',
+    follow_up_date: followUpDate || (row as LeadRecord).follow_up_date || '',
+    followup_state: (row as LeadRecord).followup_state ?? (row as PixelEyeFollowUpCallComplianceRow).compliance_status ?? null,
+    source: (row as LeadRecord).source?.trim()
+      || (row as PixelEyeFollowUpCallComplianceRow).source?.trim()
+      || 'RUNO_WEBHOOK',
+    type_of_enquiry: (row as LeadRecord).type_of_enquiry?.trim() || '',
+    daysRelative: daysBetweenIso(todayIso, followUpDate || todayIso),
+    scheduled_follow_up_at: (row as PixelEyeFollowUpCallComplianceRow).scheduled_follow_up_at ?? null,
+    allowed_until: (row as PixelEyeFollowUpCallComplianceRow).allowed_until ?? null,
+    compliance_status: (row as PixelEyeFollowUpCallComplianceRow).compliance_status ?? null,
+    reason: (row as PixelEyeFollowUpCallComplianceRow).reason ?? null,
+    matched_call_log_id: (row as PixelEyeFollowUpCallComplianceRow).matched_call_log_id ?? null,
+    matched_call_id: (row as PixelEyeFollowUpCallComplianceRow).matched_call_id ?? null,
+    matched_call_started_at: (row as PixelEyeFollowUpCallComplianceRow).matched_call_started_at ?? null,
+    normalized_phone_number: (row as PixelEyeFollowUpCallComplianceRow).normalized_phone_number ?? null,
+  };
+};
+
 const PixelEyeFollowUpsPage: React.FC = () => {
   const { mode } = useColorMode();
-  const [activeBucket, setActiveBucket] = useState<FollowUpBucketSection['key']>('all');
-  const [selectedLead, setSelectedLead] = useState<FollowUpReminder | null>(null);
+  const [activeBucket, setActiveBucket] = useState<FollowUpBucketKey>('all');
+  const [selectedLead, setSelectedLead] = useState<FollowUpDisplayItem | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileView, setMobileView] = useState<'list' | 'detail'>('list');
 
@@ -115,13 +220,13 @@ const PixelEyeFollowUpsPage: React.FC = () => {
   const [handlingLeadId, setHandlingLeadId] = useState<number | null>(null);
   const [reschedulingLeadId, setReschedulingLeadId] = useState<number | null>(null);
   const [rescheduleDialogOpen, setRescheduleDialogOpen] = useState(false);
-  const [rescheduleLead, setRescheduleLead] = useState<FollowUpReminder | null>(null);
+  const [rescheduleLead, setRescheduleLead] = useState<FollowUpDisplayItem | null>(null);
   const [rescheduleFollowUpDate, setRescheduleFollowUpDate] = useState('');
   const [rescheduleReason, setRescheduleReason] = useState('');
   const [rescheduleError, setRescheduleError] = useState('');
   const [cancellingLeadId, setCancellingLeadId] = useState<number | null>(null);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
-  const [cancelLead, setCancelLead] = useState<FollowUpReminder | null>(null);
+  const [cancelLead, setCancelLead] = useState<FollowUpDisplayItem | null>(null);
   const [cancelReason, setCancelReason] = useState('');
   const [cancelNotes, setCancelNotes] = useState('');
   const [cancelError, setCancelError] = useState('');
@@ -133,6 +238,13 @@ const PixelEyeFollowUpsPage: React.FC = () => {
   const markHandledMutation = useMarkPixelEyeFollowUpHandledMutation();
   const cancelMutation = useCancelPixelEyeFollowUpMutation();
   const rescheduleMutation = useReschedulePixelEyeFollowUpMutation();
+  const {
+    data: missedFollowUpRows = [],
+    isLoading: isMissedLoading,
+    isError: isMissedError,
+    error: missedError,
+    refetch: refetchMissedFollowUps,
+  } = usePixelEyeMissedFollowUpsQuery();
 
   const {
     data: allLeads = [],
@@ -158,12 +270,19 @@ const PixelEyeFollowUpsPage: React.FC = () => {
     });
   }, [allLeads, dateFrom, dateTo, hiddenLeadIds]);
 
+  const todayIso = useMemo(() => getLocalTodayIso(), []);
+
+  const missedFollowUps = useMemo<FollowUpDisplayItem[]>(
+    () => missedFollowUpRows.map((row) => toFollowUpDisplayItem(row, todayIso)),
+    [missedFollowUpRows, todayIso],
+  );
+
   const followUpBuckets = useMemo<FollowUpPageBuckets>(
     () => buildFollowUpPageBuckets(dateFilteredLeads),
     [dateFilteredLeads],
   );
 
-  const sections: FollowUpBucketSection[] = useMemo(
+  const sections: FollowUpBucketSectionView[] = useMemo(
     () => [
       {
         key: 'all',
@@ -200,11 +319,18 @@ const PixelEyeFollowUpsPage: React.FC = () => {
         accent: bucketAccent.week,
         leads: followUpBuckets.weekLeads,
       },
+      {
+        key: 'missed',
+        label: 'Missed Follow-up Calls',
+        count: missedFollowUps.length,
+        accent: bucketAccent.missed,
+        leads: missedFollowUps,
+      },
     ],
-    [followUpBuckets],
+    [followUpBuckets, missedFollowUps],
   );
 
-  const activeLeads = useMemo(() => {
+  const activeLeads = useMemo<FollowUpDisplayItem[]>(() => {
     const bucket = sections.find((s) => s.key === activeBucket);
     const leads = bucket ? bucket.leads : [];
     if (!searchQuery.trim()) return leads;
@@ -213,9 +339,13 @@ const PixelEyeFollowUpsPage: React.FC = () => {
       (l) =>
         (l.customer_name || '').toLowerCase().includes(query) ||
         (l.phone_number || '').includes(query) ||
-        (l.agent_name || '').toLowerCase().includes(query),
+        (l.agent_name || '').toLowerCase().includes(query) ||
+        (l.reason || '').toLowerCase().includes(query) ||
+        (l.compliance_status || '').toLowerCase().includes(query),
     );
   }, [sections, activeBucket, searchQuery]);
+
+  const hasAnyFollowUps = followUpBuckets.allCount > 0 || missedFollowUps.length > 0 || isMissedLoading;
 
   useEffect(() => {
     if (activeLeads.length > 0) {
@@ -231,10 +361,16 @@ const PixelEyeFollowUpsPage: React.FC = () => {
     }
   }, [activeBucket, activeLeads]);
 
+  useEffect(() => {
+    if (followUpBuckets.allCount === 0 && missedFollowUps.length > 0 && activeBucket === 'all') {
+      setActiveBucket('missed');
+    }
+  }, [activeBucket, followUpBuckets.allCount, missedFollowUps.length]);
+
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
-      await refetch();
+      await Promise.allSettled([refetch(), refetchMissedFollowUps()]);
     } finally {
       setIsRefreshing(false);
     }
@@ -252,6 +388,13 @@ const PixelEyeFollowUpsPage: React.FC = () => {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const getLeadActionId = (lead: FollowUpDisplayItem): number => {
+    if (typeof lead.lead_id === 'number' && Number.isFinite(lead.lead_id)) {
+      return lead.lead_id;
+    }
+    return lead.id;
+  };
+
   const handleMarkFollowedUp = async (leadId: number) => {
     setHandlingLeadId(leadId);
     try {
@@ -265,13 +408,13 @@ const PixelEyeFollowUpsPage: React.FC = () => {
     }
   };
 
-  const handleOpenReschedule = (lead: FollowUpReminder) => {
+  const handleOpenReschedule = (lead: FollowUpDisplayItem) => {
     setRescheduleLead(lead);
     // Pre-fill with existing follow-up date (date-only, YYYY-MM-DD)
     setRescheduleFollowUpDate(toDateValue(lead.follow_up_date));
     setRescheduleReason('');
     setRescheduleError('');
-    setReschedulingLeadId(lead.id);
+    setReschedulingLeadId(getLeadActionId(lead));
     setRescheduleDialogOpen(true);
   };
 
@@ -284,12 +427,12 @@ const PixelEyeFollowUpsPage: React.FC = () => {
     setReschedulingLeadId(null);
   };
 
-  const handleOpenCancel = (lead: FollowUpReminder) => {
+  const handleOpenCancel = (lead: FollowUpDisplayItem) => {
     setCancelLead(lead);
     setCancelReason('');
     setCancelNotes('');
     setCancelError('');
-    setCancellingLeadId(lead.id);
+    setCancellingLeadId(getLeadActionId(lead));
     setCancelDialogOpen(true);
   };
 
@@ -325,7 +468,7 @@ const PixelEyeFollowUpsPage: React.FC = () => {
 
     try {
       await rescheduleMutation.mutateAsync({
-        id: rescheduleLead.id,
+        id: getLeadActionId(rescheduleLead),
         follow_up_date: followUpISO,
         reason: rescheduleReason.trim() || 'Rescheduled from follow-up queue',
       });
@@ -354,11 +497,12 @@ const PixelEyeFollowUpsPage: React.FC = () => {
 
     try {
       await cancelMutation.mutateAsync({
-        id: cancelLead.id,
+        id: getLeadActionId(cancelLead),
         status: payloadStatus,
         reason: payloadReason,
       });
-      setHiddenLeadIds((prev) => (prev.includes(cancelLead.id) ? prev : [...prev, cancelLead.id]));
+      const cancelId = getLeadActionId(cancelLead);
+      setHiddenLeadIds((prev) => (prev.includes(cancelId) ? prev : [...prev, cancelId]));
       await refetch();
       handleCloseCancel();
     } catch (err) {
@@ -473,7 +617,7 @@ const PixelEyeFollowUpsPage: React.FC = () => {
           </div>
 
           {/* --- Bucket Tabs Selector Bar --- */}
-          <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5 relative z-10">
+          <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6 relative z-10">
             {sections.map((section) => {
               const isActive = activeBucket === section.key;
               return (
@@ -536,6 +680,13 @@ const PixelEyeFollowUpsPage: React.FC = () => {
           </Alert>
         )}
 
+        {isMissedError && (
+          <Alert severity="warning" sx={{ mt: 2.5, borderRadius: '16px' }}>
+            Failed to load missed follow-up calls:{' '}
+            {(missedError as any)?.response?.data?.message || (missedError as any)?.message || 'Unknown error'}
+          </Alert>
+        )}
+
         {/* --- Main Workspace Content --- */}
         {isLoading ? (
           <div className="mt-8 flex flex-col items-center justify-center py-20">
@@ -544,7 +695,7 @@ const PixelEyeFollowUpsPage: React.FC = () => {
               Loading follow-up pipeline...
             </span>
           </div>
-        ) : followUpBuckets.allCount === 0 ? (
+        ) : !hasAnyFollowUps ? (
           <div className={`mt-8 rounded-3xl border p-12 text-center shadow-sm ${
             mode === 'dark' ? 'border-[#13251D] bg-[#0B1410]' : 'border-slate-200 bg-white'
           }`}>
@@ -596,7 +747,14 @@ const PixelEyeFollowUpsPage: React.FC = () => {
 
                 {/* Leads Queue List */}
                 <div className="flex-1 overflow-y-auto space-y-3 pr-1">
-                  {activeLeads.length > 0 ? (
+                  {activeBucket === 'missed' && isMissedLoading ? (
+                    <div className={`py-14 text-center rounded-xl border ${mode === 'dark' ? 'border-[#14241C] bg-[#060B08]' : 'border-slate-200 bg-slate-50/40'}`}>
+                      <CircularProgress size={26} sx={{ color: '#F43F5E' }} />
+                      <p className={`mt-3 text-sm font-medium ${mode === 'dark' ? 'text-slate-300' : 'text-slate-600'}`}>
+                        Loading missed follow-up calls...
+                      </p>
+                    </div>
+                  ) : activeLeads.length > 0 ? (
                     activeLeads.map((lead) => {
                       const isSelected = selectedLead?.id === lead.id;
                       const accent = bucketAccent[activeBucket];
@@ -668,11 +826,22 @@ const PixelEyeFollowUpsPage: React.FC = () => {
                                   {lead.agent_name}
                                 </span>
                               )}
+                              {activeBucket === 'missed' && lead.compliance_status && (
+                                <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
+                                  mode === 'dark' ? 'bg-[#12080E] text-[#FDA4AF]' : 'bg-rose-50 text-rose-700'
+                                }`}>
+                                  {lead.compliance_status}
+                                </span>
+                              )}
                             </div>
                           </div>
                         </button>
                       );
                     })
+                  ) : activeBucket === 'missed' ? (
+                    <div className="py-12 text-center text-sm text-slate-400 border border-dashed border-slate-200/50 rounded-xl">
+                      {searchQuery.trim() ? 'No missed follow-up calls match your search.' : 'No missed follow-up calls.'}
+                    </div>
                   ) : (
                     <div className="py-12 text-center text-sm text-slate-400 border border-dashed border-slate-200/50 rounded-xl">
                       No results matching "{searchQuery}"
@@ -801,12 +970,102 @@ const PixelEyeFollowUpsPage: React.FC = () => {
                           </div>
                         </div>
                       </div>
+
+                      {(activeBucket === 'missed' || selectedLead.compliance_status) && (
+                        <div className={`p-4 rounded-xl border ${mode === 'dark' ? 'bg-[#070D0A] border-slate-200/10' : 'bg-slate-50/50 border-slate-100'}`}>
+                          <div className="text-xs text-slate-400 font-medium">Compliance Details</div>
+                          <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <div className="text-xs text-slate-400 font-medium">Compliance Status</div>
+                              <div className={`text-sm font-semibold mt-1 ${mode === 'dark' ? 'text-white' : 'text-slate-800'}`}>
+                                {selectedLead.compliance_status || 'MISSED'}
+                              </div>
+                            </div>
+                            <div>
+                              <div className="text-xs text-slate-400 font-medium">Reason</div>
+                              <div className={`text-sm font-semibold mt-1 ${mode === 'dark' ? 'text-white' : 'text-slate-800'}`}>
+                                {selectedLead.reason || 'N/A'}
+                              </div>
+                            </div>
+                            <div>
+                              <div className="text-xs text-slate-400 font-medium">Scheduled Follow-up Date</div>
+                              <div className={`text-sm font-semibold mt-1 ${mode === 'dark' ? 'text-white' : 'text-slate-800'}`}>
+                                {selectedLead.follow_up_date || 'N/A'}
+                              </div>
+                            </div>
+                            <div>
+                              <div className="text-xs text-slate-400 font-medium">Scheduled Follow-up At</div>
+                              <div className={`text-sm font-semibold mt-1 ${mode === 'dark' ? 'text-white' : 'text-slate-800'}`}>
+                                {formatDisplayDateTime(selectedLead.scheduled_follow_up_at || selectedLead.follow_up_date)}
+                              </div>
+                            </div>
+                            <div>
+                              <div className="text-xs text-slate-400 font-medium">Allowed Until</div>
+                              <div className={`text-sm font-semibold mt-1 ${mode === 'dark' ? 'text-white' : 'text-slate-800'}`}>
+                                {formatDisplayDateTime(selectedLead.allowed_until)}
+                              </div>
+                            </div>
+                            <div>
+                              <div className="text-xs text-slate-400 font-medium">Matched Call</div>
+                              <div className={`text-sm font-semibold mt-1 ${mode === 'dark' ? 'text-white' : 'text-slate-800'}`}>
+                                {selectedLead.matched_call_id || selectedLead.call_id || 'N/A'}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
 
                   {/* Actions Section footer */}
                   <div className="pt-6 border-t border-slate-200/10">
-                    {selectedLead.followup_state !== 'completed' && selectedLead.followup_state !== 'cancelled' ? (
+                    {activeBucket === 'missed' ? (
+                      <div className="flex flex-col sm:flex-row gap-3 justify-end w-full">
+                        <Button
+                          variant="outlined"
+                          color="error"
+                          onClick={() => handleOpenCancel(selectedLead)}
+                          disabled={cancellingLeadId === selectedLead.id || reschedulingLeadId === selectedLead.id}
+                          startIcon={<IconifyIcon icon="mdi:close-circle-outline" />}
+                          sx={{
+                            borderRadius: '12px',
+                            textTransform: 'none',
+                            fontWeight: 600,
+                            px: 3.5,
+                            py: 1.5,
+                            borderColor: mode === 'dark' ? '#7F1D1D' : '#FCA5A5',
+                            color: mode === 'dark' ? '#FCA5A5' : '#B91C1C',
+                            '&:hover': {
+                              borderColor: '#DC2626',
+                              backgroundColor: mode === 'dark' ? 'rgba(220,38,38,0.08)' : '#FEF2F2',
+                            },
+                          }}
+                        >
+                          Close / Cancel
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          onClick={() => handleOpenReschedule(selectedLead)}
+                          disabled={reschedulingLeadId === selectedLead.id || cancellingLeadId === selectedLead.id}
+                          startIcon={<IconifyIcon icon="mdi:calendar-clock" />}
+                          sx={{
+                            borderRadius: '12px',
+                            textTransform: 'none',
+                            fontWeight: 600,
+                            px: 3.5,
+                            py: 1.5,
+                            borderColor: mode === 'dark' ? '#2F4D3F' : '#A7F3D0',
+                            color: mode === 'dark' ? '#A7F3D0' : '#0F5738',
+                            '&:hover': {
+                              borderColor: '#156A45',
+                              backgroundColor: mode === 'dark' ? 'rgba(21,106,69,0.08)' : '#ECFDF5',
+                            },
+                          }}
+                        >
+                          Reschedule
+                        </Button>
+                      </div>
+                    ) : selectedLead.followup_state !== 'completed' && selectedLead.followup_state !== 'cancelled' ? (
                       <div className="flex flex-col sm:flex-row gap-3 justify-end w-full">
                         <Button
                           variant="outlined"
