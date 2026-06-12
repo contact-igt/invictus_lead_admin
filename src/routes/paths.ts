@@ -1,4 +1,3 @@
-
 export const rootPaths = {
   root: '/',
   pageRoot: 'pages',
@@ -12,6 +11,8 @@ export default {
   signin: `/${rootPaths.authRoot}/signin`,
   pixelEyeLeads: `/${rootPaths.pageRoot}/d/:clientKey/leads`,
   pixelEyeLeadDetail: `pixel-eye/leads/:leadId`,
+  notificationTracker: `/${rootPaths.pageRoot}/d/:clientKey/notification-tracker`,
+  notificationDetails: `/${rootPaths.pageRoot}/d/:clientKey/notification/:notificationId`,
 
   // Dynamic client module route
   dynamicTable: `/${rootPaths.pageRoot}/d/:clientKey?/:tableId`,

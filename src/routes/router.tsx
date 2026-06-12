@@ -4,7 +4,7 @@ import { Outlet, createBrowserRouter } from 'react-router-dom';
 import paths, { rootPaths } from './paths';
 import PageLoader from 'components/loader/PageLoader';
 
-// CRITICAL: Lazy-load all MUI/Emotion-using components to prevent initialization issues
+// Lazy-load MUI/Emotion-heavy modules to avoid initialization issues.
 const MainLayout = lazy(() => import('layouts/main-layout'));
 const AuthLayout = lazy(() => import('layouts/auth-layout'));
 const ProtectedRoute = lazy(async () => {
@@ -22,6 +22,8 @@ const DynamicPage = lazy(() => import('pages/dynamic'));
 const PixelEyePage = lazy(() => import('pages/pixel-eye'));
 const PixelEyeLeadDetailPage = lazy(() => import('pages/pixel-eye/lead-detail'));
 const PixelEyeFollowUpsPage = lazy(() => import('pages/pixel-eye/follow-ups'));
+const NotificationTrackerPage = lazy(() => import('pages/notifications/NotificationTracker'));
+const NotificationDetailsPage = lazy(() => import('pages/notifications/NotificationDetails'));
 const SettingsPage = lazy(() => import('pages/settings'));
 
 const router = createBrowserRouter(
@@ -34,7 +36,6 @@ const router = createBrowserRouter(
       ),
       errorElement: <ErrorPage />,
       children: [
-        // Root dashboard route
         {
           path: '/',
           element: (
@@ -53,8 +54,6 @@ const router = createBrowserRouter(
             },
           ],
         },
-
-        // All protected page routes — consolidated into one group
         {
           path: rootPaths.pageRoot,
           element: (
@@ -70,12 +69,20 @@ const router = createBrowserRouter(
           ),
           children: [
             {
-              path: paths.dynamicTable,
-              element: <DynamicPage />,
-            },
-            {
               path: paths.pixelEyeLeads,
               element: <PixelEyePage />,
+            },
+            {
+              path: paths.notificationTracker,
+              element: <NotificationTrackerPage />,
+            },
+            {
+              path: paths.notificationDetails,
+              element: <NotificationDetailsPage />,
+            },
+            {
+              path: paths.dynamicTable,
+              element: <DynamicPage />,
             },
             {
               path: paths.management,
@@ -119,7 +126,6 @@ const router = createBrowserRouter(
             </Suspense>
           ),
         },
-        // Auth routes
         {
           path: rootPaths.authRoot,
           element: (

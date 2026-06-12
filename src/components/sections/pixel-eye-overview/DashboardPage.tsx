@@ -7,7 +7,6 @@ import { _axios } from 'helper/axios';
 import { LeadRecord } from './types';
 import { buildDashboardMetrics, applyDashboardFilters, getAvailableAgents } from './dashboardUtils';
 
-
 const fetchPixelEyeLeads = async (): Promise<LeadRecord[]> => {
   const response = await _axios('get', '/pixeleye');
   if (Array.isArray(response)) return response as LeadRecord[];
@@ -16,12 +15,14 @@ const fetchPixelEyeLeads = async (): Promise<LeadRecord[]> => {
 };
 
 const DashboardPage: React.FC = () => {
-
-  const { data: allLeads = [], isLoading, isError } = useQuery<LeadRecord[]>(
-    ['pixelEyeLeads'],
-    fetchPixelEyeLeads,
-    { staleTime: 3 * 60 * 1000, refetchOnMount: 'always' },
-  );
+  const {
+    data: allLeads = [],
+    isLoading,
+    isError,
+  } = useQuery<LeadRecord[]>(['pixelEyeLeads'], fetchPixelEyeLeads, {
+    staleTime: 3 * 60 * 1000,
+    refetchOnMount: 'always',
+  });
 
   const [filters, setFilters] = useState<DashboardFilters>({
     dateFrom: '',
@@ -35,7 +36,7 @@ const DashboardPage: React.FC = () => {
 
   const filteredLeads = useMemo(
     () => applyDashboardFilters(allLeads, filters),
-    [allLeads, filters]
+    [allLeads, filters],
   );
 
   const availableAgents = useMemo(() => getAvailableAgents(allLeads), [allLeads]);
@@ -51,10 +52,34 @@ const DashboardPage: React.FC = () => {
   }
 
   const kpiItems: KPIItem[] = [
-    { key: 'total', label: 'Total Leads', value: metrics.kpis?.totalLeads ?? 0, icon: 'mdi:account-multiple', color: 'primary' },
-    { key: 'contacted', label: 'Contacted', value: metrics.kpis?.contactedLeads ?? 0, icon: 'mdi:phone', color: 'success' },
-    { key: 'appointments', label: 'Appointments', value: metrics.kpis?.appointments ?? 0, icon: 'mdi:calendar-check', color: 'warning' },
-    { key: 'lost', label: 'Lost', value: metrics.kpis?.lostLeads ?? 0, icon: 'mdi:close-circle', color: 'error' },
+    {
+      key: 'total',
+      label: 'Total Leads',
+      value: metrics.kpis?.totalLeads ?? 0,
+      icon: 'mdi:account-multiple',
+      color: 'primary',
+    },
+    {
+      key: 'contacted',
+      label: 'Contacted',
+      value: metrics.kpis?.contactedLeads ?? 0,
+      icon: 'mdi:phone',
+      color: 'success',
+    },
+    {
+      key: 'appointments',
+      label: 'Appointments',
+      value: metrics.kpis?.appointments ?? 0,
+      icon: 'mdi:calendar-check',
+      color: 'warning',
+    },
+    {
+      key: 'lost',
+      label: 'Lost',
+      value: metrics.kpis?.lostLeads ?? 0,
+      icon: 'mdi:close-circle',
+      color: 'error',
+    },
   ];
 
   const handleApplyFilters = (newFilters: DashboardFilters) => {

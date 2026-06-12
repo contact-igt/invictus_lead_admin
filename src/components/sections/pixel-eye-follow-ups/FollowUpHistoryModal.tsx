@@ -139,7 +139,12 @@ const FollowUpHistoryModal = ({
               backgroundColor: 'background.default',
             }}
           >
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'flex-start', sm: 'center' }} justifyContent="space-between">
+            <Stack
+              direction={{ xs: 'column', sm: 'row' }}
+              spacing={2}
+              alignItems={{ xs: 'flex-start', sm: 'center' }}
+              justifyContent="space-between"
+            >
               <Box>
                 <Typography variant="subtitle1" fontWeight={700}>
                   {customerName || 'Unknown customer'}
@@ -148,7 +153,11 @@ const FollowUpHistoryModal = ({
                   {phoneNumber || 'N/A'}
                 </Typography>
               </Box>
-              <Chip label={`${totalChanges} change${totalChanges === 1 ? '' : 's'}`} color="primary" variant="outlined" />
+              <Chip
+                label={`${totalChanges} change${totalChanges === 1 ? '' : 's'}`}
+                color="primary"
+                variant="outlined"
+              />
             </Stack>
           </Paper>
 
@@ -165,7 +174,9 @@ const FollowUpHistoryModal = ({
 
           {isError && !isLoading && (
             <Alert severity="error" sx={{ borderRadius: 2 }}>
-              {((error as any)?.response?.data?.message as string) || (error as any)?.message || 'Failed to load follow-up history.'}
+              {((error as any)?.response?.data?.message as string) ||
+                (error as any)?.message ||
+                'Failed to load follow-up history.'}
             </Alert>
           )}
 
@@ -176,7 +187,11 @@ const FollowUpHistoryModal = ({
           )}
 
           {!isLoading && !isError && history.length > 0 && (
-            <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
+            <TableContainer
+              component={Paper}
+              variant="outlined"
+              sx={{ borderRadius: 2, overflow: 'hidden' }}
+            >
               <Table size="small">
                 <TableHead>
                   <TableRow>
@@ -196,7 +211,15 @@ const FollowUpHistoryModal = ({
                       <TableCell>{formatDate(item.new_follow_up_date)}</TableCell>
                       <TableCell>{item.change_type || '---'}</TableCell>
                       <TableCell sx={{ maxWidth: 220 }}>
-                        <Typography variant="body2" title={item.reason || ''} sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <Typography
+                          variant="body2"
+                          title={item.reason || ''}
+                          sx={{
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
                           {item.reason || '---'}
                         </Typography>
                       </TableCell>

@@ -1,27 +1,26 @@
 import { useState, useMemo } from 'react';
 import {
-  Box,
-  Grid,
-  Typography,
-  Paper,
-  Chip,
-  MenuItem,
-  TextField,
-  Tooltip,
-  CircularProgress,
   Alert,
+  Box,
   Button,
+  Chip,
+  CircularProgress,
+  Grid,
+  MenuItem,
+  Tooltip,
+  Typography,
 } from '@mui/material';
-import {
-  DataGrid,
-  GridColDef,
-} from '@mui/x-data-grid';
+import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import dayjs from 'dayjs';
+import useColorMode from 'hooks/useColorMode';
 import {
   usePixelEyeNotificationsQuery,
   usePixelEyeNotificationsSummaryQuery,
 } from 'components/hooks/usePixelEyeNotificationsQuery';
 import DataGridFooter from 'components/common/DataGridFooter';
+import { PixelEyeCard, getPixelEyeButtonSx, PIXELEYE_COLORS } from './pixelEyeUi';
+import PixelEyeField from './PixelEyeField';
+import PixelEyeDatePicker from './PixelEyeDatePicker';
 
 interface NotificationTrackerProps {
   clientKey?: string;
@@ -32,15 +31,15 @@ const STATE_COLORS: Record<string, 'default' | 'warning' | 'success' | 'error' |
   scheduled: 'warning',
   completed: 'success',
   cancelled: 'error',
-  baseline:  'info',
-  new:       'default',
+  baseline: 'info',
+  new: 'default',
 };
 
 const SCHEDULE_TYPE_LABELS: Record<string, string> = {
-  THIRTY_MIN:     '30 Min',
-  DNP2:           'DNP2 24hr',
+  THIRTY_MIN: '30 Min',
+  DNP2: 'DNP2 24hr',
   TWENTY_FOUR_HR: '24hr Follow-up',
-  MANUAL:         'Manual Follow-up',
+  MANUAL: 'Manual Follow-up',
 };
 
 const normalizeDateForCompare = (value?: string | null): string => {
@@ -71,26 +70,25 @@ const SummaryCard = ({
   color: string;
   loading?: boolean;
 }) => (
-  <Paper
-    elevation={0}
-    sx={{
-      p: 2,
-      borderRadius: 3,
-      border: '1px solid',
-      borderColor: 'divider',
-      textAlign: 'center',
-    }}
-  >
-    <Typography variant="overline" color="text.secondary" sx={{ fontSize: '0.68rem', letterSpacing: '0.08em' }}>
+  <PixelEyeCard sx={{ p: 2.5, textAlign: 'center' }}>
+    <Typography
+      variant="overline"
+      sx={{
+        fontSize: '0.68rem',
+        letterSpacing: '0.12em',
+        color: 'text.secondary',
+      }}
+    >
       {label}
     </Typography>
-    <Typography variant="h4" sx={{ fontWeight: 700, color, mt: 0.5 }}>
-      {loading ? <CircularProgress size={22} /> : (value ?? 0)}
+    <Typography variant="h4" sx={{ fontWeight: 800, color, mt: 0.5 }}>
+      {loading ? <CircularProgress size={22} /> : value ?? 0}
     </Typography>
-  </Paper>
+  </PixelEyeCard>
 );
 
 const NotificationTracker = ({ clientKey, searchText }: NotificationTrackerProps) => {
+  const { mode } = useColorMode();
   const [stateFilter, setStateFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
   const [dateFrom, setDateFrom] = useState('');
@@ -103,10 +101,8 @@ const NotificationTracker = ({ clientKey, searchText }: NotificationTrackerProps
     error,
   } = usePixelEyeNotificationsQuery(clientKey);
 
-  const {
-    data: summary,
-    isLoading: summaryLoading,
-  } = usePixelEyeNotificationsSummaryQuery(clientKey);
+  const { data: summary, isLoading: summaryLoading } =
+    usePixelEyeNotificationsSummaryQuery(clientKey);
 
   const filtered = useMemo(() => {
     return notifications.filter((n) => {
@@ -155,9 +151,9 @@ const NotificationTracker = ({ clientKey, searchText }: NotificationTrackerProps
       field: 'call_id',
       headerName: 'Call ID',
       flex: 0.9,
-      minWidth: 110,
-      align: 'center',
-      headerAlign: 'center',
+      minWidth: 120,
+      align: 'left',
+      headerAlign: 'left',
       renderCell: (p) => (
         <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>
           {p.value || '—'}
@@ -168,34 +164,42 @@ const NotificationTracker = ({ clientKey, searchText }: NotificationTrackerProps
       field: 'customer_name',
       headerName: 'Customer',
       flex: 1.2,
-      minWidth: 140,
-      align: 'center',
-      headerAlign: 'center',
-      renderCell: (p) => <Typography variant="body2">{p.value || '—'}</Typography>,
+      minWidth: 180,
+      align: 'left',
+      headerAlign: 'left',
+      renderCell: (p) => (
+        <Typography variant="body2" fontWeight={600} noWrap title={String(p.value || '—')}>
+          {p.value || '—'}
+        </Typography>
+      ),
     },
     {
       field: 'agent_name',
       headerName: 'Agent',
       flex: 1,
-      minWidth: 120,
-      align: 'center',
-      headerAlign: 'center',
-      renderCell: (p) => <Typography variant="body2">{p.value || '—'}</Typography>,
+      minWidth: 140,
+      align: 'left',
+      headerAlign: 'left',
+      renderCell: (p) => (
+        <Typography variant="body2" noWrap>
+          {p.value || '—'}
+        </Typography>
+      ),
     },
     {
       field: 'current_day',
       headerName: 'Day',
       flex: 0.6,
-      minWidth: 80,
-      align: 'center',
-      headerAlign: 'center',
+      minWidth: 84,
+      align: 'left',
+      headerAlign: 'left',
       renderCell: (p) => (
         <Chip
           label={p.value > 0 ? `Day ${p.value}` : 'Initial'}
           size="small"
           color={p.value > 0 ? 'primary' : 'default'}
           variant="outlined"
-          sx={{ fontSize: '0.72rem' }}
+          sx={{ fontSize: '0.72rem', borderRadius: '14px' }}
         />
       ),
     },
@@ -204,14 +208,14 @@ const NotificationTracker = ({ clientKey, searchText }: NotificationTrackerProps
       headerName: 'Last Status',
       flex: 1.3,
       minWidth: 150,
-      align: 'center',
-      headerAlign: 'center',
+      align: 'left',
+      headerAlign: 'left',
       renderCell: (p) => (
         <Chip
           label={p.value || '—'}
           size="small"
           variant="outlined"
-          sx={{ fontSize: '0.72rem', maxWidth: 160 }}
+          sx={{ fontSize: '0.72rem', maxWidth: 180, borderRadius: '14px' }}
         />
       ),
     },
@@ -220,8 +224,8 @@ const NotificationTracker = ({ clientKey, searchText }: NotificationTrackerProps
       headerName: 'Type',
       flex: 0.9,
       minWidth: 120,
-      align: 'center',
-      headerAlign: 'center',
+      align: 'left',
+      headerAlign: 'left',
       renderCell: (p) => {
         const label = SCHEDULE_TYPE_LABELS[p.value] || p.value || '—';
         return (
@@ -230,7 +234,7 @@ const NotificationTracker = ({ clientKey, searchText }: NotificationTrackerProps
             size="small"
             color="primary"
             variant="outlined"
-            sx={{ fontSize: '0.72rem' }}
+            sx={{ fontSize: '0.72rem', borderRadius: '14px' }}
           />
         );
       },
@@ -240,15 +244,17 @@ const NotificationTracker = ({ clientKey, searchText }: NotificationTrackerProps
       headerName: 'Scheduled At',
       flex: 1.1,
       minWidth: 150,
-      align: 'center',
-      headerAlign: 'center',
+      align: 'left',
+      headerAlign: 'left',
       renderCell: (p) =>
         p.value ? (
           <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>
             {dayjs(p.value).format('DD MMM, HH:mm')}
           </Typography>
         ) : (
-          <Typography variant="body2" color="text.disabled">—</Typography>
+          <Typography variant="body2" color="text.disabled">
+            —
+          </Typography>
         ),
     },
     {
@@ -256,15 +262,17 @@ const NotificationTracker = ({ clientKey, searchText }: NotificationTrackerProps
       headerName: 'Sent At',
       flex: 1,
       minWidth: 140,
-      align: 'center',
-      headerAlign: 'center',
+      align: 'left',
+      headerAlign: 'left',
       renderCell: (p) =>
         p.value ? (
           <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>
             {dayjs(p.value).format('DD MMM, HH:mm')}
           </Typography>
         ) : (
-          <Typography variant="body2" color="text.disabled">—</Typography>
+          <Typography variant="body2" color="text.disabled">
+            —
+          </Typography>
         ),
     },
     {
@@ -272,14 +280,14 @@ const NotificationTracker = ({ clientKey, searchText }: NotificationTrackerProps
       headerName: 'State',
       flex: 0.8,
       minWidth: 110,
-      align: 'center',
-      headerAlign: 'center',
+      align: 'left',
+      headerAlign: 'left',
       renderCell: (p) => (
         <Chip
           label={String(p.value || '').toUpperCase()}
           size="small"
           color={STATE_COLORS[p.value] || 'default'}
-          sx={{ fontWeight: 700, fontSize: '0.68rem', minWidth: 80 }}
+          sx={{ fontWeight: 700, fontSize: '0.68rem', minWidth: 80, borderRadius: '14px' }}
         />
       ),
     },
@@ -287,9 +295,9 @@ const NotificationTracker = ({ clientKey, searchText }: NotificationTrackerProps
       field: 'cancel_reason',
       headerName: 'Cancel / Note',
       flex: 1.5,
-      minWidth: 170,
-      align: 'center',
-      headerAlign: 'center',
+      minWidth: 180,
+      align: 'left',
+      headerAlign: 'left',
       renderCell: (p) =>
         p.value ? (
           <Tooltip title={p.value} placement="top">
@@ -308,171 +316,216 @@ const NotificationTracker = ({ clientKey, searchText }: NotificationTrackerProps
             </Typography>
           </Tooltip>
         ) : (
-          <Typography variant="body2" color="text.disabled">—</Typography>
+          <Typography variant="body2" color="text.disabled">
+            —
+          </Typography>
         ),
     },
   ];
 
   return (
     <Box>
-      {/* API error banner */}
       {isError && (
-        <Alert severity="error" sx={{ mb: 2 }}>
+        <Alert severity="error" sx={{ mb: 2, borderRadius: 3 }}>
           Failed to load notifications:{' '}
-          {(error as any)?.response?.data?.message || (error as any)?.message || 'Unknown error'}
-          . Make sure the backend server is running with the latest changes.
+          {(error as any)?.response?.data?.message || (error as any)?.message || 'Unknown error'}.
+          Make sure the backend server is running with the latest changes.
         </Alert>
       )}
 
-      {/* Summary Cards */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
         <Grid item xs={6} sm={3}>
-          <SummaryCard label="Scheduled" value={summary?.scheduled} color="warning.main" loading={summaryLoading} />
+          <SummaryCard
+            label="Scheduled"
+            value={summary?.scheduled}
+            color={mode === 'dark' ? '#FDE047' : '#B45309'}
+            loading={summaryLoading}
+          />
         </Grid>
         <Grid item xs={6} sm={3}>
-          <SummaryCard label="Completed" value={summary?.completed} color="success.main" loading={summaryLoading} />
+          <SummaryCard
+            label="Completed"
+            value={summary?.completed}
+            color={mode === 'dark' ? '#86EFAC' : '#15803D'}
+            loading={summaryLoading}
+          />
         </Grid>
         <Grid item xs={6} sm={3}>
-          <SummaryCard label="Cancelled" value={summary?.cancelled} color="error.main" loading={summaryLoading} />
+          <SummaryCard
+            label="Cancelled"
+            value={summary?.cancelled}
+            color={mode === 'dark' ? '#FCA5A5' : '#B91C1C'}
+            loading={summaryLoading}
+          />
         </Grid>
         <Grid item xs={6} sm={3}>
-          <SummaryCard label="Total" value={summary?.total} color="text.primary" loading={summaryLoading} />
+          <SummaryCard
+            label="Total"
+            value={summary?.total}
+            color={mode === 'dark' ? '#FFFFFF' : '#0F172A'}
+            loading={summaryLoading}
+          />
         </Grid>
       </Grid>
 
-      {/* Filters */}
-      <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap', alignItems: 'center' }}>
-        <TextField
-          select
-          label="State"
-          value={stateFilter}
-          onChange={(e) => setStateFilter(e.target.value)}
-          size="small"
-          sx={{ minWidth: 160 }}
+      <PixelEyeCard sx={{ mb: 2 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            gap: 2,
+            p: { xs: 2, md: 2.5 },
+            flexWrap: 'wrap',
+            alignItems: 'center',
+          }}
         >
-          <MenuItem value="">All States</MenuItem>
-          <MenuItem value="scheduled">Scheduled</MenuItem>
-          <MenuItem value="completed">Completed</MenuItem>
-          <MenuItem value="cancelled">Cancelled</MenuItem>
-          <MenuItem value="baseline">Baseline</MenuItem>
-        </TextField>
-
-        <TextField
-          select
-          label="Type"
-          value={typeFilter}
-          onChange={(e) => setTypeFilter(e.target.value)}
-          size="small"
-          sx={{ minWidth: 180 }}
-        >
-          <MenuItem value="">All Types</MenuItem>
-          <MenuItem value="THIRTY_MIN">30 Min</MenuItem>
-          <MenuItem value="DNP2">DNP2 24hr</MenuItem>
-          <MenuItem value="TWENTY_FOUR_HR">24hr Follow-up</MenuItem>
-          <MenuItem value="MANUAL">Manual Follow-up</MenuItem>
-        </TextField>
-
-        <TextField
-          label="From Date"
-          type="date"
-          value={dateFrom}
-          onChange={(e) => setDateFrom(e.target.value)}
-          size="small"
-          InputLabelProps={{ shrink: true }}
-          sx={{ minWidth: 160 }}
-        />
-
-        <TextField
-          label="To Date"
-          type="date"
-          value={dateTo}
-          onChange={(e) => setDateTo(e.target.value)}
-          size="small"
-          InputLabelProps={{ shrink: true }}
-          sx={{ minWidth: 160 }}
-        />
-
-        {(dateFrom || dateTo) && (
-          <Button
-            variant="text"
-            onClick={handleClearDateFilter}
-            sx={{
-              borderRadius: 1,
-              textTransform: 'none',
-              fontWeight: 600,
-            }}
+          <PixelEyeField
+            select
+            label="State"
+            value={stateFilter}
+            onChange={(e) => setStateFilter(e.target.value)}
+            size="small"
+            sx={{ width: { xs: 150, sm: 160 } }}
+            SelectProps={{ displayEmpty: true }}
           >
-            Clear Dates
-          </Button>
-        )}
+            <MenuItem value="">All States</MenuItem>
+            <MenuItem value="scheduled">Scheduled</MenuItem>
+            <MenuItem value="completed">Completed</MenuItem>
+            <MenuItem value="cancelled">Cancelled</MenuItem>
+            <MenuItem value="baseline">Baseline</MenuItem>
+          </PixelEyeField>
 
-        <Box sx={{ flex: 1 }} />
+          <PixelEyeField
+            select
+            label="Type"
+            value={typeFilter}
+            onChange={(e) => setTypeFilter(e.target.value)}
+            size="small"
+            sx={{ width: { xs: 150, sm: 180 } }}
+            SelectProps={{ displayEmpty: true }}
+          >
+            <MenuItem value="">All Types</MenuItem>
+            <MenuItem value="THIRTY_MIN">30 Min</MenuItem>
+            <MenuItem value="DNP2">DNP2 24hr</MenuItem>
+            <MenuItem value="TWENTY_FOUR_HR">24hr Follow-up</MenuItem>
+            <MenuItem value="MANUAL">Manual Follow-up</MenuItem>
+          </PixelEyeField>
 
-        <Typography variant="caption" color="text.secondary">
-          Auto-refreshes every 30s
-        </Typography>
-      </Box>
+          <PixelEyeDatePicker
+            label="From Date"
+            value={dateFrom}
+            maxDate={dateTo || undefined}
+            sx={{ width: { xs: 150, sm: 160 } }}
+            onChange={(newFrom) => {
+              setDateFrom(newFrom);
+              if (dateTo && newFrom > dateTo) {
+                setDateTo(newFrom);
+              }
+            }}
+          />
 
-      {/* Empty state */}
+          <PixelEyeDatePicker
+            label="To Date"
+            value={dateTo}
+            minDate={dateFrom || undefined}
+            disabled={!dateFrom}
+            sx={{ width: { xs: 150, sm: 160 } }}
+            onChange={(newTo) => setDateTo(newTo)}
+          />
+
+          {(dateFrom || dateTo) && (
+            <Button
+              variant="text"
+              onClick={handleClearDateFilter}
+              sx={getPixelEyeButtonSx(mode, 'secondary')}
+            >
+              Clear Dates
+            </Button>
+          )}
+
+          <Box sx={{ flex: 1 }} />
+
+          <Typography
+            variant="caption"
+            sx={{ color: mode === 'dark' ? PIXELEYE_COLORS.mutedText : 'text.secondary' }}
+          >
+            Auto-refreshes every 30s
+          </Typography>
+        </Box>
+      </PixelEyeCard>
+
       {!isLoading && !isError && filtered.length === 0 && (
-        <Box sx={{ py: 6, textAlign: 'center' }}>
+        <PixelEyeCard sx={{ py: 6, textAlign: 'center' }}>
           <Typography variant="body1" color="text.secondary">
             No notification records yet.
           </Typography>
           <Typography variant="caption" color="text.disabled">
             Records appear here once leads are created or their status is updated.
           </Typography>
-        </Box>
+        </PixelEyeCard>
       )}
 
-      {/* Table */}
       {(isLoading || filtered.length > 0) && (
-        <DataGrid
-          rows={filtered}
-          columns={columns}
-          loading={isLoading}
-          autoHeight
-          rowHeight={58}
-          pageSizeOptions={[10, 25, 50]}
-          initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
-          disableColumnMenu
-          disableRowSelectionOnClick
-          slots={{ pagination: DataGridFooter }}
-          sx={{
-            border: 0,
-            '& .MuiDataGrid-columnHeaders': {
-              backgroundColor: 'background.default',
-              borderBottom: '1px solid',
-              borderColor: 'divider',
-            },
-            '& .MuiDataGrid-columnHeaderTitle': {
-              overflow: 'visible',
-              textOverflow: 'clip',
-              whiteSpace: 'normal',
-              fontWeight: 600,
-              textTransform: 'uppercase',
-              fontSize: '0.72rem',
-              letterSpacing: '0.05em',
-              color: 'text.secondary',
-            },
-            '& .MuiDataGrid-row': {
-              transition: 'background-color 0.2s',
-              '&:hover': { backgroundColor: 'action.hover' },
-            },
-            '& .MuiDataGrid-cell': {
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              px: 2,
-              borderBottom: '1px solid',
-              borderColor: 'divider',
-            },
-            '& .MuiDataGrid-footerContainer': {
-              borderTop: '1px solid',
-              borderColor: 'divider',
-            },
-          }}
-        />
+        <PixelEyeCard>
+          <Box sx={{ width: '100%', overflowX: 'auto' }}>
+            <DataGrid
+              rows={filtered}
+              columns={columns}
+              loading={isLoading}
+              autoHeight
+              rowHeight={60}
+              pageSizeOptions={[10, 25, 50]}
+              initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
+              disableColumnMenu
+              disableRowSelectionOnClick
+              slots={{ pagination: DataGridFooter }}
+              sx={{
+                minWidth: 1320,
+                border: 0,
+                backgroundColor: 'transparent',
+                '& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within, & .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-columnHeader:focus-within':
+                  {
+                    outline: 'none',
+                  },
+                '& .MuiDataGrid-cell:focus-visible, & .MuiDataGrid-columnHeader:focus-visible': {
+                  outline: 'none',
+                },
+                '& .MuiDataGrid-columnHeaders': {
+                  backgroundColor: mode === 'dark' ? PIXELEYE_COLORS.card : '#F8FAFC',
+                  borderBottom: `1px solid ${mode === 'dark' ? 'rgba(80, 120, 100, 0.22)' : '#E2E8F0'}`,
+                },
+                '& .MuiDataGrid-columnHeaderTitle': {
+                  overflow: 'visible',
+                  textOverflow: 'clip',
+                  whiteSpace: 'normal',
+                  fontWeight: 800,
+                  textTransform: 'uppercase',
+                  fontSize: '0.72rem',
+                  letterSpacing: '0.05em',
+                  color: mode === 'dark' ? '#9FB0A6' : '#64748B',
+                },
+                '& .MuiDataGrid-row': {
+                  transition: 'background-color 0.2s',
+                  '&:hover': {
+                    backgroundColor:
+                      mode === 'dark' ? 'rgba(34, 197, 94, 0.05)' : 'rgba(31, 107, 64, 0.03)',
+                  },
+                },
+                '& .MuiDataGrid-cell': {
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'flex-start',
+                  px: 2,
+                  borderBottom: `1px solid ${mode === 'dark' ? 'rgba(80, 120, 100, 0.18)' : '#E2E8F0'}`,
+                  color: mode === 'dark' ? '#EAF7EE' : '#334155',
+                },
+                '& .MuiDataGrid-footerContainer': {
+                  borderTop: `1px solid ${mode === 'dark' ? 'rgba(80, 120, 100, 0.22)' : '#E2E8F0'}`,
+                  backgroundColor: 'transparent',
+                },
+              }}
+            />
+          </Box>
+        </PixelEyeCard>
       )}
     </Box>
   );

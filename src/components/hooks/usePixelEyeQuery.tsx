@@ -3,436 +3,457 @@ import { useSnackbar } from 'notistack';
 import { _axios } from 'helper/axios';
 
 export interface PixelEyeLead {
-    id: number;
-    client_id?: number | null;
-    date?: string;
-    time?: string;
-    call_id?: string;
-    customer_name?: string;
-    phone_number?: string;
-    agent_name?: string;
-    status?: string;
-    day_1?: string;
-    day_2?: string;
-    day_3?: string;
-    day_4?: string;
-    day_5?: string;
-    source?: string;
-    type_of_enquiry?: string;
-    follow_up_date?: string;
-    follow_up_change_count?: number | string | null;
-    followup_state?: string | null;
-    reminder_schedule_type?: string | null;
-    reminder_scheduled_at?: string | null;
-    reminder_notification_sent?: boolean | null;
-    reminder_notification_sent_at?: string | null;
-    reminder_reason?: string | null;
-    reminder_permanently_closed?: boolean | null;
-    reminder_cancel_reason?: string | null;
-    createdAt?: string | null;
-    updatedAt?: string | null;
-    created_at?: string | null;
-    updated_at?: string | null;
+  id: number;
+  client_id?: number | null;
+  date?: string;
+  time?: string;
+  call_id?: string;
+  customer_name?: string;
+  phone_number?: string;
+  agent_name?: string;
+  status?: string;
+  day_1?: string;
+  day_2?: string;
+  day_3?: string;
+  day_4?: string;
+  day_5?: string;
+  source?: string;
+  type_of_enquiry?: string;
+  follow_up_date?: string;
+  follow_up_change_count?: number | string | null;
+  followup_state?: string | null;
+  reminder_schedule_type?: string | null;
+  reminder_scheduled_at?: string | null;
+  reminder_notification_sent?: boolean | null;
+  reminder_notification_sent_at?: string | null;
+  reminder_reason?: string | null;
+  reminder_permanently_closed?: boolean | null;
+  reminder_cancel_reason?: string | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
 }
 
 export interface CreatePixelEyePayload {
-    date: string;
-    time: string;
-    call_id: string;
-    customer_name: string;
-    phone_number: string;
-    agent_name: string;
-    status: string;
-    source?: string;
-    type_of_enquiry?: string;
-    follow_up_date?: string;
-    day_1?: string;
-    day_2?: string;
-    day_3?: string;
-    day_4?: string;
-    day_5?: string;
-    _client_key?: string;
+  date: string;
+  time: string;
+  call_id: string;
+  customer_name: string;
+  phone_number: string;
+  agent_name: string;
+  status: string;
+  source?: string;
+  type_of_enquiry?: string;
+  follow_up_date?: string;
+  day_1?: string;
+  day_2?: string;
+  day_3?: string;
+  day_4?: string;
+  day_5?: string;
+  _client_key?: string;
 }
 
 export interface UpdatePixelEyePayload {
-    id: number;
-    status?: string;
-    date?: string;
-    time?: string;
-    call_id?: string;
-    customer_name?: string;
-    phone_number?: string;
-    agent_name?: string;
-    source?: string;
-    type_of_enquiry?: string;
-    follow_up_date?: string;
-    day_1?: string;
-    day_2?: string;
-    day_3?: string;
-    day_4?: string;
-    day_5?: string;
+  id: number;
+  status?: string;
+  date?: string;
+  time?: string;
+  call_id?: string;
+  customer_name?: string;
+  phone_number?: string;
+  agent_name?: string;
+  source?: string;
+  type_of_enquiry?: string;
+  follow_up_date?: string;
+  day_1?: string;
+  day_2?: string;
+  day_3?: string;
+  day_4?: string;
+  day_5?: string;
 }
 
 export interface MarkPixelEyeFollowUpHandledPayload {
-    id: number;
-    reason?: string;
+  id: number;
+  reason?: string;
 }
 
 export interface ReschedulePixelEyeFollowUpPayload {
-    id: number;
-    follow_up_date: string;
-    reason?: string;
+  id: number;
+  follow_up_date: string;
+  reason?: string;
 }
 
 export interface CancelPixelEyeFollowUpPayload {
-    id: number;
-    status?: string;
-    reason?: string;
+  id: number;
+  status?: string;
+  reason?: string;
 }
 
 export interface PixelEyeFollowUpCallComplianceRow {
-    id: number;
-    lead_id?: number | null;
-    call_id?: string | null;
-    phone_number?: string | null;
-    normalized_phone_number?: string | null;
-    customer_name?: string | null;
-    agent_name?: string | null;
-    scheduled_follow_up_date?: string | null;
-    scheduled_follow_up_at?: string | null;
-    allowed_until?: string | null;
-    compliance_status?: string | null;
-    matched_call_log_id?: number | null;
-    matched_call_id?: string | null;
-    matched_call_started_at?: string | null;
-    reason?: string | null;
-    source?: string | null;
-    created_at?: string | null;
-    updated_at?: string | null;
+  id: number;
+  lead_id?: number | null;
+  call_id?: string | null;
+  phone_number?: string | null;
+  normalized_phone_number?: string | null;
+  customer_name?: string | null;
+  agent_name?: string | null;
+  scheduled_follow_up_date?: string | null;
+  scheduled_follow_up_at?: string | null;
+  allowed_until?: string | null;
+  compliance_status?: string | null;
+  matched_call_log_id?: number | null;
+  matched_call_id?: string | null;
+  matched_call_started_at?: string | null;
+  reason?: string | null;
+  source?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
 }
+
+const refreshPixelEyeCaches = (queryClient: ReturnType<typeof useQueryClient>) => {
+  const queryKeys = [
+    ['pixelEyeLeads'],
+    ['pixelEyeLead'],
+    ['pixelEyeNotifications'],
+    ['pixelEyeNotificationsSummary'],
+    ['pixelEyeMissedFollowUps'],
+  ] as const;
+
+  queryKeys.forEach((key) => {
+    queryClient.invalidateQueries(key);
+  });
+
+  try {
+    queryKeys.forEach((key) => {
+      queryClient.refetchQueries(key);
+    });
+  } catch {
+    // Best-effort refresh only.
+  }
+};
 
 // clientKey is included in the query key so super-admin switching between clients
 // gets a fresh fetch instead of returning the previous client's cached data.
 export const usePixelEyeQuery = (clientKey?: string) =>
-    useQuery<PixelEyeLead[]>(['pixelEyeLeads', clientKey ?? null], async () => {
-        const params = clientKey ? { _client_key: clientKey } : undefined;
-        const res = await _axios('get', '/pixeleye', undefined, 'application/json', params);
-        if (process.env.NODE_ENV !== 'production') {
-            // eslint-disable-next-line no-console
-            console.debug('usePixelEyeQuery - raw response', res);
-        }
-        if (Array.isArray(res)) {
-            if (process.env.NODE_ENV !== 'production') {
-                // eslint-disable-next-line no-console
-                console.debug('usePixelEyeQuery - returning array length', res.length);
-            }
-            return res as PixelEyeLead[];
-        }
-        if (Array.isArray(res?.data)) {
-            if (process.env.NODE_ENV !== 'production') {
-                // eslint-disable-next-line no-console
-                console.debug('usePixelEyeQuery - returning res.data length', res.data.length);
-            }
-            return res.data as PixelEyeLead[];
-        }
-        if (process.env.NODE_ENV !== 'production') {
-            // eslint-disable-next-line no-console
-            console.debug('usePixelEyeQuery - returning fallback value', res ?? []);
-        }
-        return (res ?? []) as PixelEyeLead[];
-    });
+  useQuery<PixelEyeLead[]>(['pixelEyeLeads', clientKey ?? null], async () => {
+    const params = clientKey ? { _client_key: clientKey } : undefined;
+    const res = await _axios('get', '/pixeleye', undefined, 'application/json', params);
+    if (process.env.NODE_ENV !== 'production') {
+      // eslint-disable-next-line no-console
+      console.debug('usePixelEyeQuery - raw response', res);
+    }
+    if (Array.isArray(res)) {
+      if (process.env.NODE_ENV !== 'production') {
+        // eslint-disable-next-line no-console
+        console.debug('usePixelEyeQuery - returning array length', res.length);
+      }
+      return res as PixelEyeLead[];
+    }
+    if (Array.isArray(res?.data)) {
+      if (process.env.NODE_ENV !== 'production') {
+        // eslint-disable-next-line no-console
+        console.debug('usePixelEyeQuery - returning res.data length', res.data.length);
+      }
+      return res.data as PixelEyeLead[];
+    }
+    if (process.env.NODE_ENV !== 'production') {
+      // eslint-disable-next-line no-console
+      console.debug('usePixelEyeQuery - returning fallback value', res ?? []);
+    }
+    return (res ?? []) as PixelEyeLead[];
+  });
 
 export const usePixelEyeMissedFollowUpsQuery = (clientKey?: string) =>
-    useQuery<PixelEyeFollowUpCallComplianceRow[]>(['pixelEyeMissedFollowUps', clientKey ?? null], async () => {
-        const params = clientKey ? { _client_key: clientKey } : undefined;
-        const res = await _axios('get', '/pixeleye/follow-ups/missed-calls', undefined, 'application/json', params);
-        if (Array.isArray(res)) {
-            return res as PixelEyeFollowUpCallComplianceRow[];
-        }
-        if (Array.isArray(res?.data)) {
-            return res.data as PixelEyeFollowUpCallComplianceRow[];
-        }
-        return (res?.data ?? res ?? []) as PixelEyeFollowUpCallComplianceRow[];
-    });
+  useQuery<PixelEyeFollowUpCallComplianceRow[]>(
+    ['pixelEyeMissedFollowUps', clientKey ?? null],
+    async () => {
+      const params = clientKey ? { _client_key: clientKey } : undefined;
+      const res = await _axios(
+        'get',
+        '/pixeleye/follow-ups/missed-calls',
+        undefined,
+        'application/json',
+        params,
+      );
+      if (Array.isArray(res)) {
+        return res as PixelEyeFollowUpCallComplianceRow[];
+      }
+      if (Array.isArray(res?.data)) {
+        return res.data as PixelEyeFollowUpCallComplianceRow[];
+      }
+      return (res?.data ?? res ?? []) as PixelEyeFollowUpCallComplianceRow[];
+    },
+  );
 
 export const usePixelEyeLeadQuery = (leadId?: string | number, clientKey?: string) =>
-    useQuery<PixelEyeLead | null>(
-        ['pixelEyeLead', leadId ?? null, clientKey ?? null],
-        async () => {
-            if (leadId === undefined || leadId === null || String(leadId).trim() === '') {
-                return null;
-            }
+  useQuery<PixelEyeLead | null>(
+    ['pixelEyeLead', leadId ?? null, clientKey ?? null],
+    async () => {
+      if (leadId === undefined || leadId === null || String(leadId).trim() === '') {
+        return null;
+      }
 
-            const params = clientKey ? { _client_key: clientKey } : undefined;
-            const res = await _axios('get', `/pixeleye/${leadId}`, undefined, 'application/json', params);
-            if (res?.data) {
-                return res.data as PixelEyeLead;
-            }
-            if (res && typeof res === 'object' && !Array.isArray(res)) {
-                return res as PixelEyeLead;
-            }
-            return null;
-        },
-        {
-            enabled: Boolean(leadId),
-        },
-    );
+      const params = clientKey ? { _client_key: clientKey } : undefined;
+      const res = await _axios('get', `/pixeleye/${leadId}`, undefined, 'application/json', params);
+      if (res?.data) {
+        return res.data as PixelEyeLead;
+      }
+      if (res && typeof res === 'object' && !Array.isArray(res)) {
+        return res as PixelEyeLead;
+      }
+      return null;
+    },
+    {
+      enabled: Boolean(leadId),
+    },
+  );
 
 export const useCreatePixelEyeMutation = () => {
-    const queryClient = useQueryClient();
-    return useMutation(
-        (payload: CreatePixelEyePayload) => {
-            if (process.env.NODE_ENV !== 'production') {
-                // eslint-disable-next-line no-console
-                console.debug('useCreatePixelEyeMutation - request payload', payload);
-            }
-            return _axios('post', '/pixeleye', payload).then((res) => {
-                if (process.env.NODE_ENV !== 'production') {
-                    // eslint-disable-next-line no-console
-                    console.debug('useCreatePixelEyeMutation - response', res);
-                }
-                return res;
-            });
-        },
-        {
-            onMutate: (vars) => {
-                if (process.env.NODE_ENV !== 'production') {
-                    // eslint-disable-next-line no-console
-                    console.debug('useCreatePixelEyeMutation - onMutate', vars);
-                }
-            },
-            onSuccess: (data) => {
-                if (process.env.NODE_ENV !== 'production') {
-                    // eslint-disable-next-line no-console
-                    console.debug('useCreatePixelEyeMutation - onSuccess', data);
-                }
-                queryClient.invalidateQueries(['pixelEyeLeads']);
-                // Ensure immediate refetch so active views update without delay
-                try {
-                    queryClient.refetchQueries(['pixelEyeLeads']);
-                } catch (e) {}
-            },
-            onError: (err) => {
-                if (process.env.NODE_ENV !== 'production') {
-                    // eslint-disable-next-line no-console
-                    console.debug('useCreatePixelEyeMutation - onError', err);
-                }
-            },
+  const queryClient = useQueryClient();
+  return useMutation(
+    (payload: CreatePixelEyePayload) => {
+      if (process.env.NODE_ENV !== 'production') {
+        // eslint-disable-next-line no-console
+        console.debug('useCreatePixelEyeMutation - request payload', payload);
+      }
+      return _axios('post', '/pixeleye', payload).then((res) => {
+        if (process.env.NODE_ENV !== 'production') {
+          // eslint-disable-next-line no-console
+          console.debug('useCreatePixelEyeMutation - response', res);
         }
-    );
+        return res;
+      });
+    },
+    {
+      onMutate: (vars) => {
+        if (process.env.NODE_ENV !== 'production') {
+          // eslint-disable-next-line no-console
+          console.debug('useCreatePixelEyeMutation - onMutate', vars);
+        }
+      },
+      onSuccess: (data) => {
+        if (process.env.NODE_ENV !== 'production') {
+          // eslint-disable-next-line no-console
+          console.debug('useCreatePixelEyeMutation - onSuccess', data);
+        }
+        refreshPixelEyeCaches(queryClient);
+      },
+      onError: (err) => {
+        if (process.env.NODE_ENV !== 'production') {
+          // eslint-disable-next-line no-console
+          console.debug('useCreatePixelEyeMutation - onError', err);
+        }
+      },
+    },
+  );
 };
 
 export const useUpdatePixelEyeMutation = () => {
-    const queryClient = useQueryClient();
-    return useMutation(
-        ({ id, ...payload }: UpdatePixelEyePayload) => {
-            if (process.env.NODE_ENV !== 'production') {
-                // eslint-disable-next-line no-console
-                console.debug('useUpdatePixelEyeMutation - request id,payload', id, payload);
-            }
-            return _axios('patch', `/pixeleye/${id}`, payload).then((res) => {
-                if (process.env.NODE_ENV !== 'production') {
-                    // eslint-disable-next-line no-console
-                    console.debug('useUpdatePixelEyeMutation - response', res);
-                }
-                return res;
-            });
-        },
-        {
-            onMutate: (vars) => {
-                if (process.env.NODE_ENV !== 'production') {
-                    // eslint-disable-next-line no-console
-                    console.debug('useUpdatePixelEyeMutation - onMutate', vars);
-                }
-            },
-            onSuccess: (data) => {
-                if (process.env.NODE_ENV !== 'production') {
-                    // eslint-disable-next-line no-console
-                    console.debug('useUpdatePixelEyeMutation - onSuccess', data);
-                }
-                queryClient.invalidateQueries(['pixelEyeLeads']);
-                try {
-                    queryClient.refetchQueries(['pixelEyeLeads']);
-                } catch (e) {}
-            },
-            onError: (err) => {
-                if (process.env.NODE_ENV !== 'production') {
-                    // eslint-disable-next-line no-console
-                    console.debug('useUpdatePixelEyeMutation - onError', err);
-                }
-            },
+  const queryClient = useQueryClient();
+  return useMutation(
+    ({ id, ...payload }: UpdatePixelEyePayload) => {
+      if (process.env.NODE_ENV !== 'production') {
+        // eslint-disable-next-line no-console
+        console.debug('useUpdatePixelEyeMutation - request id,payload', id, payload);
+      }
+      return _axios('patch', `/pixeleye/${id}`, payload).then((res) => {
+        if (process.env.NODE_ENV !== 'production') {
+          // eslint-disable-next-line no-console
+          console.debug('useUpdatePixelEyeMutation - response', res);
         }
-    );
+        return res;
+      });
+    },
+    {
+      onMutate: (vars) => {
+        if (process.env.NODE_ENV !== 'production') {
+          // eslint-disable-next-line no-console
+          console.debug('useUpdatePixelEyeMutation - onMutate', vars);
+        }
+      },
+      onSuccess: (data) => {
+        if (process.env.NODE_ENV !== 'production') {
+          // eslint-disable-next-line no-console
+          console.debug('useUpdatePixelEyeMutation - onSuccess', data);
+        }
+        refreshPixelEyeCaches(queryClient);
+      },
+      onError: (err) => {
+        if (process.env.NODE_ENV !== 'production') {
+          // eslint-disable-next-line no-console
+          console.debug('useUpdatePixelEyeMutation - onError', err);
+        }
+      },
+    },
+  );
 };
 
 export const useDeletePixelEyeMutation = () => {
-    const queryClient = useQueryClient();
-    return useMutation(
-        (id: number) => {
-            if (process.env.NODE_ENV !== 'production') {
-                // eslint-disable-next-line no-console
-                console.debug('useDeletePixelEyeMutation - request id', id);
-            }
-            return _axios('delete', `/pixeleye/${id}`).then((res) => {
-                if (process.env.NODE_ENV !== 'production') {
-                    // eslint-disable-next-line no-console
-                    console.debug('useDeletePixelEyeMutation - response', res);
-                }
-                return res;
-            });
-        },
-        {
-            onMutate: (vars) => {
-                if (process.env.NODE_ENV !== 'production') {
-                    // eslint-disable-next-line no-console
-                    console.debug('useDeletePixelEyeMutation - onMutate', vars);
-                }
-            },
-            onSuccess: (data) => {
-                if (process.env.NODE_ENV !== 'production') {
-                    // eslint-disable-next-line no-console
-                    console.debug('useDeletePixelEyeMutation - onSuccess', data);
-                }
-                queryClient.invalidateQueries(['pixelEyeLeads']);
-                try {
-                    queryClient.refetchQueries(['pixelEyeLeads']);
-                } catch (e) {}
-            },
-            onError: (err) => {
-                if (process.env.NODE_ENV !== 'production') {
-                    // eslint-disable-next-line no-console
-                    console.debug('useDeletePixelEyeMutation - onError', err);
-                }
-            },
+  const queryClient = useQueryClient();
+  return useMutation(
+    (id: number) => {
+      if (process.env.NODE_ENV !== 'production') {
+        // eslint-disable-next-line no-console
+        console.debug('useDeletePixelEyeMutation - request id', id);
+      }
+      return _axios('delete', `/pixeleye/${id}`).then((res) => {
+        if (process.env.NODE_ENV !== 'production') {
+          // eslint-disable-next-line no-console
+          console.debug('useDeletePixelEyeMutation - response', res);
         }
-    );
+        return res;
+      });
+    },
+    {
+      onMutate: (vars) => {
+        if (process.env.NODE_ENV !== 'production') {
+          // eslint-disable-next-line no-console
+          console.debug('useDeletePixelEyeMutation - onMutate', vars);
+        }
+      },
+      onSuccess: (data) => {
+        if (process.env.NODE_ENV !== 'production') {
+          // eslint-disable-next-line no-console
+          console.debug('useDeletePixelEyeMutation - onSuccess', data);
+        }
+        refreshPixelEyeCaches(queryClient);
+      },
+      onError: (err) => {
+        if (process.env.NODE_ENV !== 'production') {
+          // eslint-disable-next-line no-console
+          console.debug('useDeletePixelEyeMutation - onError', err);
+        }
+      },
+    },
+  );
 };
 
 export const useMarkPixelEyeFollowUpHandledMutation = () => {
-    const queryClient = useQueryClient();
-    const { enqueueSnackbar } = useSnackbar();
+  const queryClient = useQueryClient();
+  const { enqueueSnackbar } = useSnackbar();
 
-    return useMutation(
-        ({ id, reason }: MarkPixelEyeFollowUpHandledPayload) => {
-            if (process.env.NODE_ENV !== 'production') {
-                // eslint-disable-next-line no-console
-                console.debug('useMarkPixelEyeFollowUpHandledMutation - request', id, reason);
-            }
-            return _axios('patch', `/pixeleye/${id}/follow-up/handled`, { reason }).then((res) => {
-                if (process.env.NODE_ENV !== 'production') {
-                    // eslint-disable-next-line no-console
-                    console.debug('useMarkPixelEyeFollowUpHandledMutation - response', res);
-                }
-                return res;
-            });
-        },
-        {
-            onSuccess: (data) => {
-                if (process.env.NODE_ENV !== 'production') {
-                    // eslint-disable-next-line no-console
-                    console.debug('useMarkPixelEyeFollowUpHandledMutation - onSuccess', data);
-                }
-                enqueueSnackbar('Follow-up marked as handled', { variant: 'success' });
-                queryClient.invalidateQueries(['pixelEyeLeads']);
-                try {
-                    queryClient.refetchQueries(['pixelEyeLeads']);
-                } catch (e) {}
-            },
-            onError: (err: any) => {
-                if (process.env.NODE_ENV !== 'production') {
-                    // eslint-disable-next-line no-console
-                    console.debug('useMarkPixelEyeFollowUpHandledMutation - onError', err);
-                }
-                enqueueSnackbar(err?.response?.data?.message || err?.message || 'Failed to mark follow-up as handled', {
-                    variant: 'error',
-                });
-            },
+  return useMutation(
+    ({ id, reason }: MarkPixelEyeFollowUpHandledPayload) => {
+      if (process.env.NODE_ENV !== 'production') {
+        // eslint-disable-next-line no-console
+        console.debug('useMarkPixelEyeFollowUpHandledMutation - request', id, reason);
+      }
+      return _axios('patch', `/pixeleye/${id}/follow-up/handled`, { reason }).then((res) => {
+        if (process.env.NODE_ENV !== 'production') {
+          // eslint-disable-next-line no-console
+          console.debug('useMarkPixelEyeFollowUpHandledMutation - response', res);
         }
-    );
+        return res;
+      });
+    },
+    {
+      onSuccess: (data) => {
+        if (process.env.NODE_ENV !== 'production') {
+          // eslint-disable-next-line no-console
+          console.debug('useMarkPixelEyeFollowUpHandledMutation - onSuccess', data);
+        }
+        enqueueSnackbar('Follow-up marked as handled', { variant: 'success' });
+        refreshPixelEyeCaches(queryClient);
+      },
+      onError: (err: any) => {
+        if (process.env.NODE_ENV !== 'production') {
+          // eslint-disable-next-line no-console
+          console.debug('useMarkPixelEyeFollowUpHandledMutation - onError', err);
+        }
+        enqueueSnackbar(
+          err?.response?.data?.message || err?.message || 'Failed to mark follow-up as handled',
+          {
+            variant: 'error',
+          },
+        );
+      },
+    },
+  );
 };
 
 export const useReschedulePixelEyeFollowUpMutation = () => {
-    const queryClient = useQueryClient();
-    const { enqueueSnackbar } = useSnackbar();
+  const queryClient = useQueryClient();
+  const { enqueueSnackbar } = useSnackbar();
 
-    return useMutation(
-        ({ id, ...payload }: ReschedulePixelEyeFollowUpPayload) => {
-            if (process.env.NODE_ENV !== 'production') {
-                // eslint-disable-next-line no-console
-                console.debug('useReschedulePixelEyeFollowUpMutation - request', id, payload);
-            }
-            return _axios('patch', `/pixeleye/${id}/follow-up/reschedule`, payload).then((res) => {
-                if (process.env.NODE_ENV !== 'production') {
-                    // eslint-disable-next-line no-console
-                    console.debug('useReschedulePixelEyeFollowUpMutation - response', res);
-                }
-                return res;
-            });
-        },
-        {
-            onSuccess: (data) => {
-                if (process.env.NODE_ENV !== 'production') {
-                    // eslint-disable-next-line no-console
-                    console.debug('useReschedulePixelEyeFollowUpMutation - onSuccess', data);
-                }
-                enqueueSnackbar('Follow-up rescheduled', { variant: 'success' });
-                queryClient.invalidateQueries(['pixelEyeLeads']);
-                try {
-                    queryClient.refetchQueries(['pixelEyeLeads']);
-                } catch (e) {}
-            },
-            onError: (err: any) => {
-                if (process.env.NODE_ENV !== 'production') {
-                    // eslint-disable-next-line no-console
-                    console.debug('useReschedulePixelEyeFollowUpMutation - onError', err);
-                }
-                enqueueSnackbar(err?.response?.data?.message || err?.message || 'Failed to reschedule follow-up', {
-                    variant: 'error',
-                });
-            },
+  return useMutation(
+    ({ id, ...payload }: ReschedulePixelEyeFollowUpPayload) => {
+      if (process.env.NODE_ENV !== 'production') {
+        // eslint-disable-next-line no-console
+        console.debug('useReschedulePixelEyeFollowUpMutation - request', id, payload);
+      }
+      return _axios('patch', `/pixeleye/${id}/follow-up/reschedule`, payload).then((res) => {
+        if (process.env.NODE_ENV !== 'production') {
+          // eslint-disable-next-line no-console
+          console.debug('useReschedulePixelEyeFollowUpMutation - response', res);
         }
-    );
+        return res;
+      });
+    },
+    {
+      onSuccess: (data) => {
+        if (process.env.NODE_ENV !== 'production') {
+          // eslint-disable-next-line no-console
+          console.debug('useReschedulePixelEyeFollowUpMutation - onSuccess', data);
+        }
+        enqueueSnackbar('Follow-up rescheduled', { variant: 'success' });
+        refreshPixelEyeCaches(queryClient);
+      },
+      onError: (err: any) => {
+        if (process.env.NODE_ENV !== 'production') {
+          // eslint-disable-next-line no-console
+          console.debug('useReschedulePixelEyeFollowUpMutation - onError', err);
+        }
+        enqueueSnackbar(
+          err?.response?.data?.message || err?.message || 'Failed to reschedule follow-up',
+          {
+            variant: 'error',
+          },
+        );
+      },
+    },
+  );
 };
 
 export const useCancelPixelEyeFollowUpMutation = () => {
-    const queryClient = useQueryClient();
-    const { enqueueSnackbar } = useSnackbar();
+  const queryClient = useQueryClient();
+  const { enqueueSnackbar } = useSnackbar();
 
-    return useMutation(
-        ({ id, ...payload }: CancelPixelEyeFollowUpPayload) => {
-            if (process.env.NODE_ENV !== 'production') {
-                // eslint-disable-next-line no-console
-                console.debug('useCancelPixelEyeFollowUpMutation - request', id, payload);
-            }
-            return _axios('patch', `/pixeleye/${id}/follow-up/cancel`, payload).then((res) => {
-                if (process.env.NODE_ENV !== 'production') {
-                    // eslint-disable-next-line no-console
-                    console.debug('useCancelPixelEyeFollowUpMutation - response', res);
-                }
-                return res;
-            });
-        },
-        {
-            onSuccess: (data) => {
-                if (process.env.NODE_ENV !== 'production') {
-                    // eslint-disable-next-line no-console
-                    console.debug('useCancelPixelEyeFollowUpMutation - onSuccess', data);
-                }
-                enqueueSnackbar('Follow-up closed/cancelled', { variant: 'success' });
-                queryClient.invalidateQueries(['pixelEyeLeads']);
-                try {
-                    queryClient.refetchQueries(['pixelEyeLeads']);
-                } catch (e) {}
-            },
-            onError: (err: any) => {
-                if (process.env.NODE_ENV !== 'production') {
-                    // eslint-disable-next-line no-console
-                    console.debug('useCancelPixelEyeFollowUpMutation - onError', err);
-                }
-                enqueueSnackbar(err?.response?.data?.message || err?.message || 'Failed to cancel follow-up', {
-                    variant: 'error',
-                });
-            },
+  return useMutation(
+    ({ id, ...payload }: CancelPixelEyeFollowUpPayload) => {
+      if (process.env.NODE_ENV !== 'production') {
+        // eslint-disable-next-line no-console
+        console.debug('useCancelPixelEyeFollowUpMutation - request', id, payload);
+      }
+      return _axios('patch', `/pixeleye/${id}/follow-up/cancel`, payload).then((res) => {
+        if (process.env.NODE_ENV !== 'production') {
+          // eslint-disable-next-line no-console
+          console.debug('useCancelPixelEyeFollowUpMutation - response', res);
         }
-    );
+        return res;
+      });
+    },
+    {
+      onSuccess: (data) => {
+        if (process.env.NODE_ENV !== 'production') {
+          // eslint-disable-next-line no-console
+          console.debug('useCancelPixelEyeFollowUpMutation - onSuccess', data);
+        }
+        enqueueSnackbar('Follow-up closed/cancelled', { variant: 'success' });
+        refreshPixelEyeCaches(queryClient);
+      },
+      onError: (err: any) => {
+        if (process.env.NODE_ENV !== 'production') {
+          // eslint-disable-next-line no-console
+          console.debug('useCancelPixelEyeFollowUpMutation - onError', err);
+        }
+        enqueueSnackbar(
+          err?.response?.data?.message || err?.message || 'Failed to cancel follow-up',
+          {
+            variant: 'error',
+          },
+        );
+      },
+    },
+  );
 };

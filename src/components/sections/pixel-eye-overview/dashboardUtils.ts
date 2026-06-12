@@ -13,57 +13,84 @@ import {
 
 // Normalize all known status lists to lowercase to allow case-insensitive matching
 const CONTACT_EXCLUDED = new Set(['Not Answering', 'Switched Off'].map((s) => s.toLowerCase()));
-const APPOINTMENT_KPI_SET = new Set(['Appointment Fixed', 'Visited', 'Walk-in'].map((s) => s.toLowerCase()));
+const APPOINTMENT_KPI_SET = new Set(
+  ['Appointment Fixed', 'Visited', 'Walk-in'].map((s) => s.toLowerCase()),
+);
 
-const CONVERTED_SET = new Set(['Appointment Fixed', 'Visited', 'Walk-in', 'Closed'].map((s) => s.toLowerCase()));
-const FOLLOW_UP_SET = new Set([
-  'Enquiry',
-  'Hot Follow-up',
-  'Follow-up Required',
-  'Will Call Later',
-  'Rescheduling',
-  'Doctor Time',
-  'Follow-up Post Appointment',
-  'Want to Speak With Doctor',
-  'Address Requested',
-].map((s) => s.toLowerCase()));
-const LOST_SET = new Set([
-  'Not Interested',
-  'Not Willing to Come Now',
-  'Searching for Specific Hospital',
-  'Going to Other Hospital',
-  'Not in Hyderabad',
-  'Long Distance',
-  'Appointment Cancelled',
-].map((s) => s.toLowerCase()));
-const INVALID_SET = new Set([
-  'Wrong Number',
-  'Wrongly Dialed',
-  'Fraud Call',
-  'Not in Network',
-  'Incoming Call Not Available',
-  'Number Not in Service',
-  'DND',
-].map((s) => s.toLowerCase()));
+const CONVERTED_SET = new Set(
+  ['Appointment Fixed', 'Visited', 'Walk-in', 'Closed'].map((s) => s.toLowerCase()),
+);
+const FOLLOW_UP_SET = new Set(
+  [
+    'Enquiry',
+    'Hot Follow-up',
+    'Follow-up Required',
+    'Will Call Later',
+    'Rescheduling',
+    'Doctor Time',
+    'Follow-up Post Appointment',
+    'Want to Speak With Doctor',
+    'Appointment Cancelled',
+    'Address Requested',
+    'Searching for Specific Hospital',
+    'Others',
+  ].map((s) => s.toLowerCase()),
+);
+const LOST_SET = new Set(
+  [
+    'Not Interested',
+    'Not Willing to Come Now',
+    'Searching for Specific Hospital',
+    'Going to Other Hospital',
+    'Not in Hyderabad',
+    'Long Distance',
+    'Appointment Cancelled',
+  ].map((s) => s.toLowerCase()),
+);
+const INVALID_SET = new Set(
+  [
+    'Wrong Number',
+    'Wrongly Dialed',
+    'Fraud Call',
+    'Not in Network',
+    'Incoming Call Not Available',
+    'Number Not in Service',
+    'DND',
+  ].map((s) => s.toLowerCase()),
+);
 
-const TERMINAL_STATUS_SET = new Set([
-  ...Array.from(CONVERTED_SET),
-  ...Array.from(LOST_SET),
-  ...Array.from(INVALID_SET),
-  'converted',
-  'invalid',
-].map((s) => s.toLowerCase()));
+const TERMINAL_STATUS_SET = new Set(
+  [
+    'Wrong Number',
+    'Wrongly Dialed',
+    'Fraud Call',
+    'Not Interested',
+    'Not Willing to Come Now',
+    'Going to Other Hospital',
+    'Not in Hyderabad',
+    'Long Distance',
+    'Number Not in Service',
+    'Walk-in',
+    'Closed',
+    'Appointment Fixed',
+    'Visited',
+  ].map((s) => s.toLowerCase()),
+);
 
-const INTERESTED_SET = new Set([
-  ...Array.from(FOLLOW_UP_SET),
-  'Enquiry',
-  'Appointment Fixed',
-  'Visited',
-  'Walk-in',
-  'Closed',
-].map((s) => s.toLowerCase()));
+const INTERESTED_SET = new Set(
+  [
+    ...Array.from(FOLLOW_UP_SET),
+    'Enquiry',
+    'Appointment Fixed',
+    'Visited',
+    'Walk-in',
+    'Closed',
+  ].map((s) => s.toLowerCase()),
+);
 
-const HIGH_PRIORITY_SET = new Set(['Hot Follow-up', 'Follow-up Required', 'Appointment Fixed'].map((s) => s.toLowerCase()));
+const HIGH_PRIORITY_SET = new Set(
+  ['Hot Follow-up', 'Follow-up Required', 'Appointment Fixed'].map((s) => s.toLowerCase()),
+);
 const DAY_FIELDS: Array<keyof LeadRecord> = ['day_1', 'day_2', 'day_3', 'day_4', 'day_5'];
 
 const normalizeDate = (value?: string | null): string => {
@@ -151,28 +178,28 @@ export const isFollowUpStatus = (status?: string | null): boolean => {
 
 export const isFollowUpLead = (lead: LeadRecord): boolean => {
   if (isHandledReminderState(lead.followup_state)) return false;
-  return !isTerminalFollowUpStatus(lead.status) && (isValidFollowUpDate(lead.follow_up_date) || isFollowUpStatus(lead.status));
+  return (
+    !isTerminalFollowUpStatus(lead.status) &&
+    (isValidFollowUpDate(lead.follow_up_date) || isFollowUpStatus(lead.status))
+  );
 };
 
 export const getAvailableAgents = (leads: LeadRecord[]): string[] => {
   return Array.from(
-    new Set(
-      leads
-        .map((lead) => normalizeText(lead.agent_name))
-        .filter((name) => Boolean(name)),
-    ),
+    new Set(leads.map((lead) => normalizeText(lead.agent_name)).filter((name) => Boolean(name))),
   ).sort((a, b) => a.localeCompare(b));
 };
 
-export const applyDashboardFilters = (leads: LeadRecord[], filters: DashboardFilters): LeadRecord[] => {
+export const applyDashboardFilters = (
+  leads: LeadRecord[],
+  filters: DashboardFilters,
+): LeadRecord[] => {
   const { dateFrom, dateTo, agent } = filters;
   const normalizedAgent = normalizeText(agent).toLowerCase();
 
   return leads.filter((lead) => {
     const leadDate =
-      normalizeDate(lead.date) ||
-      normalizeDate(lead.createdAt) ||
-      normalizeDate(lead.created_at);
+      normalizeDate(lead.date) || normalizeDate(lead.createdAt) || normalizeDate(lead.created_at);
     const leadAgent = normalizeText(lead.agent_name).toLowerCase();
 
     const isAfterFrom = !dateFrom || (leadDate && leadDate >= dateFrom);
@@ -211,7 +238,9 @@ const buildFunnel = (leads: LeadRecord[]) => {
   }).length;
 
   const interested = countByStatus(leads, INTERESTED_SET);
-  const appointment = leads.filter((lead) => normalizeStatus(lead.status) === 'appointment fixed').length;
+  const appointment = leads.filter(
+    (lead) => normalizeStatus(lead.status) === 'appointment fixed',
+  ).length;
   const visited = leads.filter((lead) => {
     const status = normalizeStatus(lead.status);
     return status === 'visited' || status === 'walk-in' || status === 'closed';
@@ -323,7 +352,9 @@ export const buildFollowUpBuckets = (leads: LeadRecord[]): FollowUpBuckets => {
 
   const overdue = leadsWithDate
     .filter((lead) => normalizeDate(lead.follow_up_date)! < today)
-    .sort((a, b) => normalizeDate(a.follow_up_date)!.localeCompare(normalizeDate(b.follow_up_date)!))
+    .sort((a, b) =>
+      normalizeDate(a.follow_up_date)!.localeCompare(normalizeDate(b.follow_up_date)!),
+    )
     .map((lead) => buildFollowUpReminder(lead, today));
 
   const todayLeads = leadsWithDate
@@ -332,7 +363,9 @@ export const buildFollowUpBuckets = (leads: LeadRecord[]): FollowUpBuckets => {
 
   const tomorrowLeads = leadsWithDate
     .filter((lead) => normalizeDate(lead.follow_up_date) === tomorrow)
-    .sort((a, b) => normalizeDate(a.follow_up_date)!.localeCompare(normalizeDate(b.follow_up_date)!))
+    .sort((a, b) =>
+      normalizeDate(a.follow_up_date)!.localeCompare(normalizeDate(b.follow_up_date)!),
+    )
     .map((lead) => buildFollowUpReminder(lead, today));
 
   const upcoming = leadsWithDate
@@ -340,7 +373,9 @@ export const buildFollowUpBuckets = (leads: LeadRecord[]): FollowUpBuckets => {
       const fud = normalizeDate(lead.follow_up_date)!;
       return fud > tomorrow && fud <= in7Days;
     })
-    .sort((a, b) => normalizeDate(a.follow_up_date)!.localeCompare(normalizeDate(b.follow_up_date)!))
+    .sort((a, b) =>
+      normalizeDate(a.follow_up_date)!.localeCompare(normalizeDate(b.follow_up_date)!),
+    )
     .map((lead) => buildFollowUpReminder(lead, today));
 
   const all = leadsWithDate
@@ -348,7 +383,10 @@ export const buildFollowUpBuckets = (leads: LeadRecord[]): FollowUpBuckets => {
     .sort((a, b) => {
       const aDate = normalizeDate(a.follow_up_date) || '9999-12-31';
       const bDate = normalizeDate(b.follow_up_date) || '9999-12-31';
-      return aDate.localeCompare(bDate) || normalizeText(a.customer_name).localeCompare(normalizeText(b.customer_name));
+      return (
+        aDate.localeCompare(bDate) ||
+        normalizeText(a.customer_name).localeCompare(normalizeText(b.customer_name))
+      );
     })
     .map((lead) => buildFollowUpReminder(lead, today));
 
@@ -455,8 +493,16 @@ export const buildFollowUpPageBuckets = (leads: LeadRecord[]): FollowUpPageBucke
 };
 
 const SOURCE_COLORS = [
-  '#0288D1', '#7C3AED', '#ED6C02', '#2E7D32', '#D32F2F',
-  '#0D9488', '#C2185B', '#F57C00', '#1565C0', '#558B2F',
+  '#0288D1',
+  '#7C3AED',
+  '#ED6C02',
+  '#2E7D32',
+  '#D32F2F',
+  '#0D9488',
+  '#C2185B',
+  '#F57C00',
+  '#1565C0',
+  '#558B2F',
 ];
 
 const buildSourceBreakdown = (leads: LeadRecord[]): SourceBreakdownItem[] => {
@@ -478,7 +524,8 @@ const buildSourceBreakdown = (leads: LeadRecord[]): SourceBreakdownItem[] => {
     }));
 };
 
-export const buildDashboardMetrics = (leads: LeadRecord[]): DashboardMetrics => {  const totalLeads = leads.length;
+export const buildDashboardMetrics = (leads: LeadRecord[]): DashboardMetrics => {
+  const totalLeads = leads.length;
   const contactedLeads = leads.filter((lead) => {
     const status = normalizeStatus(lead.status);
     return Boolean(status) && !CONTACT_EXCLUDED.has(status);
@@ -487,13 +534,17 @@ export const buildDashboardMetrics = (leads: LeadRecord[]): DashboardMetrics => 
   const lostLeads = countByStatus(leads, LOST_SET);
 
   const today = todayIso();
-  const todayFollowUps = leads.filter((lead) => normalizeDate(lead.follow_up_date) === today).length;
+  const todayFollowUps = leads.filter(
+    (lead) => normalizeDate(lead.follow_up_date) === today,
+  ).length;
 
   const notAnswering = leads.filter((lead) => {
     const status = normalizeStatus(lead.status);
     if (status === 'not answering') return true;
 
-    return DAY_FIELDS.some((field) => normalizeStatus(lead[field] as string | null) === 'not answering');
+    return DAY_FIELDS.some(
+      (field) => normalizeStatus(lead[field] as string | null) === 'not answering',
+    );
   }).length;
 
   const highPriority = buildHighPriorityLeads(leads);

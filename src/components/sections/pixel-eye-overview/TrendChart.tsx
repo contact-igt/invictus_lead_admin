@@ -1,4 +1,4 @@
-import { Box, Card, CardContent, Paper, Skeleton, Stack, Typography, useTheme } from '@mui/material';
+import { Box, Paper, Skeleton, Stack, Typography, useTheme } from '@mui/material';
 import { useMemo } from 'react';
 import ReactEchart from 'components/base/ReactEchart';
 import * as echarts from 'echarts/core';
@@ -8,8 +8,16 @@ import { CanvasRenderer } from 'echarts/renderers';
 import { TrendPoint } from './types';
 import IconifyIcon from 'components/base/IconifyIcon';
 import useColorMode from 'hooks/useColorMode';
+import { PixelEyeCard } from 'components/sections/pixel-eye/pixelEyeUi';
 
-echarts.use([BarChart, LineChart, TooltipComponent, GridComponent, LegendComponent, CanvasRenderer]);
+echarts.use([
+  BarChart,
+  LineChart,
+  TooltipComponent,
+  GridComponent,
+  LegendComponent,
+  CanvasRenderer,
+]);
 
 interface TrendChartProps {
   points: TrendPoint[];
@@ -34,7 +42,8 @@ const TrendChart = ({ points, loading = false, highlightSeries }: TrendChartProp
 
   const totalContacted = points.reduce((sum, p) => sum + p.contacted, 0);
   const totalConverted = points.reduce((sum, p) => sum + p.converted, 0);
-  const conversionRate = totalContacted > 0 ? Math.round((totalConverted / totalContacted) * 100) : 0;
+  const conversionRate =
+    totalContacted > 0 ? Math.round((totalConverted / totalContacted) * 100) : 0;
   const isEmpty = points.length === 0;
 
   const contactedOpacity = highlightSeries && highlightSeries !== 'contacted' ? 0.35 : 1;
@@ -42,7 +51,7 @@ const TrendChart = ({ points, loading = false, highlightSeries }: TrendChartProp
 
   const rangeLabel =
     points.length >= 2
-      ? `${formatDateLabel(points[0].day)} – ${formatDateLabel(points[points.length - 1].day)}`
+      ? `${formatDateLabel(points[0].day)} - ${formatDateLabel(points[points.length - 1].day)}`
       : points.length === 1
         ? formatDateLabel(points[0].day)
         : null;
@@ -52,10 +61,12 @@ const TrendChart = ({ points, loading = false, highlightSeries }: TrendChartProp
       backgroundColor: 'transparent',
       tooltip: {
         trigger: 'axis',
-        backgroundColor: '#1E293B',
-        borderColor: 'transparent',
+        backgroundColor: mode === 'dark' ? '#111F19' : '#1E293B',
+        borderColor: mode === 'dark' ? 'rgba(34, 197, 94, 0.2)' : 'transparent',
         textStyle: { color: '#F8FAFC', fontSize: 12 },
-        formatter: (params: Array<{ seriesName: string; value: number; marker: string; axisValue: string }>) => {
+        formatter: (
+          params: Array<{ seriesName: string; value: number; marker: string; axisValue: string }>,
+        ) => {
           const label = formatDateLabel(params[0]?.axisValue ?? '');
           const rows = params
             .map(
@@ -74,7 +85,7 @@ const TrendChart = ({ points, loading = false, highlightSeries }: TrendChartProp
         axisLine: { show: false },
         axisTick: { show: false },
         axisLabel: {
-          color: theme.palette.text.secondary,
+          color: mode === 'dark' ? '#94A3B8' : theme.palette.text.secondary,
           fontSize: 11,
           formatter: (v: string) => formatDateLabel(v),
         },
@@ -82,8 +93,16 @@ const TrendChart = ({ points, loading = false, highlightSeries }: TrendChartProp
       yAxis: {
         type: 'value',
         minInterval: 1,
-        splitLine: { lineStyle: { color: '#E2E8F0', type: 'dashed' } },
-        axisLabel: { color: theme.palette.text.secondary, fontSize: 11 },
+        splitLine: {
+          lineStyle: {
+            color: mode === 'dark' ? 'rgba(76, 119, 96, 0.12)' : '#E2E8F0',
+            type: 'dashed',
+          },
+        },
+        axisLabel: {
+          color: mode === 'dark' ? '#94A3B8' : theme.palette.text.secondary,
+          fontSize: 11,
+        },
       },
       series: [
         {
@@ -109,7 +128,12 @@ const TrendChart = ({ points, loading = false, highlightSeries }: TrendChartProp
           symbolSize: 7,
           symbol: 'circle',
           lineStyle: { width: 2.5, color: CONVERTED_COLOR, opacity: convertedOpacity },
-          itemStyle: { color: CONVERTED_COLOR, borderWidth: 2, borderColor: '#fff', opacity: convertedOpacity },
+          itemStyle: {
+            color: CONVERTED_COLOR,
+            borderWidth: 2,
+            borderColor: '#fff',
+            opacity: convertedOpacity,
+          },
           areaStyle: {
             color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
               { offset: 0, color: `${CONVERTED_COLOR}26` },
@@ -120,95 +144,190 @@ const TrendChart = ({ points, loading = false, highlightSeries }: TrendChartProp
         },
       ],
     }),
-    [points, theme, highlightSeries],
+    [points, theme, highlightSeries, mode],
   );
 
   return (
-    <Card
-      elevation={0}
-      sx={{
-        borderRadius: '16px',
-        bgcolor: '#FFFFFF',
-        border: '1px solid #F1F5F9',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04)',
-        width: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
-      <CardContent sx={{ p: 2.5, flex: 1, display: 'flex', flexDirection: 'column', '&:last-child': { pb: 2.5 } }}>
-        <Stack direction="row" alignItems="flex-start" justifyContent="space-between" mb={2}>
-          <Box>
+    <PixelEyeCard sx={{ p: 4, h: '100%' }}>
+      <Stack
+        direction="row"
+        alignItems="flex-start"
+        justifyContent="space-between"
+        mb={3}
+        sx={{
+          borderBottom: mode === 'dark' ? '1px solid rgba(76, 119, 96, 0.15)' : '1px solid #F1F5F9',
+          pb: 2,
+        }}
+      >
+        <Box>
+          <Typography
+            sx={{
+              fontSize: '11px',
+              fontWeight: 800,
+              letterSpacing: '0.15em',
+              textTransform: 'uppercase',
+              color: mode === 'dark' ? '#86EFAC' : '#156A45',
+              mb: 0.5,
+            }}
+          >
+            Progression Trend
+          </Typography>
+          <Typography
+            variant="h5"
+            fontWeight={900}
+            sx={{ color: mode === 'dark' ? '#FFFFFF' : '#0F172A', letterSpacing: '-0.02em' }}
+          >
+            Contacted vs Converted
+          </Typography>
+          {rangeLabel && (
             <Typography
-              sx={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#94A3B8', mb: 0.3 }}
+              variant="caption"
+              sx={{ color: mode === 'dark' ? '#94A3B8' : '#64748B', mt: 0.5, display: 'block' }}
             >
-              Progression Trend
+              {rangeLabel}
             </Typography>
-            <Typography variant="h6" fontWeight={700} color={mode === 'dark' ? '#FFFFFF' : '#0F172A'}>
-              Contacted vs Converted
-            </Typography>
-            {rangeLabel && (
-              <Typography variant="caption" color="#64748B">{rangeLabel}</Typography>
-            )}
-          </Box>
+          )}
+        </Box>
+      </Stack>
+
+      {/* Summary mini-cards */}
+      {!loading && (
+        <Stack direction="row" spacing={2} mb={3.5} flexWrap="wrap">
+          <Paper
+            elevation={0}
+            sx={{
+              px: 2,
+              py: 1.25,
+              borderRadius: '12px',
+              border: mode === 'dark' ? '1px solid rgba(37, 99, 235, 0.24)' : '1px solid #BFDBFE',
+              bgcolor: mode === 'dark' ? 'rgba(37, 99, 235, 0.08)' : '#EFF6FF',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1.5,
+            }}
+          >
+            <IconifyIcon icon="mdi:phone-outline" sx={{ fontSize: 18, color: CONTACTED_COLOR }} />
+            <Box>
+              <Typography
+                variant="caption"
+                fontWeight={800}
+                sx={{ color: CONTACTED_COLOR, display: 'block', lineHeight: 1 }}
+              >
+                {totalContacted}
+              </Typography>
+              <Typography
+                variant="caption"
+                fontWeight={600}
+                sx={{ color: mode === 'dark' ? '#94A3B8' : '#64748B', fontSize: '10px' }}
+              >
+                Contacted
+              </Typography>
+            </Box>
+          </Paper>
+          <Paper
+            elevation={0}
+            sx={{
+              px: 2,
+              py: 1.25,
+              borderRadius: '12px',
+              border: mode === 'dark' ? '1px solid rgba(22, 163, 74, 0.24)' : '1px solid #BBF7D0',
+              bgcolor: mode === 'dark' ? 'rgba(22, 163, 74, 0.08)' : '#F0FDF4',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1.5,
+            }}
+          >
+            <IconifyIcon
+              icon="mdi:check-circle-outline"
+              sx={{ fontSize: 18, color: CONVERTED_COLOR }}
+            />
+            <Box>
+              <Typography
+                variant="caption"
+                fontWeight={800}
+                sx={{ color: CONVERTED_COLOR, display: 'block', lineHeight: 1 }}
+              >
+                {totalConverted}
+              </Typography>
+              <Typography
+                variant="caption"
+                fontWeight={600}
+                sx={{ color: mode === 'dark' ? '#94A3B8' : '#64748B', fontSize: '10px' }}
+              >
+                Converted
+              </Typography>
+            </Box>
+          </Paper>
+          <Paper
+            elevation={0}
+            sx={{
+              px: 2,
+              py: 1.25,
+              borderRadius: '12px',
+              border: mode === 'dark' ? '1px solid rgba(217, 119, 6, 0.24)' : '1px solid #FDE68A',
+              bgcolor: mode === 'dark' ? 'rgba(217, 119, 6, 0.08)' : '#FFFBEB',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1.5,
+            }}
+          >
+            <IconifyIcon icon="mdi:trending-up" sx={{ fontSize: 18, color: AMBER }} />
+            <Box>
+              <Typography
+                variant="caption"
+                fontWeight={800}
+                sx={{ color: AMBER, display: 'block', lineHeight: 1 }}
+              >
+                {conversionRate}%
+              </Typography>
+              <Typography
+                variant="caption"
+                fontWeight={600}
+                sx={{ color: mode === 'dark' ? '#94A3B8' : '#64748B', fontSize: '10px' }}
+              >
+                Conv. Rate
+              </Typography>
+            </Box>
+          </Paper>
         </Stack>
+      )}
 
-        {/* Summary mini-cards */}
-        {!loading && (
-          <Stack direction="row" spacing={1.5} mb={2.5} flexWrap="wrap" useFlexGap>
-            <Paper
-              elevation={0}
-              sx={{
-                px: 1.5, py: 1, borderRadius: '10px',
-                border: '1px solid #BFDBFE', bgcolor: '#EFF6FF',
-                display: 'flex', alignItems: 'center', gap: 1,
-              }}
-            >
-              <IconifyIcon icon="mdi:phone-outline" sx={{ fontSize: 16, color: CONTACTED_COLOR }} />
-              <Typography variant="caption" fontWeight={800} color={CONTACTED_COLOR}>{totalContacted}</Typography>
-              <Typography variant="caption" fontWeight={500} color="#64748B">Contacted</Typography>
-            </Paper>
-            <Paper
-              elevation={0}
-              sx={{
-                px: 1.5, py: 1, borderRadius: '10px',
-                border: '1px solid #BBF7D0', bgcolor: '#F0FDF4',
-                display: 'flex', alignItems: 'center', gap: 1,
-              }}
-            >
-              <IconifyIcon icon="mdi:check-circle-outline" sx={{ fontSize: 16, color: CONVERTED_COLOR }} />
-              <Typography variant="caption" fontWeight={800} color={CONVERTED_COLOR}>{totalConverted}</Typography>
-              <Typography variant="caption" fontWeight={500} color="#64748B">Converted</Typography>
-            </Paper>
-            <Paper
-              elevation={0}
-              sx={{
-                px: 1.5, py: 1, borderRadius: '10px',
-                border: '1px solid #FDE68A', bgcolor: '#FFFBEB',
-                display: 'flex', alignItems: 'center', gap: 1,
-              }}
-            >
-              <IconifyIcon icon="mdi:trending-up" sx={{ fontSize: 16, color: AMBER }} />
-              <Typography variant="caption" fontWeight={800} color={AMBER}>{conversionRate}%</Typography>
-              <Typography variant="caption" fontWeight={500} color="#64748B">Conv. Rate</Typography>
-            </Paper>
-          </Stack>
-        )}
-
-        {loading ? (
-          <Skeleton variant="rounded" sx={{ flex: 1, minHeight: 200, borderRadius: '12px' }} />
-        ) : isEmpty ? (
-          <Stack flex={1} alignItems="center" justifyContent="center" minHeight={200} spacing={1}>
-            <IconifyIcon icon="mdi:chart-bar" sx={{ fontSize: 40, color: '#CBD5E1' }} />
-            <Typography variant="body2" color="#94A3B8" fontWeight={500}>
-              No progression data for the selected period.
-            </Typography>
-          </Stack>
-        ) : (
-          <ReactEchart echarts={echarts} option={option} sx={{ height: 260, mt: 0.5 }} />
-        )}
-      </CardContent>
-    </Card>
+      {loading ? (
+        <Skeleton
+          variant="rounded"
+          sx={{
+            flex: 1,
+            minHeight: 200,
+            borderRadius: '16px',
+            bgcolor: mode === 'dark' ? '#0B1410' : '#F3F4F6',
+          }}
+        />
+      ) : isEmpty ? (
+        <Stack
+          flex={1}
+          alignItems="center"
+          justifyContent="center"
+          minHeight={260}
+          spacing={2}
+          sx={{ bgcolor: mode === 'dark' ? 'rgba(0,0,0,0.1)' : 'transparent', borderRadius: 3 }}
+        >
+          <IconifyIcon
+            icon="mdi:chart-bar"
+            sx={{ fontSize: 48, color: mode === 'dark' ? '#1F3A2D' : '#CBD5E1' }}
+          />
+          <Typography
+            variant="body2"
+            sx={{ color: mode === 'dark' ? '#4B6356' : '#94A3B8', fontWeight: 600 }}
+          >
+            No progression data for the selected period.
+          </Typography>
+        </Stack>
+      ) : (
+        <Box sx={{ flex: 1, minHeight: 260 }}>
+          <ReactEchart echarts={echarts} option={option} sx={{ height: '100%', width: '100%' }} />
+        </Box>
+      )}
+    </PixelEyeCard>
   );
 };
 

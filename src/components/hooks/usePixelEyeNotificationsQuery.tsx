@@ -48,7 +48,13 @@ export const usePixelEyeNotificationsQuery = (
       if (clientKey) params._client_key = clientKey;
       if (filters?.state) params.state = filters.state;
       if (filters?.schedule_type) params.schedule_type = filters.schedule_type;
-      const res = await _axios('get', '/pixeleye/notifications', undefined, 'application/json', params);
+      const res = await _axios(
+        'get',
+        '/pixeleye/notifications',
+        undefined,
+        'application/json',
+        params,
+      );
       return extractData<NotificationState[]>(res);
     },
     { refetchInterval: 30000 },
@@ -59,7 +65,13 @@ export const usePixelEyeNotificationsSummaryQuery = (clientKey?: string) =>
     ['pixelEyeNotificationsSummary', clientKey ?? null],
     async () => {
       const params = clientKey ? { _client_key: clientKey } : undefined;
-      const res = await _axios('get', '/pixeleye/notifications/summary', undefined, 'application/json', params);
+      const res = await _axios(
+        'get',
+        '/pixeleye/notifications/summary',
+        undefined,
+        'application/json',
+        params,
+      );
       return extractData<NotificationSummary>(res);
     },
     { refetchInterval: 30000 },
