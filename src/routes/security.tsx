@@ -21,14 +21,18 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   }
 
   // Find the current route in the sitemap to determine requirements
-  const currentItem = sitemap.find(item =>
-    item.path === location.pathname ||
-    item.items?.some(subItem => subItem.path === location.pathname)
+  const currentItem = sitemap.find(
+    (item) =>
+      item.path === location.pathname ||
+      item.items?.some((subItem) => subItem.path === location.pathname),
   );
 
   let requiredKey = currentItem?.clientKey || '';
   const routeId = currentItem?.id;
   const pixelEyeLeadDetailMatch = location.pathname.match(/^\/pixel-eye\/leads\/[^/]+$/);
+  const pixelEyeNotificationDetailMatch = location.pathname.match(
+    /^\/pages\/d\/[^/]+\/notification\/[^/]+$/,
+  );
 
   // Fallback for aliased dynamic client URLs (e.g. /pages/d/pixel_eye/overview).
   if (!requiredKey && location.pathname.startsWith('/pages/d/')) {
@@ -39,6 +43,10 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   }
 
   if (!requiredKey && pixelEyeLeadDetailMatch) {
+    requiredKey = 'pixeleye';
+  }
+
+  if (!requiredKey && pixelEyeNotificationDetailMatch) {
     requiredKey = 'pixeleye';
   }
 
@@ -70,7 +78,11 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   // 3. Client Access
   if (user?.role === 'client') {
     // Dashboard and all management pages are not allowed for client users.
-    if (routeId === 'dashboard' || routeId === 'user-management' || routeId === 'client-management') {
+    if (
+      routeId === 'dashboard' ||
+      routeId === 'user-management' ||
+      routeId === 'client-management'
+    ) {
       if (location.pathname === clientHomePath) {
         return children;
       }
