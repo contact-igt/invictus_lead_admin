@@ -1,5 +1,5 @@
 import { _axios } from 'helper/axios';
-import { VlsPropertyLaw, VlsAibe } from './script';
+import { VlsPropertyLaw, VlsFamilyLaw, VlsAibe } from './script';
 
 export class VlsApiData {
   getAllVlsLawPractice = async () => {
@@ -59,6 +59,24 @@ export class VlsApiData {
 
   deletePropertyLawById = async (id: number | string) => {
     return await _axios('delete', `/property-law/${id}`);
+  };
+
+  // Family Law Masterclass (authenticated)
+
+  getAllFamilyLaw = async () => {
+    return await _axios('get', '/family-law');
+  };
+
+  createFamilyLaw = async (payload: Partial<VlsFamilyLaw>) => {
+    return await _axios('post', '/family-law', payload);
+  };
+
+  updateFamilyLawById = async (id: number | string, payload: Partial<VlsFamilyLaw>) => {
+    return await _axios('patch', `/family-law/${id}`, payload);
+  };
+
+  deleteFamilyLawById = async (id: number | string) => {
+    return await _axios('delete', `/family-law/${id}`);
   };
 }
 
