@@ -10,7 +10,7 @@ export interface NotificationState {
   agent_name?: string;
   last_status?: string;
   state: 'new' | 'baseline' | 'scheduled' | 'completed' | 'cancelled';
-  schedule_type?: 'THIRTY_MIN' | 'DNP2' | 'TWENTY_FOUR_HR' | null;
+  schedule_type?: 'THIRTY_MIN' | 'DNP2' | 'TWENTY_FOUR_HR' | 'FORTY_EIGHT_HR' | 'MANUAL' | null;
   reason?: string;
   scheduled_at?: string;
   notification_sent: boolean;

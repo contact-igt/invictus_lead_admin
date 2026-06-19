@@ -39,6 +39,7 @@ const SCHEDULE_TYPE_LABELS: Record<string, string> = {
   THIRTY_MIN: '30 Min',
   DNP2: 'DNP2 24hr',
   TWENTY_FOUR_HR: '24hr Follow-up',
+  FORTY_EIGHT_HR: '48hr Follow-up',
   MANUAL: 'Manual Follow-up',
 };
 
@@ -407,6 +408,7 @@ const NotificationTracker = ({ clientKey, searchText }: NotificationTrackerProps
             <MenuItem value="THIRTY_MIN">30 Min</MenuItem>
             <MenuItem value="DNP2">DNP2 24hr</MenuItem>
             <MenuItem value="TWENTY_FOUR_HR">24hr Follow-up</MenuItem>
+            <MenuItem value="FORTY_EIGHT_HR">48hr Follow-up</MenuItem>
             <MenuItem value="MANUAL">Manual Follow-up</MenuItem>
           </PixelEyeField>
 

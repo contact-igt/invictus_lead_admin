@@ -426,6 +426,7 @@ const NotificationTracker: React.FC<NotificationTrackerProps> = ({
                 <MenuItem value="THIRTY_MIN">30 Min</MenuItem>
                 <MenuItem value="DNP2">DNP2</MenuItem>
                 <MenuItem value="TWENTY_FOUR_HR">24hr Follow-up</MenuItem>
+                <MenuItem value="FORTY_EIGHT_HR">48hr Follow-up</MenuItem>
               </PixelEyeField>
             </Grid>
             <Grid item xs={12} lg={4}>
