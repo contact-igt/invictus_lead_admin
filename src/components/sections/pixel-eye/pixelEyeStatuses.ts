@@ -16,7 +16,8 @@ export const ONGOING_STATUSES = [
   'Hot Follow-up',
   'Follow-up Required',
   'Will Call Later',
-  'Rescheduling',
+  'Will Call & Take Appointment Later',
+  'Medicine',
   'Doctor Time',
   'Follow-up Post Appointment',
   'Want to Speak With Doctor',
@@ -63,7 +64,6 @@ export const TWENTY_FOUR_HR_STATUSES = [
   'Hot Follow-up',
   'Follow-up Required',
   'Will Call Later',
-  'Rescheduling',
   'Doctor Time',
   'Follow-up Post Appointment',
   'Want to Speak With Doctor',
@@ -72,6 +72,8 @@ export const TWENTY_FOUR_HR_STATUSES = [
   'Searching for Specific Hospital',
   'Others',
 ] as const;
+
+export const FORTY_EIGHT_HR_STATUSES = ['Will Call & Take Appointment Later'] as const;
 
 export const TERMINATION_STATUSES = [
   'Wrong Number',
@@ -100,20 +102,21 @@ export const getDayDropdownStatuses = (dayNumber: number): string[] => {
   const otherStatuses = nonThirtyMin.filter(
     (status) =>
       !(TWENTY_FOUR_HR_STATUSES as readonly string[]).includes(status) &&
+      !(FORTY_EIGHT_HR_STATUSES as readonly string[]).includes(status) &&
       !['Dnp 1', 'Dnp 2', 'Dnp 3', 'Dnp 4'].includes(status),
   );
 
   if (dayNumber === 1) {
-    return ['Dnp 1', ...TWENTY_FOUR_HR_STATUSES, ...otherStatuses];
+    return ['Dnp 1', ...TWENTY_FOUR_HR_STATUSES, ...FORTY_EIGHT_HR_STATUSES, ...otherStatuses];
   }
   if (dayNumber === 2) {
-    return ['Dnp 2', ...TWENTY_FOUR_HR_STATUSES, ...otherStatuses];
+    return ['Dnp 2', ...TWENTY_FOUR_HR_STATUSES, ...FORTY_EIGHT_HR_STATUSES, ...otherStatuses];
   }
   if (dayNumber === 3) {
-    return ['Dnp 3', ...TWENTY_FOUR_HR_STATUSES, ...otherStatuses];
+    return ['Dnp 3', ...TWENTY_FOUR_HR_STATUSES, ...FORTY_EIGHT_HR_STATUSES, ...otherStatuses];
   }
   if (dayNumber === 4) {
-    return ['Dnp 4', ...TWENTY_FOUR_HR_STATUSES, ...otherStatuses];
+    return ['Dnp 4', ...TWENTY_FOUR_HR_STATUSES, ...FORTY_EIGHT_HR_STATUSES, ...otherStatuses];
   }
   if (dayNumber === 5) {
     return otherStatuses;

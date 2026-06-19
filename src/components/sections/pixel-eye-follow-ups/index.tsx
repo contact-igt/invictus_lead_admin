@@ -36,6 +36,7 @@ import {
   NO_ACTION_STATUSES,
   TERMINATION_STATUSES,
   TWENTY_FOUR_HR_STATUSES,
+  FORTY_EIGHT_HR_STATUSES,
 } from '../pixel-eye/pixelEyeStatuses';
 
 type FollowUpBucketKey = FollowUpBucketSection['key'] | 'missed';
@@ -80,6 +81,9 @@ const successStatusSet = new Set(NO_ACTION_STATUSES.map((status) => status.toLow
 const twentyFourHourStatusSet = new Set(
   TWENTY_FOUR_HR_STATUSES.map((status) => status.toLowerCase()),
 );
+const fortyEightHourStatusSet = new Set(
+  FORTY_EIGHT_HR_STATUSES.map((status) => status.toLowerCase()),
+);
 
 const normalizeStatusText = (status?: string | null): string =>
   String(status || '').trim().toLowerCase();
@@ -94,6 +98,9 @@ const getWorkflowChipUi = (status?: string | null) => {
   }
   if (twentyFourHourStatusSet.has(normalized)) {
     return { label: status || '24h follow-up', color: '#F59E0B', background: 'rgba(245,158,11,0.12)' };
+  }
+  if (fortyEightHourStatusSet.has(normalized)) {
+    return { label: status || '48h follow-up', color: '#8B5CF6', background: 'rgba(139,92,246,0.12)' };
   }
   return {
     label: status || 'Active follow-up',

@@ -12,7 +12,7 @@ export interface LeadRecord {
   follow_up_date?: string | null;
   status?: string | null;
   followup_state?: 'scheduled' | 'completed' | 'cancelled' | 'baseline' | 'new' | null;
-  reminder_schedule_type?: 'THIRTY_MIN' | 'DNP2' | 'TWENTY_FOUR_HR' | 'MANUAL' | null;
+  reminder_schedule_type?: 'THIRTY_MIN' | 'DNP2' | 'TWENTY_FOUR_HR' | 'FORTY_EIGHT_HR' | 'MANUAL' | null;
   reminder_scheduled_at?: string | null;
   reminder_notification_sent?: boolean | null;
   reminder_notification_sent_at?: string | null;

@@ -52,6 +52,7 @@ import {
   TERMINATION_STATUSES,
   NO_ACTION_STATUSES,
   TWENTY_FOUR_HR_STATUSES,
+  FORTY_EIGHT_HR_STATUSES,
   ALL_STATUSES,
   getDayDropdownStatuses,
   isStatusTerminalForDays,
@@ -79,6 +80,7 @@ const getMainStatusUi = (status: string | undefined | null, mode: 'dark' | 'ligh
   const isClosed = (TERMINATION_STATUSES as readonly string[]).includes(value);
   const isWon = (NO_ACTION_STATUSES as readonly string[]).includes(value);
   const isTwentyFourHour = (TWENTY_FOUR_HR_STATUSES as readonly string[]).includes(value);
+  const isFortyEightHour = (FORTY_EIGHT_HR_STATUSES as readonly string[]).includes(value);
 
   if (isClosed) {
     return {
@@ -107,6 +109,16 @@ const getMainStatusUi = (status: string | undefined | null, mode: 'dark' | 'ligh
       color: '#F59E0B',
       bg: mode === 'dark' ? 'rgba(245,158,11,0.1)' : '#FFFBEB',
       border: mode === 'dark' ? 'rgba(245,158,11,0.26)' : '#FCD34D',
+    };
+  }
+
+  if (isFortyEightHour) {
+    return {
+      label: '48-hour follow-up',
+      note: 'Appointment callback reminder is scheduled after two days',
+      color: '#8B5CF6',
+      bg: mode === 'dark' ? 'rgba(139,92,246,0.1)' : '#F5F3FF',
+      border: mode === 'dark' ? 'rgba(139,92,246,0.26)' : '#C4B5FD',
     };
   }
 
