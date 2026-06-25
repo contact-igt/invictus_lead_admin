@@ -1420,7 +1420,7 @@ const PixelEyeLeadDetailPage = () => {
                                     textOverflow: 'ellipsis',
                                   }}
                                 >
-                                  {stat.value || 'â€”'}
+                                  {stat.value || '—'}
                                 </Typography>
                               </Box>
                             </Box>
@@ -1730,7 +1730,7 @@ const PixelEyeLeadDetailPage = () => {
                           followUpSummary.latestActor || followUpSummary.latestSource
                             ? [followUpSummary.latestActor, followUpSummary.latestSource]
                               .filter(Boolean)
-                              .join(' Â· ')
+                              .join(' · ')
                             : 'No completed follow-up history yet.',
                       },
                     ].map((item) => (
@@ -2029,7 +2029,7 @@ const PixelEyeLeadDetailPage = () => {
                                     )}
 
                                     <Typography variant="caption" sx={{ fontWeight: 900, color: 'text.disabled', mx: 0.5 }}>
-                                      â†’
+                                      →
                                     </Typography>
 
                                     {item.new_follow_up_date && (
