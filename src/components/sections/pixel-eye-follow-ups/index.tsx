@@ -1190,7 +1190,7 @@ const PixelEyeFollowUpsPage: React.FC = () => {
       },
       {
         label: 'Reminder Progress',
-        value: reminderParts.join(' Ã‚Â· '),
+        value: reminderParts.join(' · '),
         tone: selectedLeadWithDetails.reminder_notification_sent
           ? 'success'
           : selectedLeadWithDetails.reminder_scheduled_at
@@ -1201,7 +1201,7 @@ const PixelEyeFollowUpsPage: React.FC = () => {
         label: 'Call Compliance',
         value:
           String(callStatus).toUpperCase() === 'CALLED'
-            ? `Call Done${complianceList[0]?.matched_call_started_at ? ` Ã‚Â· ${formatDateTime(complianceList[0].matched_call_started_at)}` : ''}`
+            ? `Call Done${complianceList[0]?.matched_call_started_at ? ` · ${formatDateTime(complianceList[0].matched_call_started_at)}` : ''}`
             : String(callStatus).toUpperCase() === 'MISSED'
               ? 'Missed compliance window'
               : 'Call Pending',
@@ -1223,7 +1223,7 @@ const PixelEyeFollowUpsPage: React.FC = () => {
         : []),
       {
         label: 'Last Saved Result',
-        value: lastSavedResultParts.length > 0 ? lastSavedResultParts.join(' Ã‚Â· ') : 'No completed follow-up history yet',
+        value: lastSavedResultParts.length > 0 ? lastSavedResultParts.join(' · ') : 'No completed follow-up history yet',
         tone: lastSavedResultParts.length > 0 ? 'success' : 'neutral',
       },
       {
@@ -1238,7 +1238,7 @@ const PixelEyeFollowUpsPage: React.FC = () => {
       {
         label: 'Last Change',
         value: latestHistoryItem
-          ? `${latestHistoryItem.change_type || 'UPDATED'} Ã‚Â· ${formatDateTime(latestHistoryItem.created_at || latestHistoryItem.createdAt)}`
+          ? `${latestHistoryItem.change_type || 'UPDATED'} · ${formatDateTime(latestHistoryItem.created_at || latestHistoryItem.createdAt)}`
           : 'No follow-up history yet',
         tone: latestHistoryItem ? 'info' : 'neutral',
       },
@@ -1419,7 +1419,7 @@ const PixelEyeFollowUpsPage: React.FC = () => {
         label: '3. Call',
         description:
           complianceStatus === 'CALLED'
-            ? `Call done${complianceList[0]?.matched_call_started_at ? ` Ã‚Â· ${formatDateTime(complianceList[0].matched_call_started_at)}` : ''}`
+            ? `Call done${complianceList[0]?.matched_call_started_at ? ` · ${formatDateTime(complianceList[0].matched_call_started_at)}` : ''}`
             : complianceStatus === 'MISSED'
               ? 'Missed call window.'
               : hasPendingSignal
@@ -2714,7 +2714,7 @@ const PixelEyeFollowUpsPage: React.FC = () => {
                                       complianceList[0].scheduled_follow_up_at ||
                                       complianceList[0].follow_up_date,
                                     )}
-                                    <span className="mx-2 opacity-40">Ã¢â€ â€™</span>
+                                    <span className="mx-2 opacity-40">→</span>
                                     {formatDisplayDateTime(complianceList[0].allowed_until)}
                                   </div>
                                 </div>
@@ -2804,7 +2804,7 @@ const PixelEyeFollowUpsPage: React.FC = () => {
                             : 'bg-slate-50 border-slate-200 text-slate-600'
                             }`}
                         >
-                          Primary actions are shown above in the Ã¢â‚¬Å“What to do nextÃ¢â‚¬Â section for faster workflow handling.
+                          Primary actions are shown above in the "What to do next" section for faster workflow handling.
                         </div>
                       ) : (
                         <div
