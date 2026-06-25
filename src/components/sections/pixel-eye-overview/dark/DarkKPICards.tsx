@@ -23,21 +23,40 @@ const DarkKPICards: React.FC<{ items: KPIItem[]; loading?: boolean }> = ({
 }) => {
   const { mode } = useColorMode();
   const COLOR_MAP = mode === 'dark' ? COLOR_MAP_DARK : COLOR_MAP_LIGHT;
+
+  // Use a denser grid for large lists to keep information compact
+  const gridCols = items.length > 4
+    ? "grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
+    : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4";
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-2">
+    <div className={`grid ${gridCols} gap-4 mt-2`}>
       {items.map((item) => {
         const style = COLOR_MAP[item.color] ?? COLOR_MAP.primary;
         const value = typeof item.value === 'number' ? item.value.toLocaleString() : item.value;
+        const isClickable = typeof item.onClick === 'function';
 
         return (
           <div
             key={item.key}
-            className={`rounded-2xl border p-4 flex flex-col justify-between transition-all duration-200 ${
-              mode === 'dark'
-                ? 'border-[#15271E] bg-[#070D0A]'
-                : 'border-slate-100 bg-slate-50/50 shadow-sm'
-            }`}
-            style={{ minHeight: 110 }}
+            onClick={item.onClick}
+            className={`rounded-2xl border p-4 flex flex-col justify-between transition-all duration-200 ${mode === 'dark'
+              ? 'border-[#15271E] bg-[#070D0A]'
+              : 'border-slate-100 bg-slate-50/50 shadow-sm'
+              }`}
+            style={{ minHeight: 110, cursor: isClickable ? 'pointer' : 'default' }}
+            role={isClickable ? 'button' : undefined}
+            tabIndex={isClickable ? 0 : undefined}
+            onKeyDown={
+              isClickable
+                ? (event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    item.onClick?.();
+                  }
+                }
+                : undefined
+            }
           >
             <div className="flex items-start justify-between w-full">
               <div
@@ -57,24 +76,21 @@ const DarkKPICards: React.FC<{ items: KPIItem[]; loading?: boolean }> = ({
 
             <div className="mt-4">
               <div
-                className={`text-xs font-semibold uppercase tracking-wider block ${
-                  mode === 'dark' ? 'text-[#94A3B8]' : 'text-slate-500'
-                }`}
+                className={`text-xs font-semibold uppercase tracking-wider block ${mode === 'dark' ? 'text-[#94A3B8]' : 'text-slate-500'
+                  }`}
               >
                 {item.label}
               </div>
               <div
-                className={`text-2xl font-bold mt-1 block ${
-                  mode === 'dark' ? 'text-white' : 'text-slate-900'
-                }`}
+                className={`text-2xl font-bold mt-1 block ${mode === 'dark' ? 'text-white' : 'text-slate-900'
+                  }`}
               >
                 {loading ? '—' : value}
               </div>
               {item.subtext && (
                 <div
-                  className={`text-xs mt-1 truncate ${
-                    mode === 'dark' ? 'text-[#4B6356]' : 'text-gray-400'
-                  }`}
+                  className={`text-xs mt-1 truncate ${mode === 'dark' ? 'text-[#4B6356]' : 'text-gray-400'
+                    }`}
                 >
                   {item.subtext}
                 </div>

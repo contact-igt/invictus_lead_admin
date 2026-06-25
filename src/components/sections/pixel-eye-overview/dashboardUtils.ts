@@ -1,98 +1,72 @@
-import {
+﻿import {
   DashboardFilters,
+  FollowUpComplianceSummary,
   DashboardMetrics,
   FollowUpBuckets,
   FollowUpPageBuckets,
   FollowUpReminder,
+  FollowUpSummaryMetrics,
   HighPriorityLead,
   LeadRecord,
   SourceBreakdownItem,
   StatusCategoryItem,
   TrendPoint,
 } from './types';
+import {
+  FORTY_EIGHT_HR_STATUSES,
+  NO_ACTION_STATUSES,
+  TERMINATION_STATUSES,
+  THIRTY_MIN_STATUSES_TO_EXCLUDE,
+  TWENTY_FOUR_HR_STATUSES,
+  normalizePixelEyeStatus,
+} from '../pixel-eye/pixelEyeStatuses';
 
-// Normalize all known status lists to lowercase to allow case-insensitive matching
-const CONTACT_EXCLUDED = new Set(['Not Answering', 'Switched Off'].map((s) => s.toLowerCase()));
+// Status groups are mutually exclusive and mirror backend reminder behavior.
+const CONTACT_EXCLUDED = new Set(
+  (THIRTY_MIN_STATUSES_TO_EXCLUDE as readonly string[]).map((status) => status.toLowerCase()),
+);
+
 const APPOINTMENT_KPI_SET = new Set(
-  ['Appointment Fixed', 'Visited', 'Walk-in'].map((s) => s.toLowerCase()),
+  (NO_ACTION_STATUSES as readonly string[]).map((status) => status.toLowerCase()),
 );
 
-const CONVERTED_SET = new Set(
-  ['Appointment Fixed', 'Visited', 'Walk-in', 'Closed'].map((s) => s.toLowerCase()),
-);
+const CONVERTED_SET = new Set(APPOINTMENT_KPI_SET);
+
 const FOLLOW_UP_SET = new Set(
-  [
-    'Enquiry',
-    'Hot Follow-up',
-    'Follow-up Required',
-    'Will Call Later',
-    'Will Call & Take Appointment Later',
-    'Medicine',
-    'Doctor Time',
-    'Follow-up Post Appointment',
-    'Want to Speak With Doctor',
-    'Appointment Cancelled',
-    'Address Requested',
-    'Searching for Specific Hospital',
-    'Others',
-  ].map((s) => s.toLowerCase()),
+  [...TWENTY_FOUR_HR_STATUSES, ...FORTY_EIGHT_HR_STATUSES].map((status) =>
+    status.toLowerCase(),
+  ),
 );
-const LOST_SET = new Set(
-  [
-    'Not Interested',
-    'Not Willing to Come Now',
-    'Searching for Specific Hospital',
-    'Going to Other Hospital',
-    'Not in Hyderabad',
-    'Long Distance',
-    'Appointment Cancelled',
-  ].map((s) => s.toLowerCase()),
-);
+
 const INVALID_SET = new Set(
-  [
-    'Wrong Number',
-    'Wrongly Dialed',
-    'Fraud Call',
-    'Not in Network',
-    'Incoming Call Not Available',
-    'Number Not in Service',
-    'DND',
-  ].map((s) => s.toLowerCase()),
+  ['Number Not In Service', 'Wrong Number'].map((status) => status.toLowerCase()),
 );
 
-const TERMINAL_STATUS_SET = new Set(
-  [
-    'Wrong Number',
-    'Wrongly Dialed',
-    'Fraud Call',
-    'Not Interested',
-    'Not Willing to Come Now',
-    'Going to Other Hospital',
-    'Not in Hyderabad',
-    'Long Distance',
-    'Number Not in Service',
-    'Walk-in',
-    'Closed',
-    'Appointment Fixed',
-    'Visited',
-  ].map((s) => s.toLowerCase()),
+const LOST_SET = new Set(
+  (TERMINATION_STATUSES as readonly string[])
+    .map((status) => status.toLowerCase())
+    .filter((status) => !INVALID_SET.has(status)),
 );
 
-const INTERESTED_SET = new Set(
-  [
-    ...Array.from(FOLLOW_UP_SET),
-    'Enquiry',
-    'Appointment Fixed',
-    'Visited',
-    'Walk-in',
-    'Closed',
-  ].map((s) => s.toLowerCase()),
-);
+const CLOSED_OR_CANCELLED_SET = new Set([
+  ...Array.from(LOST_SET),
+  ...Array.from(INVALID_SET),
+]);
 
-const HIGH_PRIORITY_SET = new Set(
-  ['Hot Follow-up', 'Follow-up Required', 'Appointment Fixed'].map((s) => s.toLowerCase()),
-);
+const TERMINAL_STATUS_SET = new Set([
+  ...Array.from(APPOINTMENT_KPI_SET),
+  ...Array.from(LOST_SET),
+  ...Array.from(INVALID_SET),
+]);
+
+const INTERESTED_SET = new Set([
+  ...Array.from(FOLLOW_UP_SET),
+  ...Array.from(APPOINTMENT_KPI_SET),
+]);
+
+const HIGH_PRIORITY_SET = new Set(['Hot Followup'.toLowerCase()]);
 const DAY_FIELDS: Array<keyof LeadRecord> = ['day_1', 'day_2', 'day_3', 'day_4', 'day_5'];
+const IST_TIME_ZONE = 'Asia/Kolkata';
 
 const normalizeDate = (value?: string | null): string => {
   if (!value) return '';
@@ -115,13 +89,88 @@ const normalizeDate = (value?: string | null): string => {
 };
 
 const normalizeText = (value?: string | null): string => (value || '').trim();
-const normalizeStatus = (value?: string | null): string => normalizeText(value).toLowerCase();
+const normalizeStatus = (value?: string | null): string =>
+  normalizePixelEyeStatus(normalizeText(value)).toLowerCase();
 
-const todayIso = (): string => {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
+const CALL_RECEIVED_OUTCOME_PENDING = 'call_received_outcome_pending';
+
+export const isCallReceivedOutcomePendingLead = (
+  lead?:
+    | {
+      followup_highlight_state?: string | null;
+      called_outcome_missing?: boolean | null;
+    }
+    | null,
+): boolean => {
+  if (!lead) return false;
+
+  return (
+    normalizeText(lead.followup_highlight_state).toLowerCase() === CALL_RECEIVED_OUTCOME_PENDING ||
+    lead.called_outcome_missing === true
+  );
+};
+
+const hasCalledComplianceSignal = (lead?: LeadRecord | null): boolean => {
+  if (!lead) return false;
+
+  return (
+    normalizeStatus(lead.compliance_status) === 'called' ||
+    Boolean(normalizeText(lead.latest_call_time)) ||
+    Boolean(normalizeText(lead.matched_call_started_at)) ||
+    Boolean(normalizeText(lead.matched_call_id)) ||
+    Boolean(lead.matched_call_log_id)
+  );
+};
+
+export const getLatestOutcomeStatus = (lead?: LeadRecord | null): string => {
+  if (!lead) return '';
+
+  for (let index = DAY_FIELDS.length - 1; index >= 0; index -= 1) {
+    const value = normalizeText(lead[DAY_FIELDS[index]] as string | null);
+    if (value) {
+      return value;
+    }
+  }
+
+  return normalizeText(lead.status);
+};
+
+export const hasUpdatedOutcome = (lead?: LeadRecord | null): boolean => {
+  if (!lead) return false;
+  return DAY_FIELDS.some((field) => Boolean(normalizeText(lead[field] as string | null)));
+};
+
+export const hasSuccessfulOutcome = (lead?: LeadRecord | null): boolean => {
+  const latestOutcome = normalizeStatus(getLatestOutcomeStatus(lead));
+  return Boolean(latestOutcome) && APPOINTMENT_KPI_SET.has(latestOutcome);
+};
+
+export const isClosedOrCancelledFollowUpLead = (lead?: LeadRecord | null): boolean => {
+  if (!lead) return false;
+
+  if (normalizeStatus(lead.followup_state) === 'cancelled') {
+    return true;
+  }
+
+  if (Boolean(lead.reminder_permanently_closed)) {
+    return true;
+  }
+
+  const latestOutcome = normalizeStatus(getLatestOutcomeStatus(lead));
+  return Boolean(latestOutcome) && CLOSED_OR_CANCELLED_SET.has(latestOutcome);
+};
+
+export const getTodayIsoInIst = (): string => {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: IST_TIME_ZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(new Date());
+
+  const year = parts.find((part) => part.type === 'year')?.value ?? '0000';
+  const month = parts.find((part) => part.type === 'month')?.value ?? '01';
+  const day = parts.find((part) => part.type === 'day')?.value ?? '01';
   return `${year}-${month}-${day}`;
 };
 
@@ -160,9 +209,29 @@ const getLeadActivityTimestamp = (lead: LeadRecord): number => {
 
 const isValidFollowUpDate = (value?: string | null): boolean => Boolean(normalizeDate(value));
 
-const isHandledReminderState = (state?: string | null): boolean => {
-  const normalized = normalizeStatus(state);
-  return normalized === 'completed' || normalized === 'cancelled';
+export const hasAllOutcomeDaysFilled = (lead?: LeadRecord | null): boolean => {
+  if (!lead) return false;
+  return DAY_FIELDS.every((field) => Boolean(normalizeText(lead[field] as string | null)));
+};
+
+type FollowUpStateLike = {
+  followup_state?: string | null;
+  followup_completion_source?: string | null;
+};
+
+export const shouldHideFollowUpLead = (lead: FollowUpStateLike): boolean => {
+  const normalizedState = normalizeStatus(lead.followup_state);
+
+  if (normalizedState === 'cancelled') {
+    return true;
+  }
+
+  if (normalizedState !== 'completed') {
+    return false;
+  }
+
+  const completionSource = normalizeStatus(lead.followup_completion_source);
+  return completionSource !== 'notification_sent';
 };
 
 export const isTerminalFollowUpStatus = (status?: string | null): boolean => {
@@ -178,11 +247,27 @@ export const isFollowUpStatus = (status?: string | null): boolean => {
 };
 
 export const isFollowUpLead = (lead: LeadRecord): boolean => {
-  if (isHandledReminderState(lead.followup_state)) return false;
+  if (shouldHideFollowUpLead(lead)) return false;
+  if (hasAllOutcomeDaysFilled(lead)) return false;
+  if (isClosedOrCancelledFollowUpLead(lead)) return false;
+
+  const latestOutcome = getLatestOutcomeStatus(lead);
   return (
-    !isTerminalFollowUpStatus(lead.status) &&
-    (isValidFollowUpDate(lead.follow_up_date) || isFollowUpStatus(lead.status))
+    !isTerminalFollowUpStatus(latestOutcome) &&
+    (isValidFollowUpDate(lead.follow_up_date) || isFollowUpStatus(latestOutcome))
   );
+};
+
+export const shouldIncludeInManualFollowUpQueue = (lead: LeadRecord): boolean => {
+  if (!isValidFollowUpDate(lead.follow_up_date)) return false;
+  if (shouldHideFollowUpLead(lead)) return false;
+  if (hasAllOutcomeDaysFilled(lead)) return false;
+  if (isClosedOrCancelledFollowUpLead(lead)) return false;
+
+  const latestOutcome = getLatestOutcomeStatus(lead);
+  if (isTerminalFollowUpStatus(latestOutcome)) return false;
+
+  return true;
 };
 
 export const getAvailableAgents = (leads: LeadRecord[]): string[] => {
@@ -197,14 +282,20 @@ export const applyDashboardFilters = (
 ): LeadRecord[] => {
   const { dateFrom, dateTo, agent } = filters;
   const normalizedAgent = normalizeText(agent).toLowerCase();
+  const normalizedFrom = normalizeDate(dateFrom);
+  const normalizedTo = normalizeDate(dateTo);
+  const effectiveFrom =
+    normalizedFrom && normalizedTo && normalizedFrom > normalizedTo ? normalizedTo : normalizedFrom;
+  const effectiveTo =
+    normalizedFrom && normalizedTo && normalizedFrom > normalizedTo ? normalizedFrom : normalizedTo;
 
   return leads.filter((lead) => {
     const leadDate =
       normalizeDate(lead.date) || normalizeDate(lead.createdAt) || normalizeDate(lead.created_at);
     const leadAgent = normalizeText(lead.agent_name).toLowerCase();
 
-    const isAfterFrom = !dateFrom || (leadDate && leadDate >= dateFrom);
-    const isBeforeTo = !dateTo || (leadDate && leadDate <= dateTo);
+    const isAfterFrom = !effectiveFrom || (leadDate && leadDate >= effectiveFrom);
+    const isBeforeTo = !effectiveTo || (leadDate && leadDate <= effectiveTo);
     const isAgentMatch = !normalizedAgent || leadAgent === normalizedAgent;
 
     return isAfterFrom && isBeforeTo && isAgentMatch;
@@ -240,11 +331,11 @@ const buildFunnel = (leads: LeadRecord[]) => {
 
   const interested = countByStatus(leads, INTERESTED_SET);
   const appointment = leads.filter(
-    (lead) => normalizeStatus(lead.status) === 'appointment fixed',
+    (lead) => APPOINTMENT_KPI_SET.has(normalizeStatus(lead.status)),
   ).length;
   const visited = leads.filter((lead) => {
     const status = normalizeStatus(lead.status);
-    return status === 'visited' || status === 'walk-in' || status === 'closed';
+    return status === 'visited' || status === 'walk in' || status === 'closed';
   }).length;
 
   const asPercent = (count: number) => (total > 0 ? Math.round((count / total) * 100) : 0);
@@ -288,7 +379,7 @@ const buildTrend = (leads: LeadRecord[]): TrendPoint[] => {
 const buildHighPriorityLeads = (
   leads: LeadRecord[],
 ): { totalCount: number; leads: HighPriorityLead[] } => {
-  const today = todayIso();
+  const today = getTodayIsoInIst();
 
   const prioritized = leads
     .filter((lead) => {
@@ -345,7 +436,7 @@ const buildFollowUpReminder = (lead: LeadRecord, today: string): FollowUpReminde
 };
 
 export const buildFollowUpBuckets = (leads: LeadRecord[]): FollowUpBuckets => {
-  const today = todayIso();
+  const today = getTodayIsoInIst();
   const in7Days = addDays(today, 7);
   const tomorrow = addDays(today, 1);
 
@@ -406,12 +497,13 @@ export const buildFollowUpBuckets = (leads: LeadRecord[]): FollowUpBuckets => {
 };
 
 export const buildFollowUpPageBuckets = (leads: LeadRecord[]): FollowUpPageBuckets => {
-  const today = todayIso();
+  const today = getTodayIsoInIst();
   const tomorrow = addDays(today, 1);
   const weekEnd = endOfWeekIso(today);
 
   const followUpLeads = leads.filter((lead) => isFollowUpLead(lead));
-  const dateBasedLeads = followUpLeads.filter((lead) => isValidFollowUpDate(lead.follow_up_date));
+  const queueOwnedLeads = followUpLeads.filter((lead) => !isCallReceivedOutcomePendingLead(lead));
+  const dateBasedLeads = queueOwnedLeads.filter((lead) => isValidFollowUpDate(lead.follow_up_date));
 
   const toReminder = (lead: LeadRecord): FollowUpReminder => {
     const followUpDate = normalizeDate(lead.follow_up_date) || '';
@@ -422,7 +514,16 @@ export const buildFollowUpPageBuckets = (leads: LeadRecord[]): FollowUpPageBucke
       agent_name: normalizeText(lead.agent_name) || 'Unassigned',
       status: normalizeText(lead.status) || 'N/A',
       follow_up_date: followUpDate,
+      followup_highlight_state: normalizeText(lead.followup_highlight_state) || null,
+      called_outcome_missing: Boolean(lead.called_outcome_missing),
+      compliance_status: normalizeText(lead.compliance_status) || null,
       followup_state: normalizeText(lead.followup_state) || '',
+      followup_completion_source:
+        normalizeStatus(lead.followup_completion_source) === 'notification_sent'
+          ? 'NOTIFICATION_SENT'
+          : normalizeStatus(lead.followup_completion_source) === 'manual_handled'
+            ? 'MANUAL_HANDLED'
+            : null,
       source: normalizeText(lead.source) || '',
       type_of_enquiry: normalizeText(lead.type_of_enquiry) || '',
       daysRelative: daysBetween(today, followUpDate || today),
@@ -430,6 +531,10 @@ export const buildFollowUpPageBuckets = (leads: LeadRecord[]): FollowUpPageBucke
   };
 
   const sortByDateThenActivity = (a: LeadRecord, b: LeadRecord) => {
+    const aPendingSignal = isCallReceivedOutcomePendingLead(a);
+    const bPendingSignal = isCallReceivedOutcomePendingLead(b);
+    if (aPendingSignal !== bPendingSignal) return aPendingSignal ? -1 : 1;
+
     const aDate = normalizeDate(a.follow_up_date) || '9999-12-31';
     const bDate = normalizeDate(b.follow_up_date) || '9999-12-31';
     if (aDate !== bDate) return aDate.localeCompare(bDate);
@@ -464,9 +569,13 @@ export const buildFollowUpPageBuckets = (leads: LeadRecord[]): FollowUpPageBucke
     .sort(sortByDateThenActivity)
     .map(toReminder);
 
-  const allLeads = followUpLeads
+  const allLeads = queueOwnedLeads
     .slice()
     .sort((a, b) => {
+      const aPendingSignal = isCallReceivedOutcomePendingLead(a);
+      const bPendingSignal = isCallReceivedOutcomePendingLead(b);
+      if (aPendingSignal !== bPendingSignal) return aPendingSignal ? -1 : 1;
+
       const aTs = getLeadActivityTimestamp(a);
       const bTs = getLeadActivityTimestamp(b);
       if (aTs !== bTs) return bTs - aTs;
@@ -490,6 +599,72 @@ export const buildFollowUpPageBuckets = (leads: LeadRecord[]): FollowUpPageBucke
     tomorrowLeads,
     weekLeads,
     allLeads,
+  };
+};
+
+type FollowUpIdentity = {
+  id?: number | null;
+  lead_id?: number | null;
+  call_id?: string | null;
+};
+
+const getFollowUpIdentityKey = (item?: FollowUpIdentity | LeadRecord | null): string => {
+  if (!item) return '';
+
+  const leadId =
+    typeof (item as FollowUpIdentity).lead_id === 'number' && Number.isFinite((item as FollowUpIdentity).lead_id)
+      ? (item as FollowUpIdentity).lead_id
+      : typeof item.id === 'number' && Number.isFinite(item.id)
+        ? item.id
+        : null;
+
+  if (leadId !== null) {
+    return `lead:${leadId}`;
+  }
+
+  const callId = normalizeText((item as FollowUpIdentity).call_id ?? (item as LeadRecord).call_id);
+  return callId ? `call:${callId}` : '';
+};
+
+export const buildFollowUpSummaryMetrics = (
+  leads: LeadRecord[],
+  complianceSummary?: Partial<FollowUpComplianceSummary> | null,
+  missedItems: FollowUpIdentity[] = [],
+): FollowUpSummaryMetrics => {
+  const today = getTodayIsoInIst();
+  const manualFollowUps = leads.filter((lead) => isValidFollowUpDate(lead.follow_up_date));
+  const actionableManualFollowUps = manualFollowUps.filter((lead) => shouldIncludeInManualFollowUpQueue(lead));
+  const overdueLeads = actionableManualFollowUps.filter(
+    (lead) => normalizeDate(lead.follow_up_date) && normalizeDate(lead.follow_up_date) < today,
+  );
+
+  const overdueOrMissedKeys = new Set<string>();
+  overdueLeads.forEach((lead) => {
+    const key = getFollowUpIdentityKey(lead);
+    if (key) overdueOrMissedKeys.add(key);
+  });
+  missedItems.forEach((item) => {
+    const key = getFollowUpIdentityKey(item);
+    if (key) overdueOrMissedKeys.add(key);
+  });
+
+  const calledSignalCount = actionableManualFollowUps.filter((lead) => hasCalledComplianceSignal(lead)).length;
+  const summaryCalledCount = Number(complianceSummary?.called || 0);
+  const outcomePendingCount = actionableManualFollowUps.filter((lead) => isCallReceivedOutcomePendingLead(lead)).length;
+
+  return {
+    totalFollowUps: manualFollowUps.length,
+    pendingFollowUps: actionableManualFollowUps.length,
+    dueToday: actionableManualFollowUps.filter((lead) => normalizeDate(lead.follow_up_date) === today).length,
+    overdueCount: overdueLeads.length,
+    overdueOrMissed: overdueOrMissedKeys.size,
+    notificationSent: manualFollowUps.filter((lead) => Boolean(lead.reminder_notification_sent)).length,
+    callDone: Math.max(summaryCalledCount, calledSignalCount),
+    outcomePending: outcomePendingCount,
+    outcomeUpdated: manualFollowUps.filter((lead) => hasUpdatedOutcome(lead)).length,
+    successfulOutcomes: manualFollowUps.filter((lead) => hasSuccessfulOutcome(lead)).length,
+    rescheduled: manualFollowUps.filter((lead) => Number(lead.follow_up_change_count || 0) > 0).length,
+    closedOrCancelled: manualFollowUps.filter((lead) => isClosedOrCancelledFollowUpLead(lead)).length,
   };
 };
 
@@ -525,7 +700,10 @@ const buildSourceBreakdown = (leads: LeadRecord[]): SourceBreakdownItem[] => {
     }));
 };
 
-export const buildDashboardMetrics = (leads: LeadRecord[]): DashboardMetrics => {
+export const buildDashboardMetrics = (
+  leads: LeadRecord[],
+  followUpSummary?: FollowUpSummaryMetrics,
+): DashboardMetrics => {
   const totalLeads = leads.length;
   const contactedLeads = leads.filter((lead) => {
     const status = normalizeStatus(lead.status);
@@ -533,11 +711,6 @@ export const buildDashboardMetrics = (leads: LeadRecord[]): DashboardMetrics => 
   }).length;
   const appointments = countByStatus(leads, APPOINTMENT_KPI_SET);
   const lostLeads = countByStatus(leads, LOST_SET);
-
-  const today = todayIso();
-  const todayFollowUps = leads.filter(
-    (lead) => normalizeDate(lead.follow_up_date) === today,
-  ).length;
 
   const notAnswering = leads.filter((lead) => {
     const status = normalizeStatus(lead.status);
@@ -550,6 +723,7 @@ export const buildDashboardMetrics = (leads: LeadRecord[]): DashboardMetrics => 
 
   const highPriority = buildHighPriorityLeads(leads);
   const followUpBuckets = buildFollowUpBuckets(leads);
+  const resolvedFollowUpSummary = followUpSummary || buildFollowUpSummaryMetrics(leads);
 
   return {
     kpis: {
@@ -563,7 +737,7 @@ export const buildDashboardMetrics = (leads: LeadRecord[]): DashboardMetrics => 
     funnel: buildFunnel(leads),
     trend: buildTrend(leads),
     actions: {
-      todayFollowUps,
+      todayFollowUps: resolvedFollowUpSummary.dueToday,
       notAnswering,
       highPriorityCount: highPriority.totalCount,
       highPriorityLeads: highPriority.leads,
@@ -576,5 +750,7 @@ export const buildDashboardMetrics = (leads: LeadRecord[]): DashboardMetrics => 
       todayLeads: followUpBuckets.todayLeads.slice(0, 6),
       upcomingLeads: followUpBuckets.weekLeads.slice(0, 6),
     },
+    followUpSummary: resolvedFollowUpSummary,
   };
 };
+

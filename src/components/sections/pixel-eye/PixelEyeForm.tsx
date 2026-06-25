@@ -1,7 +1,6 @@
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { Box, Button, Divider, Grid, MenuItem, Stack, Typography } from '@mui/material';
-import { FINAL_STATUSES, ONGOING_STATUSES } from './pixelEyeStatuses';
 import PixelEyeDatePicker from './PixelEyeDatePicker';
 import PixelEyeField from './PixelEyeField';
 
@@ -64,7 +63,7 @@ const PixelEyeForm = ({ initialValues, onSubmit, onCancel, isLoading }: PixelEye
   const isEdit = Boolean(initialValues?.call_id);
   const agentOptions =
     initialValues?.agent_name &&
-    !DEFAULT_AGENT_NAMES.includes(initialValues.agent_name as (typeof DEFAULT_AGENT_NAMES)[number])
+      !DEFAULT_AGENT_NAMES.includes(initialValues.agent_name as (typeof DEFAULT_AGENT_NAMES)[number])
       ? [initialValues.agent_name, ...DEFAULT_AGENT_NAMES]
       : [...DEFAULT_AGENT_NAMES];
 
@@ -293,29 +292,17 @@ const PixelEyeForm = ({ initialValues, onSubmit, onCancel, isLoading }: PixelEye
               </Grid>
               <Grid item xs={12} sm={6}>
                 <PixelEyeField
-                  select
                   fullWidth
                   required
                   name="status"
                   label="Status"
+                  placeholder="Enter status"
                   value={formik.values.status}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
+                  onChange={handleTrimmedChange}
+                  onBlur={handleTrimBlur}
                   error={formik.touched.status && Boolean(formik.errors.status)}
                   helperText={formik.touched.status && formik.errors.status}
-                  SelectProps={{ MenuProps: menuProps }}
-                >
-                  {ONGOING_STATUSES.map((s) => (
-                    <MenuItem key={s} value={s}>
-                      {s}
-                    </MenuItem>
-                  ))}
-                  {FINAL_STATUSES.map((s) => (
-                    <MenuItem key={s} value={s}>
-                      {s}
-                    </MenuItem>
-                  ))}
-                </PixelEyeField>
+                />
               </Grid>
             </Grid>
           </Box>

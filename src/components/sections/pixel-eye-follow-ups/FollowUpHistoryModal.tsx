@@ -18,52 +18,28 @@ import {
   Typography,
   Chip,
 } from '@mui/material';
-import dayjs from 'dayjs';
 import IconifyIcon from 'components/base/IconifyIcon';
 import { _axios } from 'helper/axios';
+import FollowUpLifecycleDetails, {
+  formatISTDate,
+  formatISTDateTime,
+  normalizeHistoryRows,
+} from './FollowUpLifecycleDetails';
 
 interface FollowUpHistoryModalProps {
   open: boolean;
   onClose: () => void;
   leadId: string | number | null;
+  clientKey?: string;
   customerName?: string;
   phoneNumber?: string;
 }
-
-interface FollowUpHistoryRow {
-  old_follow_up_date?: string | null;
-  new_follow_up_date?: string | null;
-  change_type?: string | null;
-  reason?: string | null;
-  changed_by_name?: string | null;
-  source?: string | null;
-  created_at?: string | null;
-}
-
-const formatDate = (value?: string | null): string => {
-  if (!value) return '---';
-  const parsed = dayjs(value);
-  return parsed.isValid() ? parsed.format('DD MMM YYYY') : String(value);
-};
-
-const formatDateTime = (value?: string | null): string => {
-  if (!value) return '---';
-  const parsed = dayjs(value);
-  return parsed.isValid() ? parsed.format('DD MMM YYYY, hh:mm A') : String(value);
-};
-
-const normalizeHistory = (response: any): FollowUpHistoryRow[] => {
-  if (Array.isArray(response)) return response as FollowUpHistoryRow[];
-  if (Array.isArray(response?.data)) return response.data as FollowUpHistoryRow[];
-  if (Array.isArray(response?.data?.history)) return response.data.history as FollowUpHistoryRow[];
-  if (Array.isArray(response?.history)) return response.history as FollowUpHistoryRow[];
-  return [];
-};
 
 const FollowUpHistoryModal = ({
   open,
   onClose,
   leadId,
+  clientKey,
   customerName,
   phoneNumber,
 }: FollowUpHistoryModalProps) => {
@@ -73,11 +49,17 @@ const FollowUpHistoryModal = ({
     isError,
     error,
   } = useQuery(
-    ['pixelEyeFollowUpHistory', leadId],
+    ['pixelEyeFollowUpHistory', leadId, clientKey || null],
     async () => {
       if (leadId === null || leadId === undefined) return [];
-      const response = await _axios('get', `/pixeleye/${leadId}/follow-up/history`);
-      return normalizeHistory(response);
+      const response = await _axios(
+        'get',
+        `/pixeleye/${leadId}/follow-up/history`,
+        undefined,
+        'application/json',
+        clientKey ? { _client_key: clientKey } : undefined,
+      );
+      return normalizeHistoryRows(response);
     },
     {
       enabled: open && leadId !== null && leadId !== undefined,
@@ -207,25 +189,19 @@ const FollowUpHistoryModal = ({
                 <TableBody>
                   {history.map((item, index) => (
                     <TableRow key={`${item.created_at || index}-${index}`} hover>
-                      <TableCell>{formatDate(item.old_follow_up_date)}</TableCell>
-                      <TableCell>{formatDate(item.new_follow_up_date)}</TableCell>
+                      <TableCell>{formatISTDate(item.old_follow_up_date)}</TableCell>
+                      <TableCell>{formatISTDate(item.new_follow_up_date)}</TableCell>
                       <TableCell>{item.change_type || '---'}</TableCell>
                       <TableCell sx={{ maxWidth: 220 }}>
-                        <Typography
-                          variant="body2"
-                          title={item.reason || ''}
-                          sx={{
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                          }}
-                        >
-                          {item.reason || '---'}
-                        </Typography>
+                        <FollowUpLifecycleDetails
+                          row={item}
+                          showFallbackReason
+                          fallbackNoWrap
+                        />
                       </TableCell>
                       <TableCell>{item.changed_by_name || '---'}</TableCell>
                       <TableCell>{item.source || '---'}</TableCell>
-                      <TableCell>{formatDateTime(item.created_at)}</TableCell>
+                      <TableCell>{formatISTDateTime(item.created_at)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

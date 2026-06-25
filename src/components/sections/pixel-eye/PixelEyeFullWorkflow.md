@@ -1,408 +1,532 @@
-# PixelEye Full Workflow
+# PixelEye Complete Workflow (Frontend + Backend)
 
-This document describes the full PixelEye workflow across the frontend pages, the backend APIs, and the shared data structures that connect them.
+This is the full technical workflow reference for all PixelEye pages, APIs, logic, and decision paths.
 
-## 1. Scope
+It covers:
 
-PixelEye is split into multiple user-facing pages:
+- every PixelEye frontend page
+- all PixelEye backend endpoints
+- webhook ingestion and same-phone lifecycle
+- notification and compliance schedulers
+- day-wise status progression rules
+- role-based behavior and restrictions
 
-1. Main CRM list page
-2. Overview dashboard page
-3. Follow-ups page
-4. Lead detail page
-5. Notification tracker page
+---
 
-Each page uses the same PixelEye backend source of truth and the same tenant-aware client key model.
+## 1. PixelEye Modules At A Glance
 
-## 2. Shared Structure
+### Frontend modules
 
-### Frontend entry points
+- Main Leads page: `frontend/src/components/sections/pixel-eye/index.tsx`
+- Leads table + inline actions: `frontend/src/components/sections/pixel-eye/pixelEyeTable.tsx`
+- Follow-ups page: `frontend/src/components/sections/pixel-eye-follow-ups/index.tsx`
+- Lead detail page: `frontend/src/components/sections/pixel-eye-lead-detail/index.tsx`
+- Overview dashboard: `frontend/src/components/sections/pixel-eye-overview/DashboardPage.tsx`
+- Notification tracker: `frontend/src/components/sections/pixel-eye-notification-tracker/index.tsx`
+- Shared data hooks: `frontend/src/components/hooks/usePixelEyeQuery.tsx`, `frontend/src/components/hooks/usePixelEyeNotificationsQuery.tsx`
+- Shared status rules: `frontend/src/components/sections/pixel-eye/pixelEyeStatuses.ts`
 
-- [`frontend/src/pages/pixel-eye/index.tsx`](/d:/INVICTUS%20BACKEND/Invictus/frontend/src/pages/pixel-eye/index.tsx)
-- [`frontend/src/pages/dynamic/index.tsx`](/d:/INVICTUS%20BACKEND/Invictus/frontend/src/pages/dynamic/index.tsx)
-- [`frontend/src/pages/pixel-eye/follow-ups.tsx`](/d:/INVICTUS%20BACKEND/Invictus/frontend/src/pages/pixel-eye/follow-ups.tsx)
-- [`frontend/src/pages/pixel-eye/lead-detail.tsx`](/d:/INVICTUS%20BACKEND/Invictus/frontend/src/pages/pixel-eye/lead-detail.tsx)
+### Backend modules
 
-### Shared PixelEye UI
+- API routes: `backend/src/modules/pixelEye/pixelEye.routes.js`
+- Webhook route: `backend/src/modules/pixelEye/webhook/pixelEyeWebhook.routes.js`
+- Controllers: `backend/src/modules/pixelEye/pixelEye.controller.js`, `backend/src/modules/pixelEye/webhook/pixelEyeWebhook.controller.js`
+- Lead service: `backend/src/modules/pixelEye/pixelEye.service.js`
+- Notification state service: `backend/src/modules/pixelEye/pixelEyeNotification.service.js`
+- Webhook business flow: `backend/src/modules/pixelEye/webhook/pixelEyeWebhook.service.js`
+- Compliance service: `backend/src/modules/pixelEye/pixelEyeFollowUpCallCompliance.service.js`
+- Follow-up history service: `backend/src/modules/pixelEye/pixelEyeFollowUpHistory.service.js`
+- Call-log service: `backend/src/modules/pixelEye/pixelEyeCallLog.service.js`
+- Schedulers: `backend/src/modules/pixelEye/pixelEyeScheduler.js`, `backend/src/modules/pixelEye/pixelEyeFollowUpComplianceScheduler.js`
 
-- [`frontend/src/components/sections/pixel-eye/pixelEyeUi.tsx`](/d:/INVICTUS%20BACKEND/Invictus/frontend/src/components/sections/pixel-eye/pixelEyeUi.tsx)
-- [`frontend/src/components/sections/pixel-eye/pixelEyeThemeStyles.ts`](/d:/INVICTUS%20BACKEND/Invictus/frontend/src/components/sections/pixel-eye/pixelEyeThemeStyles.ts)
-- [`frontend/src/components/sections/pixel-eye/pixelEyeStatuses.ts`](/d:/INVICTUS%20BACKEND/Invictus/frontend/src/components/sections/pixel-eye/pixelEyeStatuses.ts)
+### Startup integration
 
-### Shared hooks
+- Backend app bootstrap, migration ensures, and scheduler start: `backend/src/app.js`
 
-- [`frontend/src/components/hooks/usePixelEyeQuery.tsx`](/d:/INVICTUS%20BACKEND/Invictus/frontend/src/components/hooks/usePixelEyeQuery.tsx)
-- [`frontend/src/components/hooks/usePixelEyeNotificationsQuery.tsx`](/d:/INVICTUS%20BACKEND/Invictus/frontend/src/components/hooks/usePixelEyeNotificationsQuery.tsx)
+---
 
-### Shared backend module
+## 2. Frontend Route Map
 
-- [`backend/src/modules/pixelEye/pixelEye.routes.js`](/d:/INVICTUS%20BACKEND/Invictus/backend/src/modules/pixelEye/pixelEye.routes.js)
-- [`backend/src/modules/pixelEye/pixelEye.controller.js`](/d:/INVICTUS%20BACKEND/Invictus/backend/src/modules/pixelEye/pixelEye.controller.js)
-- [`backend/src/modules/pixelEye/pixelEye.service.js`](/d:/INVICTUS%20BACKEND/Invictus/backend/src/modules/pixelEye/pixelEye.service.js)
-- [`backend/src/modules/pixelEye/pixelEyeNotification.service.js`](/d:/INVICTUS%20BACKEND/Invictus/backend/src/modules/pixelEye/pixelEyeNotification.service.js)
-- [`backend/src/modules/pixelEye/pixelEyeFollowUpHistory.service.js`](/d:/INVICTUS%20BACKEND/Invictus/backend/src/modules/pixelEye/pixelEyeFollowUpHistory.service.js)
-- [`backend/src/modules/pixelEye/pixelEyeFollowUpCallCompliance.service.js`](/d:/INVICTUS%20BACKEND/Invictus/backend/src/modules/pixelEye/pixelEyeFollowUpCallCompliance.service.js)
-- [`backend/src/modules/pixelEye/pixelEyeScheduler.js`](/d:/INVICTUS%20BACKEND/Invictus/backend/src/modules/pixelEye/pixelEyeScheduler.js)
-- [`backend/src/modules/pixelEye/pixelEyeFollowUpComplianceScheduler.js`](/d:/INVICTUS%20BACKEND/Invictus/backend/src/modules/pixelEye/pixelEyeFollowUpComplianceScheduler.js)
+Defined in `frontend/src/routes/router.tsx` and `frontend/src/routes/paths.ts`.
 
-## 3. Route Map
+- Leads page route: `/pages/d/:clientKey/leads`
+- Lead detail route: `/pixel-eye/leads/:leadId`
+- Follow-ups route: `/pixel-eye/follow-ups`
+- Dynamic dashboard route: `/pages/d/:clientKey/:tableId`
+  - `tableId=overview` renders PixelEye overview dashboard
+  - `tableId=notification-tracker` renders PixelEye notification tracker
 
-The PixelEye frontend routes are wired in:
+---
 
-- [`frontend/src/routes/router.tsx`](/d:/INVICTUS%20BACKEND/Invictus/frontend/src/routes/router.tsx)
-- [`frontend/src/routes/paths.ts`](/d:/INVICTUS%20BACKEND/Invictus/frontend/src/routes/paths.ts)
+## 3. Backend API Surface
 
-Important routes:
+Base path: `/api/v1/pixeleye`
 
-- `GET /pages/d/:clientKey/overview`
-- `GET /pages/d/:clientKey/:tableId`
-- `GET /pages/d/:clientKey/leads`
-- `GET /pixel-eye/follow-ups`
-- `GET /pixel-eye/leads/:leadId`
+### Lead CRUD and exports
 
-The dynamic route chooses between:
+- `GET /` list leads
+- `GET /export?format=csv|pdf&dateFrom=&dateTo=&agent=` export leads
+- `GET /:id` get one lead
+- `POST /` create lead (validated)
+- `PATCH /:id` update lead (validated)
+- `DELETE /:id` hard delete lead (management role)
 
-- `overview` -> PixelEye dashboard metrics
-- `notification-tracker` -> notification tracker view
-- any other table id -> dynamic table rendering
+### Follow-up and outcome APIs
 
-## 4. Page Workflows
+- `PATCH /:id/follow-up-outcome` apply next day outcome
+- `PATCH /:id/follow-up/reschedule` reschedule manual follow-up
+- `PATCH /:id/follow-up/cancel` cancel or permanently close follow-up
+- `GET /:id/follow-up/history` follow-up date audit trail
 
-### 4.1 Main CRM List Page
+### Notification and compliance APIs
 
-Entry point:
+- `GET /notifications`
+- `GET /notifications/summary`
+- `GET /follow-ups/call-compliance`
+- `GET /follow-ups/missed-calls`
+- `GET /follow-ups/call-compliance-summary`
 
-- [`frontend/src/components/sections/pixel-eye/index.tsx`](/d:/INVICTUS%20BACKEND/Invictus/frontend/src/components/sections/pixel-eye/index.tsx)
+### Webhook API
 
-Route:
+- `POST /webhook`
+  - middleware chain: rate-limit, security headers, API key verify, request logging, payload normalize/validate
 
-- `GET /pages/d/:clientKey/leads`
+---
 
-Purpose:
+## 4. Data Tables And Their Purpose
 
-- manage the core PixelEye lead list
-- create new leads
-- update existing leads
-- delete leads
-- search and filter the current lead set
-- export filtered leads to CSV or PDF
-- navigate into the lead detail page
+- `PixelEye`
+  - primary lead row, status + day_1..day_5 + follow_up_date
+- `PixelEyeLeadState`
+  - reminder engine state (scheduled/completed/cancelled/baseline, schedule type, reason, permanently_closed)
+- `PixelEyeFollowUpHistory`
+  - follow_up_date audit history (created/updated/cleared/rescheduled/auto-from-webhook)
+- `PixelEyeCallLog`
+  - normalized webhook call logs + raw payload + outcome marker
+- `PixelEyeFollowUpCallCompliance`
+  - pending/called/missed/ignored/cancelled follow-up call SLA rows
 
-Workflow:
+---
 
-1. The page reads the current tenant/client from auth state and the URL.
-2. It fetches the lead list through `usePixelEyeQuery`.
-3. It renders the table, search box, status filter, date range controls, and export actions.
-4. The user can open the add/edit drawer to create or update a lead.
-5. The user can delete a lead through the delete drawer.
-6. Inline edits update status, day fields, and follow-up date.
-7. The page refetches after mutations to keep the table current.
-8. The row click can open the lead detail page when navigation is enabled.
+## 5. Status And Day Decision Logic
 
-Important UI pieces:
+### Canonical status set
 
-- `PixelEyeTable`
-- `PixelEyeLeadDrawer`
-- `PixelEyeDeleteDrawer`
-- `PixelEyeCard`
-- `PixelEyePageHeader`
-- `PixelEyePageShell`
+- Backend enum source: `backend/src/database/tables/PixelEyeTable/index.js`
+- Frontend source: `frontend/src/components/sections/pixel-eye/pixelEyeStatuses.ts`
+- Legacy statuses are normalized in backend via `normalizePixelEyeStatus`.
 
-Backend endpoints used:
+### Day dropdown rules
+
+- Day 1..4 allowed set =
+  - its corresponding DNP only (`DNP 1`, `DNP 2`, `DNP 3`, `DNP 4`) +
+  - 24-hour statuses +
+  - 48-hour statuses +
+  - non-DNP/non-24h/non-48h statuses excluding the 30-minute callback-only bucket
+- Day 5 allowed set =
+  - stop-flow style statuses; excludes `-` and `Medicine`
+
+### Outcome progression model
+
+- Outcome update API always fills the next empty day only.
+- If all day fields are filled or reminder flow is closed, outcome update is blocked.
+- Day updates must be sequential. You cannot fill day 3 if day 2 is empty.
+
+### Lead active vs closed decision
+
+Lead is treated as inactive/closed if any of these is true:
+
+- all `day_1..day_5` are filled
+- main status is terminal (termination/no-action category)
+- reminder state is cancelled/permanently closed
+
+Otherwise lead is active.
+
+---
+
+## 6. Role-Based Logic
+
+### Backend enforcement
+
+- All PixelEye APIs (except webhook) require auth + tenant context.
+- `DELETE` requires management-role middleware.
+- Client role restrictions in update flow:
+  - cannot directly patch `day_1..day_5` or day/value pair in generic update
+  - must use structured outcome endpoint for day progression
+  - cannot directly overwrite existing follow_up_date (must use reschedule endpoint)
+
+### Frontend behavior
+
+- Leads table:
+  - client users route day edits to `PATCH /:id/follow-up-outcome`
+  - admin/super-admin can patch day fields directly (still backend validated)
+- Lead detail:
+  - clients use structured next-day outcome dropdown
+  - admin/super-admin can edit specific day fields
+
+---
+
+## 7. Page-by-Page Workflow
+
+## 7.1 Leads Page
+
+Files:
+
+- `frontend/src/pages/pixel-eye/index.tsx`
+- `frontend/src/components/sections/pixel-eye/index.tsx`
+- `frontend/src/components/sections/pixel-eye/pixelEyeTable.tsx`
+
+### Features
+
+- list all leads for tenant/client
+- search/filter in UI
+- create lead drawer
+- edit lead drawer
+- inline status/day/follow_up_date edits
+- delete drawer
+- CSV/PDF export
+
+### APIs used
 
 - `GET /api/v1/pixeleye`
 - `POST /api/v1/pixeleye`
 - `PATCH /api/v1/pixeleye/:id`
+- `PATCH /api/v1/pixeleye/:id/follow-up-outcome` (for client role day progression)
 - `DELETE /api/v1/pixeleye/:id`
 
-### 4.2 Overview Dashboard Page
+### Important logic decisions
 
-Entry points:
+- create with duplicate active same-phone lead updates existing row instead of creating new row
+- follow_up_date is validated as future schedule when provided
+- cache invalidation after mutations refreshes leads, lead detail, notifications, and compliance summary queries
 
-- [`frontend/src/components/sections/pixel-eye-overview/DashboardPage.tsx`](/d:/INVICTUS%20BACKEND/Invictus/frontend/src/components/sections/pixel-eye-overview/DashboardPage.tsx)
-- [`frontend/src/components/sections/pixel-eye-overview/dark/OverviewDashboard.tsx`](/d:/INVICTUS%20BACKEND/Invictus/frontend/src/components/sections/pixel-eye-overview/dark/OverviewDashboard.tsx)
+---
 
-Mounted through:
+## 7.2 Overview Dashboard Page
 
-- [`frontend/src/pages/dynamic/index.tsx`](/d:/INVICTUS%20BACKEND/Invictus/frontend/src/pages/dynamic/index.tsx)
+Files:
 
-Route:
+- `frontend/src/pages/dynamic/index.tsx`
+- `frontend/src/components/sections/pixel-eye-overview/DashboardPage.tsx`
+- `frontend/src/components/sections/pixel-eye-overview/dashboardUtils.ts`
 
-- `GET /pages/d/:clientKey/overview`
+### Features
 
-Purpose:
+- KPI cards, funnel, trend, follow-up analytics
+- filters by date range and agent
+- computes metrics client-side from lead list
 
-- show live lead analytics
-- show follow-up buckets
-- show trend charts and KPI summaries
-- provide filtering by date and agent
-
-Workflow:
-
-1. `DashboardPage.tsx` fetches the PixelEye lead list from `GET /api/v1/pixeleye`.
-2. The page stores filter state for date range and agent selection.
-3. `applyDashboardFilters()` narrows the current lead set.
-4. `buildDashboardMetrics()` computes KPIs, trend data, status breakdowns, funnel data, and follow-up groups.
-5. `OverviewDashboard.tsx` lays out the cards, charts, and filter controls.
-6. The dark subcomponents render the actual dashboard widgets:
-   - `KPIStrip`
-   - `SalesOverview`
-   - `MiniStats`
-   - `TrendChart`
-   - `TotalProfitChart`
-   - `FollowUpPanel`
-7. The user can filter the dashboard without changing the backend data.
-
-Important UI pieces:
-
-- `PageHeader`
-- `FilterBar`
-- `KPIStrip`
-- `SalesOverview`
-- `MiniStats`
-- `TrendChart`
-- `TotalProfitChart`
-- `FollowUpPanel`
-- `RightPanel`
-
-Backend endpoints used:
+### APIs used
 
 - `GET /api/v1/pixeleye`
 
-### 4.3 Follow-Ups Page
+### Important logic decisions
 
-Entry points:
+- terminal/cancelled/completed reminder states are excluded from active follow-up metrics
+- follow-up dashboard helpers distinguish converted, follow-up, lost, invalid, in-progress buckets
 
-- [`frontend/src/components/sections/pixel-eye-follow-ups/index.tsx`](/d:/INVICTUS%20BACKEND/Invictus/frontend/src/components/sections/pixel-eye-follow-ups/index.tsx)
-- [`frontend/src/pages/pixel-eye/follow-ups.tsx`](/d:/INVICTUS%20BACKEND/Invictus/frontend/src/pages/pixel-eye/follow-ups.tsx)
+---
 
-Route:
+## 7.3 Follow-Ups Page
 
-- `GET /pixel-eye/follow-ups`
+Files:
 
-Purpose:
+- `frontend/src/pages/pixel-eye/follow-ups.tsx`
+- `frontend/src/components/sections/pixel-eye-follow-ups/index.tsx`
 
-- show active follow-up buckets
-- show missed follow-up calls
-- search within the selected bucket
-- mark a follow-up as handled
-- reschedule follow-ups
-- cancel or close follow-ups
-- keep the follow-up queue in sync with the backend
+### Features
 
-Workflow:
+- manual follow-up queue with bucket segmentation (overdue/today/tomorrow/week/all)
+- missed calls bucket from compliance table
+- action drawers for reschedule/cancel
+- structured outcome update from follow-up queue
 
-1. The page loads the lead list and the missed follow-up rows.
-2. `buildFollowUpPageBuckets()` groups the lead set into overdue, today, tomorrow, week, and all buckets.
-3. The page merges in missed follow-up call rows as a special bucket.
-4. The user can switch between bucket tabs.
-5. Search filters the visible bucket in memory.
-6. Selecting a lead shows the detail panel.
-7. The user can mark a lead handled, reschedule the reminder, or cancel the follow-up.
-8. Each mutation triggers a refetch so the bucket counts stay accurate.
-
-Important UI pieces:
-
-- `PixelEyePageShell`
-- `PixelEyeCard`
-- `FilterBar`-style field helpers from `pixelEyeUi.tsx`
-- bucket tabs
-- lead summary panel
-- reschedule drawer
-- cancel drawer
-
-Backend endpoints used:
+### APIs used
 
 - `GET /api/v1/pixeleye`
 - `GET /api/v1/pixeleye/follow-ups/missed-calls`
-- `PATCH /api/v1/pixeleye/:id/follow-up/handled`
+- `GET /api/v1/pixeleye/follow-ups/call-compliance-summary`
+- `GET /api/v1/pixeleye/:id`
 - `PATCH /api/v1/pixeleye/:id/follow-up/reschedule`
 - `PATCH /api/v1/pixeleye/:id/follow-up/cancel`
+- `PATCH /api/v1/pixeleye/:id/follow-up-outcome`
 
-### 4.4 Lead Detail Page
+### Important logic decisions
 
-Entry points:
+- queue is follow_up_date-driven (manual follow-up date), not generic reminder scheduled_at
+- closed/cancelled/permanently closed leads are removed from actionable queue
+- missed bucket is sourced from compliance status `MISSED`
 
-- [`frontend/src/components/sections/pixel-eye-lead-detail/index.tsx`](/d:/INVICTUS%20BACKEND/Invictus/frontend/src/components/sections/pixel-eye-lead-detail/index.tsx)
-- [`frontend/src/pages/pixel-eye/lead-detail.tsx`](/d:/INVICTUS%20BACKEND/Invictus/frontend/src/pages/pixel-eye/lead-detail.tsx)
+---
 
-Route:
+## 7.4 Lead Detail Page
 
-- `GET /pixel-eye/leads/:leadId`
+Files:
 
-Purpose:
+- `frontend/src/pages/pixel-eye/lead-detail.tsx`
+- `frontend/src/components/sections/pixel-eye-lead-detail/index.tsx`
 
-- inspect one lead in detail
-- edit the lead status
-- update day-based pipeline fields
-- copy contact details
-- review follow-up history
-- review call compliance matches
-- reschedule, handle, or cancel the active reminder
+### Features
 
-Workflow:
+- single lead inspection
+- day pipeline display and update
+- reminder state panel
+- follow-up history timeline
+- compliance rows for that lead/call
+- CRM actions: reschedule, cancel, and update outcome
 
-1. The route parameter `leadId` is read from the URL.
-2. The page normalizes the current client key.
-3. `usePixelEyeLeadQuery()` fetches the lead.
-4. Separate queries load follow-up history and call compliance rows.
-5. The page renders the hero summary, overview grid, pipeline days, history, and compliance monitor.
-6. The user can update the lead status inline.
-7. The user can update day 1 through day 5 outcomes.
-8. The user can reschedule the reminder, mark it handled, or cancel it.
-9. After every mutation, the page refetches lead, history, and compliance data.
-
-Important UI pieces:
-
-- `PixelEyePageShell`
-- `PixelEyeCard`
-- reschedule dialog
-- handled dialog
-- cancel dialog
-- history summary
-- compliance summary
-
-Backend endpoints used:
+### APIs used
 
 - `GET /api/v1/pixeleye/:id`
 - `GET /api/v1/pixeleye/:id/follow-up/history`
-- `PATCH /api/v1/pixeleye/:id`
-- `PATCH /api/v1/pixeleye/:id/follow-up/reschedule`
-- `PATCH /api/v1/pixeleye/:id/follow-up/handled`
-- `PATCH /api/v1/pixeleye/:id/follow-up/cancel`
 - `GET /api/v1/pixeleye/follow-ups/call-compliance`
+- `PATCH /api/v1/pixeleye/:id`
+- `PATCH /api/v1/pixeleye/:id/follow-up-outcome`
+- `PATCH /api/v1/pixeleye/:id/follow-up/reschedule`
+- `PATCH /api/v1/pixeleye/:id/follow-up/cancel`
 
-### 4.5 Notification Tracker Page
+### Important logic decisions
 
-Entry point:
+- client role cannot directly edit arbitrary day fields from detail view
+- terminal day outcome can propagate to main status in UI payload path
+- detail view refreshes lead, history, and compliance queries after each action
+
+---
+
+## 7.5 Notification Tracker Page
+
+Files:
 
 - `frontend/src/pages/dynamic/index.tsx`
+- `frontend/src/components/sections/pixel-eye-notification-tracker/index.tsx`
 
-Route:
+### Features
 
-- `GET /pages/d/:clientKey/notification-tracker`
+- monitor reminder engine states
+- scheduled/completed/cancelled counts
+- filter by state, schedule type, date range, search
+- row detail drawer
 
-Purpose:
-
-- inspect notification state and reminder tracking
-- review which follow-up reminders are active, pending, or completed
-
-Workflow:
-
-1. The dynamic page detects `tableId === 'notification-tracker'`.
-2. It renders `NotificationTracker`.
-3. The tracker fetches notification rows and summary data.
-4. The user reviews reminder status without editing the core lead row.
-
-Backend endpoints used:
+### APIs used
 
 - `GET /api/v1/pixeleye/notifications`
 - `GET /api/v1/pixeleye/notifications/summary`
 
-## 5. Backend Workflow
+---
 
-### Request lifecycle
+## 8. Backend Business Flows
 
-1. The frontend calls the PixelEye API through `_axios`.
-2. Authentication middleware validates the session.
-3. Tenant middleware attaches the client context.
-4. The controller validates the request and forwards it to the service layer.
-5. The service layer reads or updates the relevant database tables.
-6. The controller returns the result to the frontend.
-7. The frontend refetches the current query to keep UI state fresh.
+## 8.1 Manual Create Flow
 
-### Lead create/update lifecycle
+1. Validate and normalize payload (`validatePixelEyeCreate`).
+2. Resolve tenant/client context (super-admin can pass `_client_key`).
+3. Find same normalized phone in same client.
+4. If active same-phone lead exists: update existing lead and return duplicate update response.
+5. Else create new lead with day fields null.
+6. If follow_up_date exists and valid future: schedule manual reminder and create pending compliance row.
+7. If status implies terminal closure, flow closes accordingly.
 
-1. The main page submits lead data.
-2. `pixelEye.service.js` resolves the correct client context.
-3. The lead is created or updated in the `PixelEye` table.
-4. Follow-up history can be recorded when reminder dates change.
-5. The overview dashboard and follow-up pages pick up the new lead state on the next query refresh.
+## 8.2 Generic Update Flow
 
-### Follow-up lifecycle
+1. Validate payload (`validatePixelEyeUpdate`).
+2. Enforce role and day update rules.
+3. Enforce sequential day updates.
+4. Normalize phone if changed.
+5. If follow_up_date changed:
+   - validate future datetime
+   - schedule manual reminder if eligible
+   - refresh pending compliance row
+   - write follow-up history
+6. If status changed: run status notification engine.
+7. If a day field changed: run day notification engine.
 
-1. A lead gets a reminder schedule.
-2. The notification service stores or updates state in `PixelEyeLeadState`.
-3. The scheduler checks due reminders on a timer.
-4. Due items are sent out as notifications.
-5. When the reminder is handled, rescheduled, or cancelled, the state row is updated.
+## 8.3 Structured Outcome Flow (`PATCH /:id/follow-up-outcome`)
 
-### Compliance lifecycle
+1. Validate outcome status.
+2. Find next empty day.
+3. Verify status is allowed for that day.
+4. Update that day field atomically.
+5. Trigger day-based reminder scheduling logic.
+6. Clear existing follow_up_date (if present) and create history record for clearing.
 
-1. The compliance service maps reminders to actual call log rows.
-2. The follow-ups page reads the compliance rows.
-3. Missed call rows are exposed separately for the missed follow-up bucket.
+## 8.4 Reschedule Flow
 
-## 6. Database Structure
+1. Require active non-closed lead.
+2. Require valid future follow_up_date.
+3. Update lead follow_up_date.
+4. Cancel previous pending compliance for the lead.
+5. Schedule new manual reminder.
+6. Create new pending compliance row.
+7. Write follow-up history entry as `RESCHEDULED`.
 
-Main tables involved:
+## 8.5 Cancel Flow
 
-- `PixelEye`
-- `PixelEyeLeadState`
-- `PixelEyeFollowUpHistory`
-- `PixelEyeCallLog`
-- `PixelEyeFollowUpCallCompliance`
+1. Optional status/reason accepted.
+2. Determine whether cancellation should permanently close flow.
+3. Update/create reminder state row as cancelled.
+4. Persist cancel reason and closure flags.
 
-The backend boot sequence ensures the required tables and migrations are available before serving requests.
+## 8.6 Delete Flow (Hard Delete)
 
-## 7. Page-to-Backend Matrix
+Transactionally removes:
 
-### Main CRM list page
+- lead row
+- reminder state rows
+- pending/history compliance rows
+- follow-up history rows
+- call log rows
 
-- Load leads: `GET /api/v1/pixeleye`
-- Create lead: `POST /api/v1/pixeleye`
-- Update lead: `PATCH /api/v1/pixeleye/:id`
-- Delete lead: `DELETE /api/v1/pixeleye/:id`
+All under tenant/client scope.
 
-### Overview dashboard
+---
 
-- Load metrics source: `GET /api/v1/pixeleye`
+## 9. Webhook (Runo) Complete Flow
 
-### Follow-ups page
+Files:
 
-- Load leads: `GET /api/v1/pixeleye`
-- Load missed calls: `GET /api/v1/pixeleye/follow-ups/missed-calls`
-- Handle reminder: `PATCH /api/v1/pixeleye/:id/follow-up/handled`
-- Reschedule reminder: `PATCH /api/v1/pixeleye/:id/follow-up/reschedule`
-- Cancel reminder: `PATCH /api/v1/pixeleye/:id/follow-up/cancel`
+- `backend/src/modules/pixelEye/webhook/pixelEyeWebhook.routes.js`
+- `backend/src/modules/pixelEye/webhook/pixelEyeWebhook.controller.js`
+- `backend/src/modules/pixelEye/webhook/pixelEyeWebhook.service.js`
+- `backend/src/middlewares/validation/pixelEyeWebhookValidation.js`
 
-### Lead detail page
+### Ingestion sequence
 
-- Load lead: `GET /api/v1/pixeleye/:id`
-- Load history: `GET /api/v1/pixeleye/:id/follow-up/history`
-- Load compliance: `GET /api/v1/pixeleye/follow-ups/call-compliance`
-- Edit status or day fields: `PATCH /api/v1/pixeleye/:id`
+1. Apply webhook rate limit.
+2. Verify webhook API key.
+3. Normalize payload to Runo-style structure.
+4. Validate required fields (`call_id`, customer, phone, date/time, status).
+5. Resolve client by `_client_key`/`client_key`/env default.
+6. Normalize phone.
+7. Persist call log (always best effort).
+8. Determine lead mutation path:
+   - exact same call_id active lead: update existing
+   - same phone active lead: update existing
+   - closed same-call lead: no mutation (log only)
+   - no active lead: create new
+9. Apply next-day outcome once per call-log outcome marker.
+10. If manual follow_up_date present and valid future: schedule manual reminder.
+11. Create/update pending compliance row where applicable.
+12. Mark matching compliance row as `CALLED` when webhook call log matches pending reminder window.
 
-### Notification tracker
+### Key webhook decisions
 
-- Notifications: `GET /api/v1/pixeleye/notifications`
-- Summary: `GET /api/v1/pixeleye/notifications/summary`
+- idempotency-like behavior via call-log outcome markers
+- same-phone identity uses `client_id + normalized_phone_number`
+- closed flow is protected from accidental re-open by webhook mutation
 
-## 8. Structure Summary
+---
 
-The PixelEye app is organized around one shared CRM model:
+## 10. Reminder And Compliance Engines
 
-- the main list page manages the full lead table
-- the overview dashboard turns the lead set into analytics
-- the follow-ups page turns the same data into actionable buckets
-- the lead detail page shows and edits one lead at a time
-- the notification tracker shows reminder delivery state
+## 10.1 Reminder Scheduler
 
-The backend keeps the data synchronized through:
+File: `backend/src/modules/pixelEye/pixelEyeScheduler.js`
 
-- route handlers
-- business services
-- follow-up history
-- compliance rows
-- schedulers
+- cadence: every 1 minute
+- processes due reminder states and sends notifications
+- no-overlap guard + lag monitoring
 
-## 9. Short Version
+## 10.2 Follow-Up Compliance Scheduler
 
-If you want the short version:
+File: `backend/src/modules/pixelEye/pixelEyeFollowUpComplianceScheduler.js`
 
-1. Main page manages all leads.
-2. Overview page shows analytics from the same lead list.
-3. Follow-ups page groups leads into action buckets.
-4. Lead detail page edits one lead and its reminder state.
-5. Notification tracker shows reminder delivery state.
-6. Backend services and schedulers keep all of it in sync.
+- cadence: every 15 minutes
+- scans pending compliance rows with `allowed_until <= now`
+- resolves final state:
+  - `CALLED`: matching call found
+  - `IGNORED`: lead closed/cancelled/terminal
+  - `MISSED`: no matching call within allowed window
+
+## 10.3 Reminder category mapping
+
+From status category in notification service:
+
+- `THIRTY_MIN` statuses -> schedule in 30 minutes
+- `DNP2` statuses -> schedule in 24 hours
+- `TWENTY_FOUR_HR` statuses -> schedule in 24 hours
+- `FORTY_EIGHT_HR` statuses -> schedule in 48 hours
+- `MANUAL` -> schedule at follow_up_date timestamp
+- `TERMINATION`/`NO_ACTION` -> cancel/close flow
+- `NO_REMINDER`/`UNKNOWN` -> baseline state, no callback scheduled
+
+---
+
+## 11. End-To-End Flow Charts
+
+### 11.1 UI -> API -> State
+
+```mermaid
+flowchart TD
+   A[User action on PixelEye page] --> B[Frontend hook mutation/query]
+   B --> C[/api/v1/pixeleye endpoint]
+   C --> D[Controller]
+   D --> E[Service logic + validation rules]
+   E --> F[(PixelEye + LeadState + History + CallLog + Compliance)]
+   F --> G[JSON response]
+   G --> H[React Query invalidate/refetch]
+   H --> I[Updated UI]
+```
+
+### 11.2 Webhook lifecycle
+
+```mermaid
+flowchart TD
+   W1[Runo webhook] --> W2[Rate limit + API key + payload validation]
+   W2 --> W3[Resolve client and normalize phone]
+   W3 --> W4{Existing active lead?}
+   W4 -->|Exact call or same phone active| W5[Update lead and apply next-day outcome]
+   W4 -->|Closed same-call| W6[No lead mutation]
+   W4 -->|No active lead| W7[Create lead]
+   W5 --> W8[Persist call log]
+   W6 --> W8
+   W7 --> W8
+   W8 --> W9[Optional manual follow_up schedule]
+   W9 --> W10[Create or refresh pending compliance]
+   W10 --> W11[Mark matching compliance as CALLED when matched]
+```
+
+---
+
+## 12. Validation And Error Behavior
+
+### Manual APIs
+
+- create/update/outcome use Joi validation middleware
+- invalid status/day pairing returns 400
+- duplicate conflicts can return 409
+- unauthorized/tenant mismatch returns 403/404 pattern depending on lookup path
+
+### Webhook API
+
+- malformed payload returns 400
+- duplicate/conflict markers return 409 when applicable
+- unknown server failures return 500
+
+### Common protection checks
+
+- invalid phone normalization is rejected
+- follow_up_date must be future when scheduling manual reminder
+- cannot reschedule/cancel closed terminal workflows in disallowed paths
+
+---
+
+## 13. Final Reference Matrix (Page -> APIs -> Core Logic)
+
+| Page                 | APIs                                                                                                                                                                                 | Core Logic                                                  |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------- |
+| Leads                | `GET /`, `POST /`, `PATCH /:id`, `PATCH /:id/follow-up-outcome`, `DELETE /:id`, `GET /export`                                                                                        | CRUD, duplicate active same-phone merge, inline progression |
+| Overview             | `GET /`                                                                                                                                                                              | KPI and funnel derivation from lead set                     |
+| Follow-ups           | `GET /`, `GET /follow-ups/missed-calls`, `GET /follow-ups/call-compliance-summary`, `PATCH /:id/follow-up/reschedule`, `PATCH /:id/follow-up/cancel`, `PATCH /:id/follow-up-outcome` | manual queue + missed SLA management                        |
+| Lead Detail          | `GET /:id`, `GET /:id/follow-up/history`, `GET /follow-ups/call-compliance`, `PATCH /:id`, `PATCH /:id/follow-up-*`                                                                  | single-lead CRM actions + audit + compliance view           |
+| Notification Tracker | `GET /notifications`, `GET /notifications/summary`                                                                                                                                   | reminder engine state observability                         |
+
+---
+
+## 14. Practical Notes
+
+- The entire PixelEye flow is tenant-scoped.
+- Super-admin can scope by `_client_key`; non-super-admin uses JWT tenant context.
+- Reminder and compliance are separate but connected subsystems:
+  - reminder state controls callback scheduling
+  - compliance state verifies whether follow-up calls actually happened
+- Day progression is strict and intentionally guarded to preserve follow-up lifecycle consistency.

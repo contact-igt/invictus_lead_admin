@@ -2,17 +2,19 @@ import {
   usePixelEyeQuery,
   useCreatePixelEyeMutation,
   useUpdatePixelEyeMutation,
+  useUpdatePixelEyeFollowUpOutcomeMutation,
   useDeletePixelEyeMutation,
   CreatePixelEyePayload,
   UpdatePixelEyePayload,
 } from 'components/hooks/usePixelEyeQuery';
 import PixelEyeTable, { PixelEyeRow } from './pixelEyeTable';
 import PixelEyeLeadDrawer, { PixelEyeLeadFormValues } from './PixelEyeLeadDrawer';
+import PixelEyeNotesDrawer from './PixelEyeNotesDrawer';
 import PixelEyeDeleteDrawer from './PixelEyeDeleteDrawer';
 import PageLoader from 'components/loader/PageLoader';
 import Button from '@mui/material/Button';
 import { useState, useMemo } from 'react';
-import { Box, MenuItem, InputAdornment, Stack } from '@mui/material';
+import { Box, MenuItem, InputAdornment, Stack, IconButton, Tooltip } from '@mui/material';
 import { ALL_STATUSES } from './pixelEyeStatuses';
 import { useAuth } from 'redux/selectors/auth/authSelector';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -20,7 +22,8 @@ import { normalizeClientKey } from 'utils/clientKey';
 import { saveAs } from 'file-saver';
 import { useSnackbar } from 'notistack';
 import useColorMode from 'hooks/useColorMode';
-import { Search, Download, Plus } from 'lucide-react';
+import { Search, Download, Plus, RotateCcw, AlertTriangle, Clock3 } from 'lucide-react';
+import { _axios } from 'helper/axios';
 import {
   PixelEyeCard,
   PixelEyePageHeader,
@@ -29,23 +32,14 @@ import {
 } from './pixelEyeUi';
 import PixelEyeDatePicker from './PixelEyeDatePicker';
 import PixelEyeField from './PixelEyeField';
+import {
+  buildFollowUpPageBuckets,
+  getTodayIsoInIst,
+  isCallReceivedOutcomePendingLead,
+  shouldIncludeInManualFollowUpQueue,
+} from '../pixel-eye-overview/dashboardUtils';
 
 const ENABLE_PIXEL_EYE_LEAD_DETAIL_NAVIGATION = true;
-
-const EXPORT_COLUMNS: Array<{ key: keyof PixelEyeRow; label: string; width: number }> = [
-  { key: 'date', label: 'Date', width: 54 },
-  { key: 'time', label: 'Time', width: 42 },
-  { key: 'customer_name', label: 'Customer Name', width: 82 },
-  { key: 'phone_number', label: 'Phone', width: 64 },
-  { key: 'agent_name', label: 'Agent', width: 58 },
-  { key: 'status', label: 'Status', width: 70 },
-  { key: 'follow_up_date', label: 'Follow Up', width: 56 },
-  { key: 'source', label: 'Source', width: 45 },
-  { key: 'type_of_enquiry', label: 'Enquiry', width: 68 },
-  { key: 'call_id', label: 'Call ID', width: 70 },
-  { key: 'createdAt', label: 'Created At', width: 68 },
-  { key: 'updatedAt', label: 'Updated At', width: 68 },
-];
 
 const normalizeDateForCompare = (value?: string | null): string => {
   const text = String(value || '').trim();
@@ -68,126 +62,43 @@ const getLeadBusinessDate = (lead: PixelEyeRow): string =>
   normalizeDateForCompare(lead.createdAt) ||
   normalizeDateForCompare(lead.created_at);
 
-const getLeadValue = (lead: PixelEyeRow, key: keyof PixelEyeRow): string => {
-  if (key === 'createdAt') {
-    return String(lead.createdAt || lead.created_at || '');
-  }
-  if (key === 'updatedAt') {
-    return String(lead.updatedAt || lead.updated_at || '');
-  }
-  return String(lead[key] ?? '');
-};
-
-const escapeCsvValue = (value: string): string => {
-  const text = value.replace(/\r?\n|\r/g, ' ').trim();
-  return /[",]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
-};
-
-const buildCsv = (rows: PixelEyeRow[]): string => {
-  const header = EXPORT_COLUMNS.map((column) => escapeCsvValue(column.label)).join(',');
-  const body = rows.map((row) =>
-    EXPORT_COLUMNS.map((column) => escapeCsvValue(getLeadValue(row, column.key))).join(','),
-  );
-  return [header, ...body].join('\n');
-};
-
-const escapePdfText = (value: string): string =>
-  value
-    .replace(/\\/g, '\\\\')
-    .replace(/\(/g, '\\(')
-    .replace(/\)/g, '\\)')
-    .replace(/\r?\n|\r/g, ' ');
-
-const truncateText = (value: string, maxChars: number): string => {
-  const text = String(value || '').trim();
-  if (text.length <= maxChars) return text;
-  return `${text.slice(0, Math.max(maxChars - 3, 0))}...`;
-};
-
-const addPdfText = (commands: string[], x: number, y: number, text: string, fontSize = 7) => {
-  commands.push(`BT /F1 ${fontSize} Tf ${x} ${y} Td (${escapePdfText(text)}) Tj ET`);
-};
-
-const buildSimplePdf = (rows: PixelEyeRow[], fromDate: string, toDate: string): Blob => {
-  const pageWidth = 842;
-  const pageHeight = 595;
-  const margin = 24;
-  const rowHeight = 16;
-  const topY = pageHeight - 82;
-  const minY = 34;
-  const pages: string[] = [];
-  let commands: string[] = [];
-  let y = topY;
-
-  const drawHeader = () => {
-    commands = [];
-    addPdfText(commands, margin, pageHeight - 30, 'PixelEye Lead Report', 14);
-    addPdfText(commands, margin, pageHeight - 48, `Date range: ${fromDate} to ${toDate}`, 8);
-    addPdfText(commands, margin, pageHeight - 62, `Generated: ${new Date().toLocaleString()}`, 8);
-    let x = margin;
-    EXPORT_COLUMNS.forEach((column) => {
-      addPdfText(commands, x, pageHeight - 78, column.label, 6.5);
-      x += column.width;
-    });
-    commands.push(`${margin} ${pageHeight - 84} m ${pageWidth - margin} ${pageHeight - 84} l S`);
-    y = topY;
-  };
-
-  const finishPage = () => {
-    pages.push(commands.join('\n'));
-  };
-
-  drawHeader();
-  rows.forEach((row) => {
-    if (y < minY) {
-      finishPage();
-      drawHeader();
-    }
-
-    let x = margin;
-    EXPORT_COLUMNS.forEach((column) => {
-      const maxChars = Math.max(Math.floor(column.width / 4.2), 6);
-      const value = truncateText(getLeadValue(row, column.key), maxChars);
-      addPdfText(commands, x, y, value || '-', 6);
-      x += column.width;
-    });
-    y -= rowHeight;
-  });
-  finishPage();
-
-  const objects: string[] = [
-    '<< /Type /Catalog /Pages 2 0 R >>',
-    `<< /Type /Pages /Kids [${pages.map((_, index) => `${3 + index * 2} 0 R`).join(' ')}] /Count ${pages.length} >>`,
-  ];
-
-  pages.forEach((content, index) => {
-    const pageObjectId = 3 + index * 2;
-    const contentObjectId = pageObjectId + 1;
-    objects.push(
-      `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageWidth} ${pageHeight}] /Resources << /Font << /F1 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> >> >> /Contents ${contentObjectId} 0 R >>`,
-    );
-    objects.push(`<< /Length ${content.length} >>\nstream\n${content}\nendstream`);
-  });
-
-  let pdf = '%PDF-1.4\n';
-  const offsets = [0];
-  objects.forEach((object, index) => {
-    offsets.push(pdf.length);
-    pdf += `${index + 1} 0 obj\n${object}\nendobj\n`;
-  });
-
-  const xrefOffset = pdf.length;
-  pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
-  offsets.slice(1).forEach((offset) => {
-    pdf += `${String(offset).padStart(10, '0')} 00000 n \n`;
-  });
-  pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
-
-  return new Blob([pdf], { type: 'application/pdf' });
-};
-
 const getMutationErrorMessage = (error: any, fallback: string) =>
   error?.response?.data?.message || error?.message || fallback;
+
+const isManualFollowUpSignalResponse = (response: any): boolean => {
+  const result = String(response?.result || response?.data?.result || '').trim().toLowerCase();
+  const highlightState = String(
+    response?.followup_highlight_state ||
+    response?.data?.followup_highlight_state ||
+    response?.data?.lead?.followup_highlight_state ||
+    '',
+  ).trim().toUpperCase();
+  const normalAttentionState = String(
+    response?.normal_lead_attention_state ||
+    response?.data?.normal_lead_attention_state ||
+    response?.data?.lead?.normal_lead_attention_state ||
+    '',
+  ).trim().toUpperCase();
+  const needsManualDayOutcome = Boolean(
+    response?.needs_manual_day_outcome ||
+    response?.data?.needs_manual_day_outcome ||
+    response?.data?.lead?.needs_manual_day_outcome,
+  );
+
+  return (
+    result === 'same_number_outcome_pending' ||
+    result === 'manual_followup_signal_received' ||
+    result === 'call_received_outcome_pending' ||
+    highlightState === 'CALL_RECEIVED_OUTCOME_PENDING' ||
+    normalAttentionState === 'SAME_NUMBER_OUTCOME_PENDING' ||
+    needsManualDayOutcome
+  );
+};
+
+const extractFileName = (contentDisposition?: string): string | null => {
+  const match = String(contentDisposition || '').match(/filename="?([^";]+)"?/i);
+  return match?.[1] || null;
+};
 
 const PixelEyeSection = () => {
   const { mode } = useColorMode();
@@ -197,23 +108,147 @@ const PixelEyeSection = () => {
   const { clientKey: urlClientKey } = useParams<{ clientKey?: string }>();
   const createMutation = useCreatePixelEyeMutation();
   const updateMutation = useUpdatePixelEyeMutation();
+  const outcomeMutation = useUpdatePixelEyeFollowUpOutcomeMutation();
   const deleteMutation = useDeletePixelEyeMutation();
+  const userRole = (user?.role || '').toLowerCase().trim();
+  const isSuperAdmin = userRole === 'super-admin';
+  /**
+   * Role-based access flow for Pixel-Eye Lead Management:
+   * - super-admin: Global oversight
+   * - admin: Client-level administrator
+   * - client: Client-level manager (this is the primary role for client-side managers)
+   */
+  const canDeleteLead = userRole === 'super-admin' || userRole === 'admin' || userRole === 'client';
 
   const activeClientKey = normalizeClientKey(
-    user?.role === 'super-admin' ? urlClientKey || 'pixeleye' : user?.clientKey,
+    isSuperAdmin ? urlClientKey : user?.clientKey,
   );
+  const hasScopedClientContext = !isSuperAdmin || Boolean(activeClientKey);
 
   const { data: leads = [], isLoading } = usePixelEyeQuery(
-    user?.role === 'super-admin' ? activeClientKey : undefined,
+    isSuperAdmin ? activeClientKey : undefined,
+    { enabled: hasScopedClientContext },
   );
 
   const [formOpen, setFormOpen] = useState(false);
   const [editRow, setEditRow] = useState<PixelEyeRow | null>(null);
+  const [notesDrawerOpen, setNotesDrawerOpen] = useState(false);
+  const [notesRow, setNotesRow] = useState<PixelEyeRow | null>(null);
   const [deleteDrawerOpen, setDeleteDrawerOpen] = useState(false);
   const [deleteRow, setDeleteRow] = useState<PixelEyeRow | null>(null);
   const [exportFromDate, setExportFromDate] = useState('');
   const [exportToDate, setExportToDate] = useState('');
   const [isExporting, setIsExporting] = useState(false);
+
+  const [selectedLeadIds, setSelectedLeadIds] = useState<number[]>([]);
+  const manualFollowUpLeads = useMemo(
+    () => leads.filter((lead: PixelEyeRow) => shouldIncludeInManualFollowUpQueue(lead as any)),
+    [leads],
+  );
+  const priorityFollowUpCount = useMemo(
+    () => manualFollowUpLeads.filter((lead: PixelEyeRow) => isCallReceivedOutcomePendingLead(lead as any)).length,
+    [manualFollowUpLeads],
+  );
+  const queueFollowUpBuckets = useMemo(
+    () => buildFollowUpPageBuckets(
+      manualFollowUpLeads.filter((lead: PixelEyeRow) => !isCallReceivedOutcomePendingLead(lead as any)) as any,
+    ),
+    [manualFollowUpLeads],
+  );
+  const todayFollowUpCount = useMemo(() => {
+    const todayIso = getTodayIsoInIst();
+
+    return queueFollowUpBuckets.todayLeads.filter(
+      (lead) => normalizeDateForCompare(lead.follow_up_date) === todayIso,
+    ).length;
+  }, [queueFollowUpBuckets]);
+  const overdueFollowUpCount = queueFollowUpBuckets.overdueCount;
+
+  const navigateToFollowUps = (section?: string) => {
+    if (isSuperAdmin && activeClientKey) {
+      navigate(`/pages/d/${activeClientKey}/follow-ups${section ? `?section=${section}` : ''}`);
+      return;
+    }
+
+    navigate(`/pixel-eye/follow-ups${section ? `?section=${section}` : ''}`);
+  };
+
+  const renderFollowUpShortcutCard = ({
+    title,
+    count,
+    subtitle,
+    icon,
+    iconBg,
+    iconColor,
+    onClick,
+  }: {
+    title: string;
+    count: number;
+    subtitle: string;
+    icon: React.ReactNode;
+    iconBg: string;
+    iconColor: string;
+    onClick: () => void;
+  }) => (
+    <Box
+      role="button"
+      tabIndex={0}
+      onClick={onClick}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onClick();
+        }
+      }}
+    >
+      <PixelEyeCard
+        sx={{
+          p: 3,
+          cursor: 'pointer',
+          transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+          '&:hover': {
+            transform: 'translateY(-2px)',
+            boxShadow:
+              mode === 'dark' ? '0 12px 30px rgba(0,0,0,0.32)' : '0 12px 28px rgba(15,23,42,0.08)',
+          },
+        }}
+      >
+        <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
+          <Box>
+            <Box
+              sx={{
+                fontSize: 12,
+                fontWeight: 800,
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase',
+                color: 'text.secondary',
+              }}
+            >
+              {title}
+            </Box>
+            <Box sx={{ mt: 1, fontSize: { xs: '2rem', md: '2.25rem' }, fontWeight: 900, lineHeight: 1 }}>
+              {count.toLocaleString()}
+            </Box>
+            <Box sx={{ mt: 1, fontSize: 13, color: 'text.secondary' }}>{subtitle}</Box>
+          </Box>
+          <Box
+            sx={{
+              width: 52,
+              height: 52,
+              borderRadius: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: iconBg,
+              color: iconColor,
+            }}
+          >
+            {icon}
+          </Box>
+        </Stack>
+      </PixelEyeCard>
+    </Box>
+  );
 
   const handleAdd = () => {
     setEditRow(null);
@@ -225,13 +260,23 @@ const PixelEyeSection = () => {
     setFormOpen(true);
   };
 
+  const handleOpenNotesDrawer = (row: PixelEyeRow) => {
+    setNotesRow(row);
+    setNotesDrawerOpen(true);
+  };
+
   const handleOpenLeadDetail = (row: PixelEyeRow) => {
+    if (isSuperAdmin && activeClientKey) {
+      navigate(`/pages/d/${activeClientKey}/pixel-eye/leads/${row.id}`);
+      return;
+    }
+
     navigate(`/pixel-eye/leads/${row.id}`);
   };
 
   const handleInlineStatusChange = (id: number, value: string) => {
     updateMutation.mutate(
-      { id, status: value },
+      { id, status: value, clientKey: isSuperAdmin ? activeClientKey : undefined },
       {
         onError: (error: any) => {
           enqueueSnackbar(getMutationErrorMessage(error, 'Failed to update status'), {
@@ -243,10 +288,28 @@ const PixelEyeSection = () => {
   };
 
   const handleInlineDayChange = (id: number, day: string, value: string) => {
+    if (userRole === 'client') {
+      outcomeMutation.mutate(
+        { id, status: value },
+        {
+          onError: (error: any) => {
+            enqueueSnackbar(
+              getMutationErrorMessage(error, `Failed to update ${day.replace('_', ' ')}`),
+              {
+                variant: 'error',
+              },
+            );
+          },
+        },
+      );
+      return;
+    }
+
     updateMutation.mutate(
       {
         id,
         [day]: value,
+        clientKey: isSuperAdmin ? activeClientKey : undefined,
       },
       {
         onError: (error: any) => {
@@ -266,6 +329,7 @@ const PixelEyeSection = () => {
       {
         id,
         follow_up_date: value,
+        clientKey: isSuperAdmin ? activeClientKey : undefined,
       },
       {
         onError: (error: any) => {
@@ -277,7 +341,8 @@ const PixelEyeSection = () => {
     );
   };
 
-  const handleOpenDeleteDrawer = (row: PixelEyeRow) => {
+  const handleOpenDeleteDrawer = (row: any) => {
+    if (!row) return;
     setDeleteRow(row);
     setDeleteDrawerOpen(true);
   };
@@ -285,10 +350,11 @@ const PixelEyeSection = () => {
   const handleDelete = () => {
     if (!deleteRow?.id) return;
 
-    deleteMutation.mutate(deleteRow.id, {
+    deleteMutation.mutate({ id: deleteRow.id, clientKey: isSuperAdmin ? activeClientKey : undefined }, {
       onSuccess: () => {
         setDeleteDrawerOpen(false);
         setDeleteRow(null);
+        enqueueSnackbar('Lead deleted successfully', { variant: 'success' });
       },
       onError: (error: any) => {
         enqueueSnackbar(getMutationErrorMessage(error, 'Failed to delete lead'), {
@@ -303,16 +369,17 @@ const PixelEyeSection = () => {
     setEditRow(null);
   };
 
+  const closeNotesDrawer = () => {
+    setNotesDrawerOpen(false);
+    setNotesRow(null);
+  };
+
   const buildLeadPayload = (values: PixelEyeLeadFormValues): PixelEyeLeadFormValues => {
     const payload = { ...values };
     if (!String(payload.follow_up_date || '').trim()) {
       delete payload.follow_up_date;
     }
-    (['day_1', 'day_2', 'day_3', 'day_4', 'day_5'] as const).forEach((day) => {
-      if (!String(payload[day] || '').trim()) {
-        delete payload[day];
-      }
-    });
+
     return payload;
   };
 
@@ -321,7 +388,11 @@ const PixelEyeSection = () => {
 
     if (editRow && editRow.id) {
       // Close only after the API call succeeds so the user sees errors if it fails.
-      updateMutation.mutate({ id: editRow.id, ...leadPayload } as UpdatePixelEyePayload, {
+      updateMutation.mutate({
+        id: editRow.id,
+        ...leadPayload,
+        clientKey: isSuperAdmin ? activeClientKey : undefined,
+      } as UpdatePixelEyePayload, {
         onSuccess: closeForm,
         onError: (error: any) => {
           enqueueSnackbar(getMutationErrorMessage(error, 'Failed to save lead'), {
@@ -334,7 +405,15 @@ const PixelEyeSection = () => {
         ? { ...leadPayload, _client_key: activeClientKey }
         : leadPayload;
       createMutation.mutate(payload, {
-        onSuccess: closeForm,
+        onSuccess: (response) => {
+          closeForm();
+          enqueueSnackbar(
+            isManualFollowUpSignalResponse(response)
+              ? 'Same number matched an active lead. Please update the next day outcome manually.'
+              : 'New lead created',
+            { variant: 'success' },
+          );
+        },
         onError: (error: any) => {
           enqueueSnackbar(getMutationErrorMessage(error, 'Failed to create lead'), {
             variant: 'error',
@@ -346,11 +425,32 @@ const PixelEyeSection = () => {
 
   const handleFormCancel = closeForm;
 
+  const handleNotesSubmit = (notes: string) => {
+    if (!notesRow?.id) return;
+
+    updateMutation.mutate(
+      {
+        id: notesRow.id,
+        notes,
+        clientKey: isSuperAdmin ? activeClientKey : undefined,
+      },
+      {
+        onSuccess: closeNotesDrawer,
+        onError: (error: any) => {
+          enqueueSnackbar(getMutationErrorMessage(error, 'Failed to save notes'), {
+            variant: 'error',
+          });
+        },
+      },
+    );
+  };
+
   // --- Filtering ---
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const filteredLeads = useMemo(() => {
     return leads.filter((lead: PixelEyeRow) => {
+
       const matchesSearch =
         !search ||
         lead.customer_name?.toLowerCase().includes(search.toLowerCase()) ||
@@ -364,6 +464,48 @@ const PixelEyeSection = () => {
     });
   }, [exportFromDate, exportToDate, leads, search, statusFilter]);
 
+  const prioritizedLeads = useMemo(() => {
+    const getLeadTimestamp = (lead: PixelEyeRow) => {
+      const parsed = new Date(
+        lead.updatedAt || lead.updated_at || lead.createdAt || lead.created_at || '',
+      );
+      return Number.isNaN(parsed.getTime()) ? 0 : parsed.getTime();
+    };
+
+    return [...filteredLeads].sort((a, b) => {
+      const aPriority = a.needs_manual_day_outcome ? 1 : 0;
+      const bPriority = b.needs_manual_day_outcome ? 1 : 0;
+      if (aPriority !== bPriority) {
+        return bPriority - aPriority;
+      }
+
+      return getLeadTimestamp(b) - getLeadTimestamp(a);
+    });
+  }, [filteredLeads]);
+  const handleDeleteSelectedLeads = async () => {
+    if (selectedLeadIds.length === 0) return;
+
+    const idsToDelete = [...selectedLeadIds];
+
+    try {
+      for (const id of idsToDelete) {
+        await deleteMutation.mutateAsync({
+          id,
+          clientKey: isSuperAdmin ? activeClientKey : undefined,
+        });
+      }
+
+      enqueueSnackbar(
+        idsToDelete.length + ' lead' + (idsToDelete.length === 1 ? '' : 's') + ' deleted permanently',
+        { variant: 'success' },
+      );
+      setSelectedLeadIds([]);
+    } catch (error: any) {
+      enqueueSnackbar(getMutationErrorMessage(error, 'Failed to delete selected leads'), {
+        variant: 'error',
+      });
+    }
+  };
   const getExportRows = (): PixelEyeRow[] | null => {
     if (!exportFromDate || !exportToDate) {
       enqueueSnackbar('Please select date range', { variant: 'warning' });
@@ -385,34 +527,58 @@ const PixelEyeSection = () => {
     return rows;
   };
 
-  const exportFileBaseName = `pixel-eye-leads-${exportFromDate}-to-${exportToDate}`;
-
-  const handleExportCsv = () => {
+  const handleExport = async (format: 'csv' | 'pdf') => {
     const rows = getExportRows();
     if (!rows) return;
 
     setIsExporting(true);
     try {
-      const csv = buildCsv(rows);
-      const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8' });
-      saveAs(blob, `${exportFileBaseName}.csv`);
+      const response = await _axios(
+        'get',
+        '/pixeleye/export',
+        null,
+        'application/json',
+        {
+          format,
+          dateFrom: exportFromDate,
+          dateTo: exportToDate,
+          status: statusFilter || undefined,
+          search: search.trim() || undefined,
+          ...(isSuperAdmin && activeClientKey ? { _client_key: activeClientKey } : {}),
+        },
+        { responseType: 'blob', returnRawResponse: true },
+      );
+
+      const blob = new Blob([response.data], {
+        type: response.headers['content-type'] || (format === 'pdf' ? 'application/pdf' : 'text/csv;charset=utf-8'),
+      });
+      const fileName =
+        extractFileName(response.headers['content-disposition']) ||
+        `pixel-eye-leads-${exportFromDate}-to-${exportToDate}.${format}`;
+      saveAs(blob, fileName);
+    } catch (error: any) {
+      enqueueSnackbar(getMutationErrorMessage(error, `Failed to export ${format.toUpperCase()}`), {
+        variant: 'error',
+      });
     } finally {
       setIsExporting(false);
     }
   };
 
-  const handleExportPdf = () => {
-    const rows = getExportRows();
-    if (!rows) return;
-
-    setIsExporting(true);
-    try {
-      const blob = buildSimplePdf(rows, exportFromDate, exportToDate);
-      saveAs(blob, `${exportFileBaseName}.pdf`);
-    } finally {
-      setIsExporting(false);
-    }
-  };
+  if (!hasScopedClientContext) {
+    return (
+      <PixelEyePageShell>
+        <PixelEyeCard sx={{ p: 4 }}>
+          <Stack spacing={1}>
+            <Box sx={{ fontWeight: 800, fontSize: '1.25rem' }}>Please select a client</Box>
+            <Box sx={{ color: 'text.secondary' }}>
+              Select a client from the route context to load PixelEye leads.
+            </Box>
+          </Stack>
+        </PixelEyeCard>
+      </PixelEyePageShell>
+    );
+  }
 
   if (isLoading) return <PageLoader />;
 
@@ -436,160 +602,275 @@ const PixelEyeSection = () => {
         }
       />
 
-      <PixelEyeCard sx={{ mb: 4 }}>
-        <Stack
-          direction={{ xs: 'column', lg: 'row' }}
-          spacing={2.5}
-          alignItems={{ xs: 'stretch', lg: 'center' }}
-          sx={{ p: { xs: 2.5, md: 3 } }}
-        >
-          <Stack
-            direction={{ xs: 'column', sm: 'row' }}
-            spacing={2}
-            flex={1}
-            alignItems={{ xs: 'stretch', sm: 'center' }}
-          >
-            <PixelEyeField
-              placeholder="Search name, phone..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              size="small"
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start" sx={{ color: 'text.secondary', ml: 0.5 }}>
-                    <Search size={18} />
-                  </InputAdornment>
-                ),
-              }}
-              sx={{
-                minWidth: { xs: '100%', sm: 280 },
-              }}
-            />
-            <PixelEyeField
-              select
-              label="Status Filter"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              size="small"
-              sx={{
-                minWidth: { xs: '100%', sm: 200 },
-              }}
-              SelectProps={{ displayEmpty: true }}
-            >
-              <MenuItem value="">All Statuses</MenuItem>
-              {ALL_STATUSES.map((s) => (
-                <MenuItem key={s} value={s}>
-                  {s}
-                </MenuItem>
-              ))}
-            </PixelEyeField>
-          </Stack>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', md: 'repeat(3, minmax(0, 1fr))' },
+          gap: 2,
+          mb: 4,
+        }}
+      >
+        {renderFollowUpShortcutCard({
+          title: "Today's Follow-ups",
+          count: todayFollowUpCount,
+          subtitle: 'Open today queue',
+          icon: <Search size={20} />,
+          iconBg: mode === 'dark' ? 'rgba(22, 163, 74, 0.14)' : 'rgba(220, 252, 231, 1)',
+          iconColor: mode === 'dark' ? '#86EFAC' : '#15803D',
+          onClick: () => navigateToFollowUps('today'),
+        })}
 
-          <Stack
-            direction={{ xs: 'column', sm: 'row' }}
-            spacing={2}
-            alignItems={{ xs: 'stretch', sm: 'center' }}
+        {renderFollowUpShortcutCard({
+          title: 'Overdue Follow-ups',
+          count: overdueFollowUpCount,
+          subtitle: 'Review delayed queue',
+          icon: <AlertTriangle size={20} />,
+          iconBg: mode === 'dark' ? 'rgba(239, 68, 68, 0.16)' : 'rgba(254, 226, 226, 1)',
+          iconColor: mode === 'dark' ? '#FCA5A5' : '#B91C1C',
+          onClick: () => navigateToFollowUps('overdue'),
+        })}
+
+        {renderFollowUpShortcutCard({
+          title: 'Needs Outcome',
+          count: priorityFollowUpCount,
+          subtitle: 'Open outcome-pending leads',
+          icon: <Clock3 size={20} />,
+          iconBg: mode === 'dark' ? 'rgba(245, 158, 11, 0.16)' : 'rgba(254, 243, 199, 1)',
+          iconColor: mode === 'dark' ? '#FCD34D' : '#B45309',
+          onClick: () => navigateToFollowUps('priority'),
+        })}
+      </Box>
+
+      <PixelEyeCard sx={{ mb: 4 }}>
+        <Box
+          sx={{
+            p: { xs: 2.5, md: 3 },
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2,
+          }}
+        >
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 2,
+            }}
           >
-            <PixelEyeDatePicker
-              label="From"
-              value={exportFromDate}
-              maxDate={exportToDate || undefined}
-              onChange={(newFrom) => {
-                setExportFromDate(newFrom);
-                if (exportToDate && newFrom > exportToDate) {
-                  setExportToDate(newFrom);
-                }
+            <Box
+              sx={{
+                minWidth: 0,
+                display: 'grid',
+                gap: 2,
+                gridTemplateColumns: {
+                  xs: '1fr',
+                  sm: 'repeat(2, minmax(0, 1fr))',
+                  lg: 'minmax(240px, 1.35fr) minmax(190px, 0.95fr) minmax(160px, 0.8fr) minmax(160px, 0.8fr) auto',
+                },
+                alignItems: 'end',
               }}
-              fullWidth={false}
-            />
-            <PixelEyeDatePicker
-              label="To"
-              value={exportToDate}
-              minDate={exportFromDate || undefined}
-              disabled={!exportFromDate}
-              onChange={(newTo) => setExportToDate(newTo)}
-              fullWidth={false}
-            />
+            >
+              <Box sx={{ minWidth: 0 }}>
+                <PixelEyeField
+                  placeholder="Search name, phone..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  size="small"
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start" sx={{ color: 'text.secondary', ml: 0.5 }}>
+                        <Search size={18} />
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{ width: '100%' }}
+                />
+              </Box>
+
+              <Box sx={{ minWidth: 0 }}>
+                <PixelEyeField
+                  select
+                  label="Status Filter"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  size="small"
+                  sx={{ width: '100%' }}
+                  SelectProps={{ displayEmpty: true }}
+                >
+                  <MenuItem value="">All Statuses</MenuItem>
+                  {ALL_STATUSES.map((s) => (
+                    <MenuItem key={s} value={s}>
+                      {s}
+                    </MenuItem>
+                  ))}
+                </PixelEyeField>
+              </Box>
+
+              <Box sx={{ minWidth: 0 }}>
+                <PixelEyeDatePicker
+                  label="From"
+                  value={exportFromDate}
+                  maxDate={exportToDate || undefined}
+                  onChange={(newFrom) => {
+                    setExportFromDate(newFrom);
+                    if (exportToDate && newFrom > exportToDate) {
+                      setExportToDate(newFrom);
+                    }
+                  }}
+                  fullWidth={false}
+                  sx={{ width: '100%' }}
+                />
+              </Box>
+
+              <Box sx={{ minWidth: 0 }}>
+                <PixelEyeDatePicker
+                  label="To"
+                  value={exportToDate}
+                  minDate={exportFromDate || undefined}
+                  disabled={!exportFromDate}
+                  onChange={(newTo) => setExportToDate(newTo)}
+                  fullWidth={false}
+                  sx={{ width: '100%' }}
+                />
+              </Box>
+
+              <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent={{ xs: 'flex-start', lg: 'flex-end' }}
+                sx={{ minHeight: 46, minWidth: 46 }}
+              >
+                {(exportFromDate || exportToDate) && (
+                  <Tooltip title="Reset dates">
+                    <IconButton
+                      onClick={() => {
+                        setExportFromDate('');
+                        setExportToDate('');
+                      }}
+                      size="small"
+                      sx={{
+                        height: 42,
+                        width: 42,
+                        borderRadius: '12px',
+                        border: mode === 'dark'
+                          ? '1px solid rgba(134, 239, 172, 0.22)'
+                          : '1px solid rgba(21, 106, 69, 0.18)',
+                        color: mode === 'dark' ? '#86EFAC' : '#156A45',
+                        backgroundColor: mode === 'dark'
+                          ? 'rgba(20, 45, 30, 0.7)'
+                          : 'rgba(240, 253, 244, 0.95)',
+                        flexShrink: 0,
+                        '&:hover': {
+                          backgroundColor: mode === 'dark'
+                            ? 'rgba(22, 60, 36, 0.92)'
+                            : 'rgba(220, 252, 231, 1)',
+                        },
+                      }}
+                    >
+                      <RotateCcw size={16} />
+                    </IconButton>
+                  </Tooltip>
+                )}
+              </Stack>
+            </Box>
 
             <Stack
-              direction="row"
+              direction={{ xs: 'column', sm: 'row' }}
               spacing={1}
-              justifyContent={{ xs: 'space-between', sm: 'flex-start' }}
+              alignItems={{ xs: 'stretch', sm: 'center' }}
+              justifyContent={{ xs: 'stretch', xl: 'flex-end' }}
+              useFlexGap
+              sx={{
+                width: '100%',
+                pt: 0,
+              }}
             >
-              {(exportFromDate || exportToDate) && (
-                <Button
-                  variant="text"
-                  onClick={() => {
-                    setExportFromDate('');
-                    setExportToDate('');
-                  }}
-                  sx={{
-                    textTransform: 'none',
-                    fontWeight: 700,
-                    borderRadius: '12px',
-                    color: mode === 'dark' ? '#86EFAC' : '#156A45',
-                    px: 1.5,
-                  }}
-                >
-                  Reset
-                </Button>
-              )}
-
-              <Box
-                sx={{
-                  borderLeft:
-                    mode === 'dark'
-                      ? '1px solid rgba(255,255,255,0.1)'
-                      : '1px solid rgba(0,0,0,0.1)',
-                  height: 24,
-                  mx: 1,
-                  display: { xs: 'none', sm: 'block' },
-                }}
-              />
-
               <Button
                 variant="outlined"
-                onClick={handleExportCsv}
-                disabled={isLoading || isExporting}
+                onClick={() => void handleExport('csv')}
+                disabled={isLoading || isExporting || !exportFromDate || !exportToDate}
                 startIcon={<Download size={16} />}
                 sx={{
                   ...getPixelEyeButtonSx(mode, 'secondary'),
                   height: 46,
                   px: 2,
                   borderRadius: '14px',
+                  minWidth: { xs: '100%', sm: 140 },
+                  whiteSpace: 'nowrap',
+                  '&.Mui-disabled': {
+                    borderColor: mode === 'dark' ? 'rgba(134, 239, 172, 0.14)' : 'rgba(203, 213, 225, 0.9)',
+                    color: mode === 'dark' ? 'rgba(223, 255, 227, 0.52)' : 'rgba(71, 85, 105, 0.78)',
+                    backgroundColor: mode === 'dark' ? 'rgba(16, 33, 24, 0.72)' : 'rgba(248, 250, 252, 0.95)',
+                  },
                 }}
               >
-                CSV
+                Export CSV
               </Button>
               <Button
                 variant="outlined"
-                onClick={handleExportPdf}
-                disabled={isLoading || isExporting}
+                onClick={() => void handleExport('pdf')}
+                disabled={isLoading || isExporting || !exportFromDate || !exportToDate}
                 startIcon={<Download size={16} />}
                 sx={{
                   ...getPixelEyeButtonSx(mode, 'secondary'),
                   height: 46,
                   px: 2,
                   borderRadius: '14px',
+                  minWidth: { xs: '100%', sm: 140 },
+                  whiteSpace: 'nowrap',
+                  '&.Mui-disabled': {
+                    borderColor: mode === 'dark' ? 'rgba(134, 239, 172, 0.14)' : 'rgba(203, 213, 225, 0.9)',
+                    color: mode === 'dark' ? 'rgba(223, 255, 227, 0.52)' : 'rgba(71, 85, 105, 0.78)',
+                    backgroundColor: mode === 'dark' ? 'rgba(16, 33, 24, 0.72)' : 'rgba(248, 250, 252, 0.95)',
+                  },
                 }}
               >
-                PDF
+                Export PDF
+              </Button>
+            </Stack>
+          </Box>
+        </Box>
+      </PixelEyeCard>
+
+      <PixelEyeCard sx={{ borderRadius: '22px' }}>
+        {selectedLeadIds.length > 0 && (
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={1.5}
+            justifyContent="space-between"
+            alignItems={{ xs: 'stretch', sm: 'center' }}
+            sx={{ mb: 2 }}
+          >
+            <Box sx={{ fontSize: 13, fontWeight: 700, color: mode === 'dark' ? '#A7F3D0' : '#156A45' }}>
+              {selectedLeadIds.length} selected
+            </Box>
+            <Stack direction="row" spacing={1}>
+              <Button
+                variant="outlined"
+                disabled={selectedLeadIds.length === 0 || deleteMutation.isLoading}
+                onClick={() => void handleDeleteSelectedLeads()}
+                sx={getPixelEyeButtonSx(mode, 'secondary')}
+              >
+                Delete selected
               </Button>
             </Stack>
           </Stack>
-        </Stack>
-      </PixelEyeCard>
-
-      <PixelEyeCard sx={{ overflow: 'hidden', borderRadius: '22px' }}>
-        <PixelEyeTable
-          rows={filteredLeads}
-          onEdit={handleEdit}
-          onDelete={handleOpenDeleteDrawer}
-          onStatusChange={handleInlineStatusChange}
-          onDayChange={handleInlineDayChange}
-          onFollowUpDateChange={handleInlineFollowUpDateChange}
-          onRowClick={ENABLE_PIXEL_EYE_LEAD_DETAIL_NAVIGATION ? handleOpenLeadDetail : undefined}
-        />
+        )}
+        <Box sx={{ width: '100%', overflowX: 'auto' }}>
+          <PixelEyeTable
+            rows={prioritizedLeads}
+            onEdit={handleEdit}
+            onNotes={handleOpenNotesDrawer}
+            onDelete={canDeleteLead ? handleOpenDeleteDrawer : undefined}
+            onStatusChange={handleInlineStatusChange}
+            onDayChange={handleInlineDayChange}
+            onFollowUpDateChange={handleInlineFollowUpDateChange}
+            userRole={userRole}
+            onRowClick={ENABLE_PIXEL_EYE_LEAD_DETAIL_NAVIGATION ? handleOpenLeadDetail : undefined}
+            selectedRowIds={selectedLeadIds}
+            onSelectedRowIdsChange={setSelectedLeadIds}
+          />
+        </Box>
       </PixelEyeCard>
 
       {/* --- Drawers & Dialogs --- */}
@@ -600,6 +881,13 @@ const PixelEyeSection = () => {
         onClose={handleFormCancel}
         onSubmit={handleFormSubmit}
         isLoading={createMutation.isLoading || updateMutation.isLoading}
+      />
+      <PixelEyeNotesDrawer
+        open={notesDrawerOpen}
+        lead={notesRow}
+        onClose={closeNotesDrawer}
+        onSubmit={handleNotesSubmit}
+        isLoading={updateMutation.isLoading}
       />
       <PixelEyeDeleteDrawer
         open={deleteDrawerOpen}
@@ -616,3 +904,5 @@ const PixelEyeSection = () => {
 };
 
 export default PixelEyeSection;
+
+

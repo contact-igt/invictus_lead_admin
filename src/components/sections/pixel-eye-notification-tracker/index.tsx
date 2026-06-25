@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import {
   Box,
   Button,
+  Dialog,
   Grid,
   MenuItem,
   Stack,
@@ -11,9 +12,9 @@ import {
   Card,
   IconButton,
   Pagination,
+  Tooltip,
 } from '@mui/material';
 import {
-  RotateCcw,
   Search,
   AlertCircle,
   CheckCircle2,
@@ -21,19 +22,22 @@ import {
   BarChart3,
   Clock,
   SlidersHorizontal,
-  Download,
   Bell,
 } from 'lucide-react';
 import useColorMode from 'hooks/useColorMode';
 import {
   usePixelEyeNotificationsQuery,
   usePixelEyeNotificationsSummaryQuery,
+  useDeletePixelEyeNotificationsMutation,
+  type NotificationState,
 } from 'components/hooks/usePixelEyeNotificationsQuery';
+import { useAuth } from 'redux/selectors/auth/authSelector';
 import { PixelEyePageShell, PIXELEYE_COLORS } from '../pixel-eye/pixelEyeUi';
 import NotificationTrackerList from './NotificationTrackerList';
 import NotificationDetailsDrawer from './NotificationDetailsDrawer';
 import PixelEyeField from '../pixel-eye/PixelEyeField';
 import PixelEyeDatePicker from '../pixel-eye/PixelEyeDatePicker';
+import { normalizePixelEyeStatus } from '../pixel-eye/pixelEyeStatuses';
 import dayjs from 'dayjs';
 
 interface NotificationTrackerProps {
@@ -141,56 +145,121 @@ const StatWidget = ({
 
 const ITEMS_PER_PAGE = 12;
 
+const normalizeDateForCompare = (value?: string | null): string => {
+  const text = String(value || '').trim();
+  if (!text) return '';
+
+  const directDate = text.match(/^\d{4}-\d{2}-\d{2}/);
+  if (directDate) return directDate[0];
+
+  const parsed = dayjs(text);
+  return parsed.isValid() ? parsed.format('YYYY-MM-DD') : '';
+};
+
+const matchesDateRange = (
+  notification: NotificationState,
+  dateFrom: string,
+  dateTo: string,
+): boolean => {
+  const candidateDates = [
+    normalizeDateForCompare(notification.scheduled_at),
+    normalizeDateForCompare(notification.notification_sent_at),
+    normalizeDateForCompare(notification.createdAt),
+    normalizeDateForCompare(notification.updatedAt),
+  ].filter(Boolean);
+
+  if (candidateDates.length === 0) return false;
+
+  return candidateDates.some((candidateDate) => {
+    if (dateFrom && candidateDate < dateFrom) return false;
+    if (dateTo && candidateDate > dateTo) return false;
+    return true;
+  });
+};
+
 const NotificationTracker: React.FC<NotificationTrackerProps> = ({
   clientKey,
   searchText: externalSearchText,
 }) => {
+  const { user } = useAuth();
   const { mode } = useColorMode();
   const isDark = mode === 'dark';
+  const isSuperAdmin = String(user?.role || '').toLowerCase().trim() === 'super-admin';
+  const canDeleteNotifications = ['super-admin', 'admin', 'client'].includes(
+    String(user?.role || '').toLowerCase().trim(),
+  );
   const [internalSearchText, setInternalSearchText] = useState('');
   const [stateFilter, setStateFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
-  const [selectedNotification, setSelectedNotification] = useState<any>(null);
+  const [selectedNotification, setSelectedNotification] = useState<NotificationState | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [selectedNotificationIds, setSelectedNotificationIds] = useState<number[]>([]);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
 
   // Pagination state
   const [page, setPage] = useState(1);
 
   const searchText = externalSearchText || internalSearchText;
 
+  const hasScopedClientContext = !isSuperAdmin || Boolean(clientKey);
+
   const {
     data: notifications = [],
     isLoading,
     isError,
-    refetch,
-  } = usePixelEyeNotificationsQuery(clientKey);
+  } = usePixelEyeNotificationsQuery(clientKey, undefined, { enabled: hasScopedClientContext });
 
   const { data: summary, isLoading: summaryLoading } =
-    usePixelEyeNotificationsSummaryQuery(clientKey);
+    usePixelEyeNotificationsSummaryQuery(clientKey, { enabled: hasScopedClientContext });
+  const deleteNotificationsMutation = useDeletePixelEyeNotificationsMutation();
+  const hasActiveFilters = Boolean(searchText || stateFilter || typeFilter || dateFrom || dateTo);
+
+  if (!hasScopedClientContext) {
+    return (
+      <PixelEyePageShell>
+        <Box sx={{ px: 3, mt: 2, width: '100%' }}>
+          <Card sx={{ p: 3, borderRadius: '20px' }}>
+            <Typography variant="h5" fontWeight={800}>
+              Please select a client
+            </Typography>
+            <Typography variant="body2" sx={{ mt: 1, color: 'text.secondary' }}>
+              Select a client from route context to load notification tracker data.
+            </Typography>
+          </Card>
+        </Box>
+      </PixelEyePageShell>
+    );
+  }
 
   const filtered = useMemo(() => {
-    return notifications.filter((n: any) => {
-      if (stateFilter && n.state !== stateFilter) return false;
-      if (typeFilter && n.schedule_type !== typeFilter) return false;
+    return notifications.filter((n) => {
+      const normalizedState = String(n.state || '').trim().toLowerCase();
+      const normalizedType = String(n.schedule_type || '').trim().toUpperCase();
+
+      if (stateFilter && normalizedState !== stateFilter.toLowerCase()) return false;
+      if (typeFilter && normalizedType !== typeFilter.toUpperCase()) return false;
 
       if (dateFrom || dateTo) {
-        const schedAt = n.scheduled_at ? dayjs(n.scheduled_at).format('YYYY-MM-DD') : '';
-        const sentAt = n.notification_sent_at
-          ? dayjs(n.notification_sent_at).format('YYYY-MM-DD')
-          : '';
-        const createdAt = n.createdAt ? dayjs(n.createdAt).format('YYYY-MM-DD') : '';
-
-        const compareDate = schedAt || sentAt || createdAt;
-
-        if (!compareDate) return false;
-        if (dateFrom && compareDate < dateFrom) return false;
-        if (dateTo && compareDate > dateTo) return false;
+        if (!matchesDateRange(n, dateFrom, dateTo)) return false;
       }
 
       if (searchText) {
-        const query = searchText.toLowerCase();
+        const query = searchText.toLowerCase().trim();
+        const scheduleTypeText = String(n.schedule_type || '')
+          .replace(/_/g, ' ')
+          .toLowerCase();
+        const completionSourceText = String(n.completion_source || '')
+          .replace(/_/g, ' ')
+          .toLowerCase();
+        const currentDayText = n.current_day ? `day ${n.current_day}` : 'initial';
+        const outcomeText = ['day_1', 'day_2', 'day_3', 'day_4', 'day_5']
+          .map((key) => normalizePixelEyeStatus(n[key as keyof NotificationState] as string | null | undefined))
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase();
+
         return (
           String(n.customer_name || '')
             .toLowerCase()
@@ -203,7 +272,25 @@ const NotificationTracker: React.FC<NotificationTrackerProps> = ({
             .includes(query) ||
           String(n.agent_name || '')
             .toLowerCase()
-            .includes(query)
+            .includes(query) ||
+          String(n.reason || '')
+            .toLowerCase()
+            .includes(query) ||
+          String(n.cancel_reason || '')
+            .toLowerCase()
+            .includes(query) ||
+          normalizedState.includes(query) ||
+          scheduleTypeText.includes(query) ||
+          completionSourceText.includes(query) ||
+          String(n.outcome_status || '')
+            .toLowerCase()
+            .includes(query) ||
+          String(n.compliance_status || '')
+            .toLowerCase()
+            .includes(query) ||
+          currentDayText.includes(query) ||
+          normalizePixelEyeStatus(n.last_status).toLowerCase().includes(query) ||
+          outcomeText.includes(query)
         );
       }
 
@@ -216,6 +303,12 @@ const NotificationTracker: React.FC<NotificationTrackerProps> = ({
     setPage(1);
   }, [stateFilter, typeFilter, dateFrom, dateTo, searchText]);
 
+  React.useEffect(() => {
+    setSelectedNotificationIds((current) =>
+      current.filter((id) => filtered.some((notification) => notification.id === id)),
+    );
+  }, [filtered]);
+
   const paginatedNotifications = useMemo(() => {
     const start = (page - 1) * ITEMS_PER_PAGE;
     return filtered.slice(start, start + ITEMS_PER_PAGE);
@@ -226,6 +319,54 @@ const NotificationTracker: React.FC<NotificationTrackerProps> = ({
   const handleOpenDetails = (notification: any) => {
     setSelectedNotification(notification);
     setDrawerOpen(true);
+  };
+
+  const handleToggleNotification = (notificationId: number) => {
+    setSelectedNotificationIds((current) =>
+      current.includes(notificationId)
+        ? current.filter((id) => id !== notificationId)
+        : [...current, notificationId],
+    );
+  };
+
+  const visibleNotificationIds = paginatedNotifications
+    .map((notification) => Number(notification.id))
+    .filter((id) => Number.isInteger(id) && id > 0);
+
+  const areAllVisibleSelected =
+    visibleNotificationIds.length > 0 &&
+    visibleNotificationIds.every((id) => selectedNotificationIds.includes(id));
+
+  const handleToggleAllVisible = () => {
+    setSelectedNotificationIds((current) => {
+      if (areAllVisibleSelected) {
+        return current.filter((id) => !visibleNotificationIds.includes(id));
+      }
+
+      return Array.from(new Set([...current, ...visibleNotificationIds]));
+    });
+  };
+
+  const handleDeleteSelected = () => {
+    if (!canDeleteNotifications || selectedNotificationIds.length === 0) return;
+
+    deleteNotificationsMutation.mutate(
+      { ids: selectedNotificationIds, clientKey },
+      {
+        onSuccess: () => {
+          setIsDeleteConfirmOpen(false);
+          setSelectedNotificationIds([]);
+        },
+      },
+    );
+  };
+
+  const handleClearFilters = () => {
+    setInternalSearchText('');
+    setStateFilter('');
+    setTypeFilter('');
+    setDateFrom('');
+    setDateTo('');
   };
 
   return (
@@ -283,47 +424,6 @@ const NotificationTracker: React.FC<NotificationTrackerProps> = ({
               delivery statuses, and customer engagement metrics.
             </Typography>
           </Box>
-          <Stack direction="row" spacing={2} sx={{ mt: 1 }}>
-            <Button
-              variant="outlined"
-              onClick={() => refetch()}
-              startIcon={<RotateCcw size={16} />}
-              sx={{
-                borderRadius: '12px',
-                px: 2,
-                height: 42,
-                textTransform: 'none',
-                fontWeight: 700,
-                borderColor: isDark ? 'rgba(134, 239, 172, 0.2)' : 'rgba(0,0,0,0.1)',
-                color: isDark ? '#86EFAC' : 'text.primary',
-                '&:hover': {
-                  borderColor: isDark ? '#86EFAC' : 'primary.main',
-                  bgcolor: isDark ? 'rgba(134, 239, 172, 0.05)' : 'rgba(0,0,0,0.02)',
-                },
-              }}
-            >
-              Refresh
-            </Button>
-            <Button
-              variant="contained"
-              startIcon={<Download size={16} />}
-              sx={{
-                borderRadius: '12px',
-                px: 2,
-                height: 42,
-                textTransform: 'none',
-                fontWeight: 700,
-                boxShadow: 'none',
-                bgcolor: PIXELEYE_COLORS.primary,
-                '&:hover': {
-                  bgcolor: PIXELEYE_COLORS.primaryHover,
-                  boxShadow: '0 4px 12px rgba(21, 106, 69, 0.3)',
-                },
-              }}
-            >
-              Export
-            </Button>
-          </Stack>
         </Stack>
 
         {/* Stats Grid */}
@@ -339,7 +439,7 @@ const NotificationTracker: React.FC<NotificationTrackerProps> = ({
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
             <StatWidget
-              label="Completed"
+              label="Notification Sent"
               value={summary?.completed}
               color="#22c55e"
               icon={CheckCircle2}
@@ -408,8 +508,10 @@ const NotificationTracker: React.FC<NotificationTrackerProps> = ({
                 onChange={(e) => setStateFilter(e.target.value as string)}
               >
                 <MenuItem value="">All Statuses</MenuItem>
+                <MenuItem value="new">New</MenuItem>
+                <MenuItem value="baseline">Baseline</MenuItem>
                 <MenuItem value="scheduled">Scheduled</MenuItem>
-                <MenuItem value="completed">Completed</MenuItem>
+                <MenuItem value="completed">Notification Sent</MenuItem>
                 <MenuItem value="cancelled">Cancelled</MenuItem>
               </PixelEyeField>
             </Grid>
@@ -441,26 +543,39 @@ const NotificationTracker: React.FC<NotificationTrackerProps> = ({
                     label="From"
                     value={dateFrom}
                     fullWidth
-                    onChange={(val) => setDateFrom(val)}
+                    maxDate={dateTo || undefined}
+                    onChange={(val) => {
+                      setDateFrom(val);
+                      if (dateTo && val && val > dateTo) {
+                        setDateTo(val);
+                      }
+                    }}
                   />
                 </Box>
                 <Box sx={{ flexGrow: 1, maxWidth: { xs: '100%', lg: '160px' } }}>
                   <PixelEyeDatePicker
                     label="To"
                     value={dateTo}
+                    minDate={dateFrom || undefined}
                     fullWidth
                     onChange={(val) => setDateTo(val)}
                   />
                 </Box>
-                <IconButton
-                  sx={{
-                    bgcolor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-                    borderRadius: '12px',
-                    p: 1.2,
-                  }}
-                >
-                  <SlidersHorizontal size={18} />
-                </IconButton>
+                <Tooltip title={hasActiveFilters ? 'Clear filters' : 'No active filters'}>
+                  <Box>
+                    <IconButton
+                      onClick={handleClearFilters}
+                      disabled={!hasActiveFilters}
+                      sx={{
+                        bgcolor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+                        borderRadius: '12px',
+                        p: 1.2,
+                      }}
+                    >
+                      <SlidersHorizontal size={18} />
+                    </IconButton>
+                  </Box>
+                </Tooltip>
               </Stack>
             </Grid>
           </Grid>
@@ -470,14 +585,6 @@ const NotificationTracker: React.FC<NotificationTrackerProps> = ({
           <Box sx={{ p: 10, textAlign: 'center' }}>
             <AlertCircle size={48} color="#ef4444" style={{ marginBottom: 16, opacity: 0.5 }} />
             <Typography variant="h6">Failed to sync tracker data</Typography>
-            <Button
-              variant="text"
-              onClick={() => refetch()}
-              startIcon={<RotateCcw size={16} />}
-              sx={{ mt: 1 }}
-            >
-              Try again
-            </Button>
           </Box>
         ) : (
           <>
@@ -485,6 +592,17 @@ const NotificationTracker: React.FC<NotificationTrackerProps> = ({
               notifications={paginatedNotifications}
               loading={isLoading}
               onViewDetails={handleOpenDetails}
+              selectedNotificationIds={selectedNotificationIds}
+              onToggleNotification={handleToggleNotification}
+              onToggleAllVisible={handleToggleAllVisible}
+              allVisibleSelected={areAllVisibleSelected}
+              canDeleteNotifications={canDeleteNotifications}
+              onDeleteSelected={() => setIsDeleteConfirmOpen(true)}
+              deleteDisabled={
+                !canDeleteNotifications ||
+                selectedNotificationIds.length === 0 ||
+                deleteNotificationsMutation.isLoading
+              }
             />
 
             {/* Pagination Section */}
@@ -550,6 +668,40 @@ const NotificationTracker: React.FC<NotificationTrackerProps> = ({
         onClose={() => setDrawerOpen(false)}
         notification={selectedNotification}
       />
+
+      <Dialog
+        open={isDeleteConfirmOpen}
+        onClose={() => {
+          if (!deleteNotificationsMutation.isLoading) {
+            setIsDeleteConfirmOpen(false);
+          }
+        }}
+        maxWidth="xs"
+        fullWidth
+      >
+        <Box sx={{ p: 3 }}>
+          <Typography variant="h6" sx={{ fontWeight: 800, mb: 1.5 }}>
+            Delete {selectedNotificationIds.length} notification
+            {selectedNotificationIds.length === 1 ? '' : 's'}?
+          </Typography>
+          <Typography variant="body2" sx={{ color: 'text.secondary', mb: 3 }}>
+            This removes the selected tracker rows from the notification page.
+          </Typography>
+          <Stack direction="row" spacing={1.5} justifyContent="flex-end">
+            <Button onClick={() => setIsDeleteConfirmOpen(false)} disabled={deleteNotificationsMutation.isLoading}>
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              color="error"
+              onClick={handleDeleteSelected}
+              disabled={deleteNotificationsMutation.isLoading}
+            >
+              Delete Selected
+            </Button>
+          </Stack>
+        </Box>
+      </Dialog>
     </PixelEyePageShell>
   );
 };

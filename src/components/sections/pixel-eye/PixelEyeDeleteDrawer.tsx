@@ -20,7 +20,9 @@ const PixelEyeDeleteDrawer = ({
   <Drawer
     anchor="right"
     open={open}
-    onClose={onClose}
+    onClose={() => {
+      if (!isLoading) onClose();
+    }}
     PaperProps={{
       sx: {
         width: { xs: '100%', sm: 460 },
@@ -52,7 +54,12 @@ const PixelEyeDeleteDrawer = ({
             This action cannot be undone.
           </Typography>
         </Box>
-        <IconButton onClick={onClose} sx={{ color: '#cfe2d5' }} aria-label="Close delete drawer">
+        <IconButton
+          onClick={onClose}
+          disabled={isLoading}
+          sx={{ color: '#cfe2d5' }}
+          aria-label="Close delete drawer"
+        >
           <IconifyIcon icon="mdi:close" width={20} />
         </IconButton>
       </Stack>
@@ -94,7 +101,12 @@ const PixelEyeDeleteDrawer = ({
           borderTop: '1px solid rgba(248, 113, 113, 0.18)',
         }}
       >
-        <Button onClick={onClose} color="inherit" sx={{ color: '#cfe2d5', textTransform: 'none' }}>
+        <Button
+          onClick={onClose}
+          disabled={isLoading}
+          color="inherit"
+          sx={{ color: '#cfe2d5', textTransform: 'none' }}
+        >
           Cancel
         </Button>
         <Button

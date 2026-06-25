@@ -1,6 +1,5 @@
 import { useState, ChangeEvent } from 'react';
-import { Box, Button, Drawer, Paper, Stack } from '@mui/material';
-import IconifyIcon from 'components/base/IconifyIcon';
+import { Drawer, Paper, Stack } from '@mui/material';
 import PageTitle from 'components/common/PageTitle';
 import PageLoader from 'components/loader/PageLoader';
 import { Popup } from 'components/common/Popup';
@@ -68,27 +67,25 @@ const ClientSection = () => {
 
   return (
     <>
-      <Stack direction="column" spacing={1.5} width={1}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <PageTitle
-            title="Client Management"
-            searchText={searchText}
-            handleInputChange={handleSearch}
-          />
-          <Button
-            variant="contained"
-            startIcon={<IconifyIcon icon="mingcute:add-line" />}
-            onClick={() => openDrawer()}
-            sx={{ height: 45, px: 2.5 }}
-          >
-            Add Client
-          </Button>
-        </Box>
+      <Stack direction="column" spacing={2.5} width={1} sx={{ flex: 1, minHeight: 0 }}>
+        <PageTitle
+          title="Client Management"
+          searchText={searchText}
+          handleInputChange={handleSearch}
+          isAddEnable
+          btnText="Add Client"
+          openModal={() => openDrawer()}
+        />
 
         <Paper
           elevation={0}
           sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            flex: 1,
+            minHeight: 0,
             p: 0,
+            pb: 0.75,
             width: 1,
             borderRadius: 3,
             border: '1px solid',
@@ -122,7 +119,14 @@ const ClientSection = () => {
         anchor="right"
         open={drawerOpen}
         onClose={closeDrawer}
-        PaperProps={{ sx: { width: { xs: '100vw', sm: 480 }, borderLeft: 0 } }}
+        PaperProps={{
+          sx: {
+            width: { xs: '100vw', sm: 520 },
+            maxWidth: '100vw',
+            borderLeft: 0,
+            bgcolor: 'background.paper',
+          },
+        }}
       >
         <ClientForm
           initialValues={selectedClient}

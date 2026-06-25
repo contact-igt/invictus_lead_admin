@@ -73,6 +73,14 @@ const router = createBrowserRouter(
               element: <PixelEyePage />,
             },
             {
+              path: paths.pixelEyeScopedFollowUps,
+              element: <PixelEyeFollowUpsPage />,
+            },
+            {
+              path: paths.pixelEyeScopedLeadDetail,
+              element: <PixelEyeLeadDetailPage />,
+            },
+            {
               path: paths.notificationTracker,
               element: <NotificationTrackerPage />,
             },
@@ -99,7 +107,7 @@ const router = createBrowserRouter(
           ],
         },
         {
-          path: 'pixel-eye/follow-ups',
+          path: paths.pixelEyeFollowUps,
           element: (
             <Suspense fallback={<PageLoader />}>
               <MainLayout>

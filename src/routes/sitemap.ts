@@ -70,8 +70,8 @@ const generateDynamicClientMenus = (): MenuItem[] => {
     if (clientKey === 'pixeleye') {
       items.push({
         name: 'Follow-ups',
-        pathName: '/pixel-eye/follow-ups',
-        path: '/pixel-eye/follow-ups',
+        pathName: `/pages/d/${clientKey}/follow-ups`,
+        path: `/pages/d/${clientKey}/follow-ups`,
       });
       items.push({
         name: 'Notification Tracker',

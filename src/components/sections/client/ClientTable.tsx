@@ -20,7 +20,7 @@ const ClientTable = ({ rows, searchText, isLoading, onEdit, onDelete }: ClientTa
 
   useEffect(() => {
     if (apiRef.current?.setQuickFilterValues) {
-      apiRef.current.setQuickFilterValues(searchText.split(/\b\W+\b/).filter(Boolean));
+      apiRef.current.setQuickFilterValues(searchText.trim().split(/\s+/).filter(Boolean));
     }
   }, [searchText]);
 
@@ -113,7 +113,6 @@ const ClientTable = ({ rows, searchText, isLoading, onEdit, onDelete }: ClientTa
       rows={rows}
       columns={columns}
       loading={isLoading}
-      autoHeight
       rowHeight={60}
       pageSizeOptions={[5, 10, 20]}
       initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
@@ -121,15 +120,27 @@ const ClientTable = ({ rows, searchText, isLoading, onEdit, onDelete }: ClientTa
       disableRowSelectionOnClick
       slots={{ pagination: DataGridFooter }}
       sx={{
+        height: '100%',
+        border: 0,
         '& .MuiDataGrid-columnHeaderTitle': {
           overflow: 'visible',
           textOverflow: 'clip',
           whiteSpace: 'normal',
         },
+        '& .MuiDataGrid-columnHeaders': {
+          borderBottomColor: 'divider',
+          backgroundColor: 'rgba(21, 106, 69, 0.04)',
+        },
+        '& .MuiDataGrid-row:hover': {
+          backgroundColor: 'rgba(21, 106, 69, 0.04)',
+        },
         '& .MuiDataGrid-cell': {
           display: 'flex',
           alignItems: 'center',
           px: 1,
+        },
+        '& .MuiDataGrid-cell:focus, & .MuiDataGrid-columnHeader:focus': {
+          outline: 'none',
         },
       }}
     />

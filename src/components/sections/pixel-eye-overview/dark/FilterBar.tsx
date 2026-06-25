@@ -18,8 +18,8 @@ type QuickSelectOption =
   | 'yesterday'
   | 'last7'
   | 'last30'
-  | 'lastWeek'
-  | 'lastMonth'
+  | 'thisWeek'
+  | 'thisMonth'
   | 'allTime';
 const toLocalDateString = (date: Date): string => {
   const year = date.getFullYear();
@@ -70,22 +70,22 @@ const FilterBar: React.FC<FilterBarProps> = ({ agents, filters, onApplyFilters, 
         last30.setDate(last30.getDate() - 29);
         return { dateFrom: toLocalDateString(last30), dateTo: todayStr };
       }
-      case 'lastWeek': {
-        const lastWeekStart = new Date(today);
-        lastWeekStart.setDate(lastWeekStart.getDate() - lastWeekStart.getDay() - 7);
-        const lastWeekEnd = new Date(lastWeekStart);
-        lastWeekEnd.setDate(lastWeekEnd.getDate() + 6);
+      case 'thisWeek': {
+        const thisWeekStart = new Date(today);
+        thisWeekStart.setDate(thisWeekStart.getDate() - thisWeekStart.getDay());
+        const thisWeekEnd = new Date(thisWeekStart);
+        thisWeekEnd.setDate(thisWeekEnd.getDate() + 6);
         return {
-          dateFrom: toLocalDateString(lastWeekStart),
-          dateTo: toLocalDateString(lastWeekEnd),
+          dateFrom: toLocalDateString(thisWeekStart),
+          dateTo: toLocalDateString(thisWeekEnd),
         };
       }
-      case 'lastMonth': {
-        const lastMonthStart = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-        const lastMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0);
+      case 'thisMonth': {
+        const thisMonthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+        const thisMonthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
         return {
-          dateFrom: toLocalDateString(lastMonthStart),
-          dateTo: toLocalDateString(lastMonthEnd),
+          dateFrom: toLocalDateString(thisMonthStart),
+          dateTo: toLocalDateString(thisMonthEnd),
         };
       }
       case 'allTime':
@@ -142,11 +142,10 @@ const FilterBar: React.FC<FilterBarProps> = ({ agents, filters, onApplyFilters, 
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-4 px-5 py-3 rounded-2xl border transition-all duration-300 ${
-          mode === 'dark'
+        className={`flex items-center gap-4 px-5 py-3 rounded-2xl border transition-all duration-300 ${mode === 'dark'
             ? 'bg-gradient-to-tr from-[#0D1310] to-[#141C18] border-[#1E2E25] hover:border-[#22C55E]/50 shadow-[0_4px_25px_rgba(0,0,0,0.3)]'
             : 'bg-white border-gray-100 hover:border-green-500 shadow-sm hover:shadow-md'
-        }`}
+          }`}
       >
         <div className={`p-2 rounded-xl ${mode === 'dark' ? 'bg-[#22C55E]/10' : 'bg-green-50'}`}>
           <IconifyIcon
@@ -157,9 +156,8 @@ const FilterBar: React.FC<FilterBarProps> = ({ agents, filters, onApplyFilters, 
         </div>
         <div className="flex flex-col items-start min-w-[100px]">
           <span
-            className={`text-[10px] font-black uppercase tracking-[0.15em] leading-none mb-1.5 ${
-              mode === 'dark' ? 'text-[#4ade80]/60' : 'text-gray-400'
-            }`}
+            className={`text-[10px] font-black uppercase tracking-[0.15em] leading-none mb-1.5 ${mode === 'dark' ? 'text-[#4ade80]/60' : 'text-gray-400'
+              }`}
           >
             ACTIVE FILTER
           </span>
@@ -172,11 +170,10 @@ const FilterBar: React.FC<FilterBarProps> = ({ agents, filters, onApplyFilters, 
 
         {filters.agent && (
           <div
-            className={`px-3 py-1 rounded-full border text-[10px] font-black tracking-wide ${
-              mode === 'dark'
+            className={`px-3 py-1 rounded-full border text-[10px] font-black tracking-wide ${mode === 'dark'
                 ? 'bg-[#16A34A]/10 border-[#16A34A]/30 text-[#22C55E]'
                 : 'bg-green-50 border-green-200 text-green-700'
-            }`}
+              }`}
           >
             {filters.agent}
           </div>
@@ -195,9 +192,8 @@ const FilterBar: React.FC<FilterBarProps> = ({ agents, filters, onApplyFilters, 
         <>
           <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
           <div
-            className={`absolute top-full right-0 mt-3 w-[360px] z-50 rounded-3xl border shadow-[0_25px_60px_rgba(0,0,0,0.6)] backdrop-blur-xl transition-all duration-300 transform origin-top-right ${
-              mode === 'dark' ? 'bg-[#0B1511]/95 border-[#1E2E25]' : 'bg-white/95 border-gray-100'
-            }`}
+            className={`absolute top-full right-0 mt-3 w-[360px] z-50 rounded-3xl border shadow-[0_25px_60px_rgba(0,0,0,0.6)] backdrop-blur-xl transition-all duration-300 transform origin-top-right ${mode === 'dark' ? 'bg-[#0B1511]/95 border-[#1E2E25]' : 'bg-white/95 border-gray-100'
+              }`}
           >
             <div className="p-5">
               <div className="mb-5">
@@ -221,8 +217,8 @@ const FilterBar: React.FC<FilterBarProps> = ({ agents, filters, onApplyFilters, 
                     { label: 'Yesterday', value: 'yesterday' as QuickSelectOption },
                     { label: 'Last 7D', value: 'last7' as QuickSelectOption },
                     { label: 'Last 30D', value: 'last30' as QuickSelectOption },
-                    { label: 'This Wk', value: 'lastWeek' as QuickSelectOption },
-                    { label: 'This Mo', value: 'lastMonth' as QuickSelectOption },
+                    { label: 'This Wk', value: 'thisWeek' as QuickSelectOption },
+                    { label: 'This Mo', value: 'thisMonth' as QuickSelectOption },
                     { label: 'All Time', value: 'allTime' as QuickSelectOption },
                   ].map((opt) => {
                     const isActive = activeQuickSelect === opt.value;
@@ -230,15 +226,14 @@ const FilterBar: React.FC<FilterBarProps> = ({ agents, filters, onApplyFilters, 
                       <button
                         key={opt.value}
                         onClick={() => handleQuickSelect(opt.value)}
-                        className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-all duration-200 border ${
-                          isActive
+                        className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-all duration-200 border ${isActive
                             ? mode === 'dark'
                               ? 'bg-[#16A34A] border-[#16A34A] text-white shadow-[0_0_12px_rgba(22,163,74,0.4)]'
                               : 'bg-[#156A45] border-[#156A45] text-white'
                             : mode === 'dark'
                               ? 'bg-[#111714] border-[#1E2E25] text-[#94A3B8] hover:border-[#16A34A]/40 hover:text-white'
                               : 'bg-gray-50 border-gray-200 text-gray-500 hover:border-green-300 hover:text-green-700'
-                        }`}
+                          }`}
                       >
                         {opt.label}
                       </button>
@@ -332,21 +327,19 @@ const FilterBar: React.FC<FilterBarProps> = ({ agents, filters, onApplyFilters, 
               <div className="flex items-center gap-2.5 pt-2">
                 <button
                   onClick={handleReset}
-                  className={`flex-1 py-2.5 rounded-xl text-xs font-black transition-all ${
-                    mode === 'dark'
+                  className={`flex-1 py-2.5 rounded-xl text-xs font-black transition-all ${mode === 'dark'
                       ? 'bg-transparent border border-[#1E2E25] text-gray-400 hover:bg-[#1E2E25] hover:text-white'
                       : 'bg-gray-50 border border-gray-200 text-gray-500 hover:bg-gray-100'
-                  }`}
+                    }`}
                 >
                   RESET
                 </button>
                 <button
                   onClick={handleApply}
-                  className={`flex-[1.5] py-2.5 rounded-xl text-xs font-black transition-all shadow-lg ${
-                    mode === 'dark'
+                  className={`flex-[1.5] py-2.5 rounded-xl text-xs font-black transition-all shadow-lg ${mode === 'dark'
                       ? 'bg-[#16A34A] text-white hover:bg-[#15803d] shadow-[0_8px_20px_rgba(22,163,74,0.25)]'
                       : 'bg-[#156A45] text-white hover:bg-[#0f4d32]'
-                  }`}
+                    }`}
                 >
                   APPLY FILTERS
                 </button>

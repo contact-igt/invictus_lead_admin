@@ -13,21 +13,6 @@ import FollowUpHistoryModal from 'components/sections/pixel-eye-follow-ups/Follo
 import { TableConfig } from 'config/clients';
 import { _axios } from 'helper/axios';
 
-const PIXELEYE_EXPORT_COLUMNS = [
-  { key: 'date', label: 'Date', width: 54 },
-  { key: 'time', label: 'Time', width: 42 },
-  { key: 'customer_name', label: 'Customer Name', width: 82 },
-  { key: 'phone_number', label: 'Phone', width: 64 },
-  { key: 'agent_name', label: 'Agent', width: 58 },
-  { key: 'status', label: 'Status', width: 70 },
-  { key: 'follow_up_date', label: 'Follow Up', width: 56 },
-  { key: 'source', label: 'Source', width: 45 },
-  { key: 'type_of_enquiry', label: 'Enquiry', width: 68 },
-  { key: 'call_id', label: 'Call ID', width: 70 },
-  { key: 'createdAt', label: 'Created At', width: 68 },
-  { key: 'updatedAt', label: 'Updated At', width: 68 },
-] as const;
-
 interface DynamicSectionProps {
   config: TableConfig;
   clientKey?: string;
@@ -71,112 +56,9 @@ const sortByLatestActivity = (records: any[]): any[] =>
     return Number(b?.id || 0) - Number(a?.id || 0);
   });
 
-const getLeadValue = (lead: any, key: string): string => {
-  if (key === 'createdAt') return String(lead.createdAt || lead.created_at || '');
-  if (key === 'updatedAt') return String(lead.updatedAt || lead.updated_at || '');
-  return String(lead[key] ?? '');
-};
-
-const escapeCsvValue = (value: string): string => {
-  const text = value.replace(/\r?\n|\r/g, ' ').trim();
-  return /[",]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
-};
-
-const buildPixelEyeCsv = (rows: any[]): string => {
-  const header = PIXELEYE_EXPORT_COLUMNS.map((column) => escapeCsvValue(column.label)).join(',');
-  const body = rows.map((row) =>
-    PIXELEYE_EXPORT_COLUMNS.map((column) => escapeCsvValue(getLeadValue(row, column.key))).join(','),
-  );
-  return [header, ...body].join('\n');
-};
-
-const escapePdfText = (value: string): string =>
-  value.replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)').replace(/\r?\n|\r/g, ' ');
-
-const truncateText = (value: string, maxChars: number): string => {
-  const text = String(value || '').trim();
-  return text.length <= maxChars ? text : `${text.slice(0, Math.max(maxChars - 3, 0))}...`;
-};
-
-const addPdfText = (commands: string[], x: number, y: number, text: string, fontSize = 7) => {
-  commands.push(`BT /F1 ${fontSize} Tf ${x} ${y} Td (${escapePdfText(text)}) Tj ET`);
-};
-
-const buildPixelEyePdf = (rows: any[], fromDate: string, toDate: string): Blob => {
-  const pageWidth = 842;
-  const pageHeight = 595;
-  const margin = 24;
-  const rowHeight = 16;
-  const topY = pageHeight - 82;
-  const minY = 34;
-  const pages: string[] = [];
-  let commands: string[] = [];
-  let y = topY;
-
-  const drawHeader = () => {
-    commands = [];
-    addPdfText(commands, margin, pageHeight - 30, 'PixelEye Lead Report', 14);
-    addPdfText(commands, margin, pageHeight - 48, `Date range: ${fromDate} to ${toDate}`, 8);
-    addPdfText(commands, margin, pageHeight - 62, `Generated: ${new Date().toLocaleString()}`, 8);
-    let x = margin;
-    PIXELEYE_EXPORT_COLUMNS.forEach((column) => {
-      addPdfText(commands, x, pageHeight - 78, column.label, 6.5);
-      x += column.width;
-    });
-    commands.push(`${margin} ${pageHeight - 84} m ${pageWidth - margin} ${pageHeight - 84} l S`);
-    y = topY;
-  };
-
-  const finishPage = () => {
-    pages.push(commands.join('\n'));
-  };
-
-  drawHeader();
-  rows.forEach((row) => {
-    if (y < minY) {
-      finishPage();
-      drawHeader();
-    }
-
-    let x = margin;
-    PIXELEYE_EXPORT_COLUMNS.forEach((column) => {
-      const maxChars = Math.max(Math.floor(column.width / 4.2), 6);
-      addPdfText(commands, x, y, truncateText(getLeadValue(row, column.key), maxChars) || '-', 6);
-      x += column.width;
-    });
-    y -= rowHeight;
-  });
-  finishPage();
-
-  const objects: string[] = [
-    '<< /Type /Catalog /Pages 2 0 R >>',
-    `<< /Type /Pages /Kids [${pages.map((_, index) => `${3 + index * 2} 0 R`).join(' ')}] /Count ${pages.length} >>`,
-  ];
-
-  pages.forEach((content, index) => {
-    const pageObjectId = 3 + index * 2;
-    const contentObjectId = pageObjectId + 1;
-    objects.push(
-      `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageWidth} ${pageHeight}] /Resources << /Font << /F1 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> >> >> /Contents ${contentObjectId} 0 R >>`,
-    );
-    objects.push(`<< /Length ${content.length} >>\nstream\n${content}\nendstream`);
-  });
-
-  let pdf = '%PDF-1.4\n';
-  const offsets = [0];
-  objects.forEach((object, index) => {
-    offsets.push(pdf.length);
-    pdf += `${index + 1} 0 obj\n${object}\nendobj\n`;
-  });
-
-  const xrefOffset = pdf.length;
-  pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
-  offsets.slice(1).forEach((offset) => {
-    pdf += `${String(offset).padStart(10, '0')} 00000 n \n`;
-  });
-  pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
-
-  return new Blob([pdf], { type: 'application/pdf' });
+const extractFileName = (contentDisposition?: string): string | null => {
+  const match = String(contentDisposition || '').match(/filename="?([^";]+)"?/i);
+  return match?.[1] || null;
 };
 
 const DynamicSection = ({ config, clientKey }: DynamicSectionProps) => {
@@ -352,28 +234,34 @@ const DynamicSection = ({ config, clientKey }: DynamicSectionProps) => {
 
   const exportFileBaseName = `pixel-eye-leads-${exportFromDate}-to-${exportToDate}`;
 
-  const handleExportCsv = () => {
+  const handleExport = async (format: 'csv' | 'pdf') => {
     const rows = getExportRows();
     if (!rows) return;
 
     setIsExporting(true);
     try {
-      const csv = buildPixelEyeCsv(rows);
-      const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8' });
-      saveAs(blob, `${exportFileBaseName}.csv`);
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
-  const handleExportPdf = () => {
-    const rows = getExportRows();
-    if (!rows) return;
-
-    setIsExporting(true);
-    try {
-      const blob = buildPixelEyePdf(rows, exportFromDate, exportToDate);
-      saveAs(blob, `${exportFileBaseName}.pdf`);
+      const response = await _axios(
+        'get',
+        '/pixeleye/export',
+        null,
+        'application/json',
+        {
+          format,
+          dateFrom: exportFromDate,
+          dateTo: exportToDate,
+          search: searchText.trim() || undefined,
+          ...(clientKey ? { _client_key: clientKey } : {}),
+        },
+        { responseType: 'blob', returnRawResponse: true },
+      );
+      const blob = new Blob([response.data], {
+        type: response.headers['content-type'] || (format === 'pdf' ? 'application/pdf' : 'text/csv;charset=utf-8'),
+      });
+      const fileName = extractFileName(response.headers['content-disposition']) || `${exportFileBaseName}.${format}`;
+      saveAs(blob, fileName);
+    } catch (error: any) {
+      const message = error?.response?.data?.message || error?.message || `Failed to export ${format.toUpperCase()}`;
+      enqueueSnackbar(message, { variant: 'error' });
     } finally {
       setIsExporting(false);
     }
@@ -433,10 +321,10 @@ const DynamicSection = ({ config, clientKey }: DynamicSectionProps) => {
                 Clear Dates
               </Button>
             )}
-            <Button variant="outlined" onClick={handleExportCsv} disabled={isLoading || isExporting}>
+            <Button variant="outlined" onClick={() => void handleExport('csv')} disabled={isLoading || isExporting}>
               Export CSV
             </Button>
-            <Button variant="outlined" onClick={handleExportPdf} disabled={isLoading || isExporting}>
+            <Button variant="outlined" onClick={() => void handleExport('pdf')} disabled={isLoading || isExporting}>
               Export PDF
             </Button>
           </Box>
@@ -496,6 +384,7 @@ const DynamicSection = ({ config, clientKey }: DynamicSectionProps) => {
         open={isFollowUpHistoryOpen}
         onClose={handleCloseFollowUpHistory}
         leadId={selectedFollowUpHistoryLead?.id ?? null}
+        clientKey={clientKey}
         customerName={selectedFollowUpHistoryLead?.customer_name}
         phoneNumber={selectedFollowUpHistoryLead?.phone_number}
       />

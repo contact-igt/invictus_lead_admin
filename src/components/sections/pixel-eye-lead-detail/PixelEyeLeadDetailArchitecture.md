@@ -73,7 +73,6 @@ Relevant hooks:
 
 - `usePixelEyeLeadQuery`
 - `useReschedulePixelEyeFollowUpMutation`
-- `useMarkPixelEyeFollowUpHandledMutation`
 - `useCancelPixelEyeFollowUpMutation`
 - `useUpdatePixelEyeMutation`
 
@@ -89,8 +88,7 @@ The page is organized into these visible blocks:
 6. History / audit trail
 7. Call compliance section
 8. Reschedule dialog
-9. Mark handled dialog
-10. Cancel / close dialog
+9. Cancel / close dialog
 
 ## 3. Backend Structure
 
@@ -119,7 +117,6 @@ The lead detail page uses these routes:
 - `GET /api/v1/pixeleye/:id/follow-up/history`
 - `PATCH /api/v1/pixeleye/:id`
 - `PATCH /api/v1/pixeleye/:id/follow-up/reschedule`
-- `PATCH /api/v1/pixeleye/:id/follow-up/handled`
 - `PATCH /api/v1/pixeleye/:id/follow-up/cancel`
 
 It also depends on supporting list endpoints for related data:
@@ -205,7 +202,9 @@ Relevant migration files:
 4. The backend updates the reminder state and records history.
 5. The page refreshes the detail data.
 
-### D. Mark handled
+### D. Legacy mark handled
+
+Mark handled is no longer a supported user action. Old `MANUAL_HANDLED` state can still appear as read-only legacy data when returned by the backend.
 
 1. The user opens the handled dialog.
 2. The page submits the handled reason.

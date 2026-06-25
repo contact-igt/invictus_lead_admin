@@ -4,7 +4,7 @@ export interface ColumnConfig {
   field: string;
   header: string;
   type: FieldType;
-  options?: string[]; 
+  options?: string[];
   flex?: number;
   minWidth?: number;
   required?: boolean;
@@ -33,6 +33,7 @@ export interface ClientConfig {
   tables: TableConfig[];
 }
 
+import { MAIN_STATUS_OPTIONS, getDayDropdownStatuses } from 'components/sections/pixel-eye/pixelEyeStatuses';
 export const ClientRegistry: Record<string, ClientConfig> = {
   pixeleye: {
     appName: "PixelEye",
@@ -54,34 +55,22 @@ export const ClientRegistry: Record<string, ClientConfig> = {
           { field: "follow_up_change_count", header: "Follow-up Changes", type: "text", required: false },
           { field: "follow_up_date", header: "Follow Up Date", type: "date", required: false },
           {
-            field: "status", header: "Status", type: "status_chip", required: true, options: [
-              "Busy", "Not Answering", "Switched Off", "Missed Call", "On Another Call", "DND", "Dnp 1", "Dnp 2", "Dnp 3", "Dnp 4", "Not Speaking", "Disconnecting", "Not in Network", "Incoming Call Not Available", "Number Not in Service", "Wrong Number", "Wrongly Dialed", "Fraud Call", "Enquiry", "Hot Follow-up", "Follow-up Required", "Will Call Later", "Will Call & Take Appointment Later", "Medicine", "Doctor Time", "Follow-up Post Appointment", "Want to Speak With Doctor", "Appointment Fixed", "Appointment Cancelled", "Visited", "Walk-in", "Not Interested", "Not Willing to Come Now", "Searching for Specific Hospital", "Going to Other Hospital", "Not in Hyderabad", "Long Distance", "Address Requested", "Closed", "Others"
-            ]
+            field: "status", header: "Status", type: "status_chip", required: true, options: [...MAIN_STATUS_OPTIONS]
           },
           {
-            field: "day_1", header: "Day 1", type: "status_chip", required: false, options: [
-              "Busy", "Not Answering", "Switched Off", "Missed Call", "On Another Call", "DND", "Dnp 1", "Dnp 2", "Dnp 3", "Dnp 4", "Not Speaking", "Disconnecting", "Not in Network", "Incoming Call Not Available", "Number Not in Service", "Wrong Number", "Wrongly Dialed", "Fraud Call", "Enquiry", "Hot Follow-up", "Follow-up Required", "Will Call Later", "Will Call & Take Appointment Later", "Medicine", "Doctor Time", "Follow-up Post Appointment", "Want to Speak With Doctor", "Appointment Fixed", "Appointment Cancelled", "Visited", "Walk-in", "Not Interested", "Not Willing to Come Now", "Searching for Specific Hospital", "Going to Other Hospital", "Not in Hyderabad", "Long Distance", "Address Requested", "Closed", "Others"
-            ]
+            field: "day_1", header: "Day 1", type: "status_chip", required: false, options: getDayDropdownStatuses(1)
           },
           {
-            field: "day_2", header: "Day 2", type: "status_chip", required: false, options: [
-              "Busy", "Not Answering", "Switched Off", "Missed Call", "On Another Call", "DND", "Dnp 1", "Dnp 2", "Dnp 3", "Dnp 4", "Not Speaking", "Disconnecting", "Not in Network", "Incoming Call Not Available", "Number Not in Service", "Wrong Number", "Wrongly Dialed", "Fraud Call", "Enquiry", "Hot Follow-up", "Follow-up Required", "Will Call Later", "Will Call & Take Appointment Later", "Medicine", "Doctor Time", "Follow-up Post Appointment", "Want to Speak With Doctor", "Appointment Fixed", "Appointment Cancelled", "Visited", "Walk-in", "Not Interested", "Not Willing to Come Now", "Searching for Specific Hospital", "Going to Other Hospital", "Not in Hyderabad", "Long Distance", "Address Requested", "Closed", "Others"
-            ]
+            field: "day_2", header: "Day 2", type: "status_chip", required: false, options: getDayDropdownStatuses(2)
           },
           {
-            field: "day_3", header: "Day 3", type: "status_chip", required: false, options: [
-              "Busy", "Not Answering", "Switched Off", "Missed Call", "On Another Call", "DND", "Dnp 1", "Dnp 2", "Dnp 3", "Dnp 4", "Not Speaking", "Disconnecting", "Not in Network", "Incoming Call Not Available", "Number Not in Service", "Wrong Number", "Wrongly Dialed", "Fraud Call", "Enquiry", "Hot Follow-up", "Follow-up Required", "Will Call Later", "Will Call & Take Appointment Later", "Medicine", "Doctor Time", "Follow-up Post Appointment", "Want to Speak With Doctor", "Appointment Fixed", "Appointment Cancelled", "Visited", "Walk-in", "Not Interested", "Not Willing to Come Now", "Searching for Specific Hospital", "Going to Other Hospital", "Not in Hyderabad", "Long Distance", "Address Requested", "Closed", "Others"
-            ]
+            field: "day_3", header: "Day 3", type: "status_chip", required: false, options: getDayDropdownStatuses(3)
           },
           {
-            field: "day_4", header: "Day 4", type: "status_chip", required: false, options: [
-              "Busy", "Not Answering", "Switched Off", "Missed Call", "On Another Call", "DND", "Dnp 1", "Dnp 2", "Dnp 3", "Dnp 4", "Not Speaking", "Disconnecting", "Not in Network", "Incoming Call Not Available", "Number Not in Service", "Wrong Number", "Wrongly Dialed", "Fraud Call", "Enquiry", "Hot Follow-up", "Follow-up Required", "Will Call Later", "Will Call & Take Appointment Later", "Medicine", "Doctor Time", "Follow-up Post Appointment", "Want to Speak With Doctor", "Appointment Fixed", "Appointment Cancelled", "Visited", "Walk-in", "Not Interested", "Not Willing to Come Now", "Searching for Specific Hospital", "Going to Other Hospital", "Not in Hyderabad", "Long Distance", "Address Requested", "Closed", "Others"
-            ]
+            field: "day_4", header: "Day 4", type: "status_chip", required: false, options: getDayDropdownStatuses(4)
           },
           {
-            field: "day_5", header: "Day 5", type: "status_chip", required: false, options: [
-              "Busy", "Not Answering", "Switched Off", "Missed Call", "On Another Call", "DND", "Dnp 1", "Dnp 2", "Dnp 3", "Dnp 4", "Not Speaking", "Disconnecting", "Not in Network", "Incoming Call Not Available", "Number Not in Service", "Wrong Number", "Wrongly Dialed", "Fraud Call", "Enquiry", "Hot Follow-up", "Follow-up Required", "Will Call Later", "Will Call & Take Appointment Later", "Medicine", "Doctor Time", "Follow-up Post Appointment", "Want to Speak With Doctor", "Appointment Fixed", "Appointment Cancelled", "Visited", "Walk-in", "Not Interested", "Not Willing to Come Now", "Searching for Specific Hospital", "Going to Other Hospital", "Not in Hyderabad", "Long Distance", "Address Requested", "Closed", "Others"
-            ]
+            field: "day_5", header: "Day 5", type: "status_chip", required: false, options: getDayDropdownStatuses(5)
           },
         ],
       },

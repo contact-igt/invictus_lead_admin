@@ -121,10 +121,10 @@ const UserForm = ({ initialValues, onSubmit, onCancel, isLoading, isReadOnly }: 
             component="form"
             onSubmit={formik.handleSubmit}
             noValidate
-            sx={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}
+            sx={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', bgcolor: 'background.paper' }}
         >
             {/* Header */}
-            <Box sx={{ px: 3, py: 2.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Box sx={{ px: { xs: 2, sm: 3 }, py: 2.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
                 <Box>
                     <Typography variant="h5" fontWeight={700}>
                         {isEdit ? (isReadOnly ? 'User Details' : 'Edit User') : 'Create User'}
@@ -141,10 +141,10 @@ const UserForm = ({ initialValues, onSubmit, onCancel, isLoading, isReadOnly }: 
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }} />
 
             {/* Body */}
-            <Box sx={{ flexGrow: 1, overflowY: 'auto', px: 3, py: 3 }}>
+            <Box sx={{ flexGrow: 1, overflowY: 'auto', px: { xs: 2, sm: 3 }, py: 3 }}>
                 {/* Row 1 – Title + Username */}
-                <Stack direction="row" spacing={2} mb={2.5} alignItems="flex-start">
-                    <FormControl disabled={isReadOnly} sx={{ width: 110, ...ctrl }}>
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} mb={2.5} alignItems="stretch">
+                    <FormControl disabled={isReadOnly} sx={{ width: { xs: '100%', sm: 140 }, ...ctrl }}>
                         <InputLabel id="title-label">Title</InputLabel>
                         <Select labelId="title-label" name="title" value={formik.values.title} label="Title" onChange={formik.handleChange}>
                             <MenuItem value="Mr">Mr.</MenuItem>
@@ -179,8 +179,8 @@ const UserForm = ({ initialValues, onSubmit, onCancel, isLoading, isReadOnly }: 
                 />
 
                 {/* Row 3 – Country code + Mobile */}
-                <Stack direction="row" spacing={2} mb={2.5} alignItems="flex-start">
-                    <FormControl disabled={isReadOnly} sx={{ width: 130, ...ctrl }}>
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} mb={2.5} alignItems="stretch">
+                    <FormControl disabled={isReadOnly} sx={{ width: { xs: '100%', sm: 160 }, ...ctrl }}>
                         <InputLabel id="cc-label">Code</InputLabel>
                         <Select labelId="cc-label" name="country_code" value={formik.values.country_code} label="Code" onChange={formik.handleChange}>
                             {countryCodes.map((cc) => (
@@ -229,7 +229,7 @@ const UserForm = ({ initialValues, onSubmit, onCancel, isLoading, isReadOnly }: 
                 )}
 
                 {/* Row 5 – Role + Client (when role = client) */}
-                <Stack direction="row" spacing={2} alignItems="flex-start">
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="stretch">
                     <FormControl disabled={isReadOnly} sx={{ flex: 1, ...ctrl }}>
                         <InputLabel id="role-label">Account Role</InputLabel>
                         <Select labelId="role-label" name="role" value={formik.values.role} label="Account Role" onChange={formik.handleChange}>
@@ -268,13 +268,14 @@ const UserForm = ({ initialValues, onSubmit, onCancel, isLoading, isReadOnly }: 
             <Box sx={{ borderTop: 1, borderColor: 'divider' }} />
 
             {/* Footer */}
-            <Box sx={{ px: 3, py: 2, display: 'flex', justifyContent: 'flex-end', gap: 1.5 }}>
+            <Box sx={{ px: { xs: 2, sm: 3 }, py: 2, display: 'flex', flexDirection: { xs: 'column-reverse', sm: 'row' }, justifyContent: 'flex-end', gap: 1.5 }}>
                 <Button
                     onClick={onCancel}
                     variant="outlined"
                     sx={{
                         height: 44,
                         px: 3,
+                        width: { xs: '100%', sm: 'auto' },
                         textTransform: 'none',
                         fontWeight: 600,
                         borderColor: 'divider',
@@ -293,6 +294,7 @@ const UserForm = ({ initialValues, onSubmit, onCancel, isLoading, isReadOnly }: 
                         sx={{
                             height: 44,
                             px: 3.5,
+                            width: { xs: '100%', sm: 'auto' },
                             textTransform: 'none',
                             fontWeight: 700,
                             borderRadius: '8px',

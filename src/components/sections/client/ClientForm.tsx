@@ -129,16 +129,17 @@ const ClientForm = ({
       component="form"
       onSubmit={formik.handleSubmit}
       noValidate
-      sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}
+      sx={{ display: 'flex', flexDirection: 'column', height: '100%', bgcolor: 'background.paper' }}
     >
       {/* Header */}
       <Box
         sx={{
-          px: 3,
+          px: { xs: 2, sm: 3 },
           py: 2.5,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
+          gap: 2,
         }}
       >
         <Box>
@@ -161,7 +162,7 @@ const ClientForm = ({
       <Divider />
 
       {/* Body */}
-      <Box sx={{ flexGrow: 1, overflowY: 'auto', px: 3, py: 3 }}>
+      <Box sx={{ flexGrow: 1, overflowY: 'auto', px: { xs: 2, sm: 3 }, py: 3 }}>
         <Stack direction="column" spacing={3} width={1} alignItems="stretch">
           {field('name', 'Client Name', 'e.g. Pixel Eye Hospital', true)}
 
@@ -232,9 +233,15 @@ const ClientForm = ({
       <Divider />
 
       {/* Footer */}
-      <Box sx={{ px: 3, py: 2.5 }}>
-        <Stack direction="row" spacing={2} justifyContent="flex-end">
-          <Button variant="outlined" color="inherit" onClick={onCancel} disabled={isLoading}>
+      <Box sx={{ px: { xs: 2, sm: 3 }, py: 2.5 }}>
+        <Stack direction={{ xs: 'column-reverse', sm: 'row' }} spacing={2} justifyContent="flex-end">
+          <Button
+            variant="outlined"
+            color="inherit"
+            onClick={onCancel}
+            disabled={isLoading}
+            sx={{ width: { xs: '100%', sm: 'auto' } }}
+          >
             {isReadOnly ? 'Close' : 'Cancel'}
           </Button>
           {!isReadOnly && (
@@ -245,6 +252,7 @@ const ClientForm = ({
               startIcon={
                 isLoading ? <IconifyIcon icon="eos-icons:loading" /> : null
               }
+              sx={{ width: { xs: '100%', sm: 'auto' } }}
             >
               {isLoading ? 'Saving...' : isEdit ? 'Save Changes' : 'Add Client'}
             </Button>
