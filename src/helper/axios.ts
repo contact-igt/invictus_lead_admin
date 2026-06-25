@@ -23,10 +23,14 @@ export const _axios = async (
   params?: any,
   options?: AxiosHelperOptions,
 ) => {
+  const resolvedMode = String(import.meta.env.VITE_MODE || 'local').trim().toLowerCase();
+  const isNgrokMode = resolvedMode === 'ngrok';
   const APIURL =
-    import.meta.env.VITE_MODE === 'production'
+    resolvedMode === 'production'
       ? import.meta.env.VITE_PRODUCTION_API_URL
-      : import.meta.env.VITE_LOCALHOST_API_URL;
+      : isNgrokMode
+        ? import.meta.env.VITE_NGROK_API_URL || import.meta.env.VITE_LOCALHOST_API_URL
+        : import.meta.env.VITE_LOCALHOST_API_URL;
 
   const normalizedApiUrl = APIURL?.trim();
   const endpoint = `${normalizedApiUrl}${url}`;
@@ -60,6 +64,7 @@ export const _axios = async (
     const res = await axios({
       headers: {
         ...(isFormData ? {} : { 'Content-Type': contentType }),
+        ...(isNgrokMode ? { 'ngrok-skip-browser-warning': 'true' } : {}),
         ...(isGetRequest
           ? {
             'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -67,7 +72,7 @@ export const _axios = async (
             Expires: '0',
           }
           : {}),
-...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       method: method,
       url: endpoint,

@@ -2,15 +2,16 @@ import { useEffect } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { Box, Button, Drawer, Grid, IconButton, MenuItem, Stack, Typography } from '@mui/material';
+import { useSnackbar } from 'notistack';
 import IconifyIcon from 'components/base/IconifyIcon';
-import { ALL_STATUSES, getDayDropdownStatuses } from './pixelEyeStatuses';
+import { isLeadFollowUpLocked } from './pixelEyeStatuses';
 import { PixelEyeRow } from './pixelEyeTable';
 import useColorMode from 'hooks/useColorMode';
+import { useAuth } from 'redux/selectors/auth/authSelector';
 import { getPixelEyeFieldSx, getPixelEyeMenuProps } from './pixelEyeUi';
 import PixelEyeDatePicker from './PixelEyeDatePicker';
 import PixelEyeField from './PixelEyeField';
 
-const DAY_FIELDS = ['day_1', 'day_2', 'day_3', 'day_4', 'day_5'] as const;
 const DEFAULT_AGENT_NAMES = ['Shadan', 'PXLS RECEPTION SN'] as const;
 
 export interface PixelEyeLeadFormValues {
@@ -24,11 +25,6 @@ export interface PixelEyeLeadFormValues {
   source?: string;
   type_of_enquiry?: string;
   follow_up_date?: string;
-  day_1?: string;
-  day_2?: string;
-  day_3?: string;
-  day_4?: string;
-  day_5?: string;
 }
 
 interface PixelEyeLeadDrawerProps {
@@ -51,11 +47,6 @@ const validationSchema = Yup.object({
   source: Yup.string().nullable(),
   type_of_enquiry: Yup.string().nullable(),
   follow_up_date: Yup.string().nullable(),
-  day_1: Yup.string().nullable(),
-  day_2: Yup.string().nullable(),
-  day_3: Yup.string().nullable(),
-  day_4: Yup.string().nullable(),
-  day_5: Yup.string().nullable(),
 });
 
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => {
@@ -91,10 +82,20 @@ const PixelEyeLeadDrawer = ({
   onSubmit,
 }: PixelEyeLeadDrawerProps) => {
   const { mode: colorMode } = useColorMode();
+  const { user } = useAuth();
   const isEdit = mode === 'edit';
+  const userRole = (user?.role || '').toLowerCase().trim();
+  const leadHasFollowUpDate = Boolean(String(lead?.follow_up_date || '').trim());
+  const leadFollowUpLocked = isLeadFollowUpLocked(lead);
+  const canEditFollowUpDate =
+    !isEdit ||
+    ((!leadFollowUpLocked && (userRole === 'super-admin' || userRole === 'admin')) ||
+      (!leadFollowUpLocked && userRole === 'client' && !leadHasFollowUpDate));
+  const showReadOnlyFollowUpDate =
+    isEdit && (leadFollowUpLocked || (userRole === 'client' && leadHasFollowUpDate));
   const agentOptions =
     lead?.agent_name &&
-    !DEFAULT_AGENT_NAMES.includes(lead.agent_name as (typeof DEFAULT_AGENT_NAMES)[number])
+      !DEFAULT_AGENT_NAMES.includes(lead.agent_name as (typeof DEFAULT_AGENT_NAMES)[number])
       ? [lead.agent_name, ...DEFAULT_AGENT_NAMES]
       : [...DEFAULT_AGENT_NAMES];
 
@@ -121,22 +122,27 @@ const PixelEyeLeadDrawer = ({
       source: lead?.source || '',
       type_of_enquiry: lead?.type_of_enquiry || '',
       follow_up_date: lead?.follow_up_date || '',
-      day_1: lead?.day_1 || '',
-      day_2: lead?.day_2 || '',
-      day_3: lead?.day_3 || '',
-      day_4: lead?.day_4 || '',
-      day_5: lead?.day_5 || '',
     },
     validationSchema,
     enableReinitialize: true,
     onSubmit: (values) => {
-      onSubmit({
-        ...values,
+      const drawerPayload: PixelEyeLeadFormValues = {
+        date: values.date,
+        time: values.time,
         call_id: values.call_id.trim(),
         customer_name: values.customer_name.trim(),
         phone_number: values.phone_number.trim(),
-        agent_name: values.agent_name.trim(),
-      });
+        agent_name: (values.agent_name || '').trim(),
+        status: values.status,
+        source: values.source,
+        type_of_enquiry: values.type_of_enquiry,
+      };
+
+      if (canEditFollowUpDate) {
+        drawerPayload.follow_up_date = values.follow_up_date;
+      }
+
+      onSubmit(drawerPayload);
     },
   });
 
@@ -151,7 +157,13 @@ const PixelEyeLeadDrawer = ({
   const renderTextField = (
     name: keyof PixelEyeLeadFormValues,
     label: string,
-    props?: { type?: string; required?: boolean },
+    props?: {
+      type?: string;
+      required?: boolean;
+      multiline?: boolean;
+      rows?: number;
+      placeholder?: string;
+    },
   ) => {
     if (props?.type === 'date') {
       return (
@@ -177,6 +189,9 @@ const PixelEyeLeadDrawer = ({
         onBlur={formik.handleBlur}
         error={Boolean(formik.touched[name] && formik.errors[name])}
         helperText={formik.touched[name] && formik.errors[name]}
+        multiline={props?.multiline}
+        rows={props?.rows}
+        placeholder={props?.placeholder}
         InputLabelProps={props?.type === 'time' ? { shrink: true } : undefined}
         sx={fieldSx}
       />
@@ -213,6 +228,53 @@ const PixelEyeLeadDrawer = ({
     </PixelEyeField>
   );
 
+  const renderFollowUpDateField = () => {
+    if (showReadOnlyFollowUpDate) {
+      const helperText = leadFollowUpLocked
+        ? 'Follow-up date is locked for closed or completed leads.'
+        : 'Use Reschedule to change follow-up date.';
+
+      return (
+        <PixelEyeField
+          fullWidth
+          label="Follow-up Date"
+          type="date"
+          value={formik.values.follow_up_date || ''}
+          disabled
+          helperText={helperText}
+          InputLabelProps={{ shrink: true }}
+          sx={fieldSx}
+        />
+      );
+    }
+
+    return (
+      <PixelEyeDatePicker
+        fullWidth={true}
+        label="Follow-up Date"
+        value={formik.values.follow_up_date || ''}
+        onChange={(val) => formik.setFieldValue('follow_up_date', val)}
+        disabled={isLoading || !canEditFollowUpDate}
+      />
+    );
+  };
+
+  const { enqueueSnackbar } = useSnackbar();
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const errors = await formik.validateForm();
+    if (Object.keys(errors).length > 0) {
+      // mark all fields as touched so helperText appears
+      const touched: Record<string, boolean> = {};
+      Object.keys(formik.initialValues).forEach((k) => (touched[k] = true));
+      formik.setTouched(touched);
+      enqueueSnackbar('Please fill the required fields', { variant: 'warning' });
+      return;
+    }
+    formik.handleSubmit(e as any);
+  };
+
   return (
     <Drawer
       anchor="right"
@@ -227,7 +289,7 @@ const PixelEyeLeadDrawer = ({
     >
       <Box
         component="form"
-        onSubmit={formik.handleSubmit}
+        onSubmit={handleFormSubmit}
         sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}
       >
         <Stack
@@ -254,7 +316,7 @@ const PixelEyeLeadDrawer = ({
               sx={{ mt: 0.5, color: colorMode === 'dark' ? '#9fb0a6' : '#64748B' }}
             >
               {isEdit
-                ? 'Update lead details, status, and follow-up information.'
+                ? 'Update lead details and status. Reschedule follow-up from the Follow-up Page.'
                 : 'Create a new lead and schedule follow-up if required.'}
             </Typography>
           </Box>
@@ -284,7 +346,10 @@ const PixelEyeLeadDrawer = ({
                 {renderSelect('agent_name', 'Agent Name', agentOptions)}
               </Grid>
               <Grid item xs={12} sm={6}>
-                {renderSelect('status', 'Status', ALL_STATUSES as unknown as string[], true, false)}
+                {renderTextField('status', 'Status', {
+                  required: true,
+                  placeholder: 'Enter status',
+                })}
               </Grid>
               <Grid item xs={12} sm={6}>
                 {renderSelect('source', 'Source', [
@@ -326,13 +391,8 @@ const PixelEyeLeadDrawer = ({
           <Section title="Follow-up">
             <Grid container spacing={2}>
               <Grid item xs={12}>
-                {renderTextField('follow_up_date', 'Follow-up Date', { type: 'date' })}
+                {renderFollowUpDateField()}
               </Grid>
-              {DAY_FIELDS.map((day, index) => (
-                <Grid item xs={12} sm={6} key={day}>
-                  {renderSelect(day, `Day ${index + 1}`, getDayDropdownStatuses(index + 1))}
-                </Grid>
-              ))}
             </Grid>
           </Section>
         </Stack>

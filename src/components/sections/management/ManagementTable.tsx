@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import Box from '@mui/material/Box';
 import { DataGrid, GridColDef, useGridApiRef, GridApi } from '@mui/x-data-grid';
 import DataGridFooter from 'components/common/DataGridFooter';
 import ActionMenu from 'components/sections/ActionMenu';
@@ -20,7 +21,7 @@ const ManagementTable = ({ searchText, usersData, handleRemove, handleEdit, hand
 
     useEffect(() => {
         if (apiRef.current?.setQuickFilterValues) {
-            apiRef.current.setQuickFilterValues(searchText.split(/\b\W+\b/).filter(Boolean));
+            apiRef.current.setQuickFilterValues(searchText.trim().split(/\s+/).filter(Boolean));
         }
     }, [searchText]);
 
@@ -94,29 +95,43 @@ const ManagementTable = ({ searchText, usersData, handleRemove, handleEdit, hand
     ];
 
     return (
-        <DataGrid
-            apiRef={apiRef}
-            rows={usersData || []}
-            columns={columns}
-            pageSizeOptions={[5, 10, 20]}
-            initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
-            rowHeight={60}
-            disableColumnMenu
-            disableRowSelectionOnClick
-            slots={{ pagination: DataGridFooter }}
-            sx={{
-                '& .MuiDataGrid-columnHeaderTitle': {
-                    overflow: 'visible',
-                    textOverflow: 'clip',
-                    whiteSpace: 'normal',
-                },
-                '& .MuiDataGrid-cell': {
-                    display: 'flex',
-                    alignItems: 'center',
-                    px: 1,
-                },
-            }}
-        />
+        <Box sx={{ height: '100%', minHeight: 0, width: 1 }}>
+            <DataGrid
+                apiRef={apiRef}
+                rows={usersData || []}
+                columns={columns}
+                autoHeight
+                pageSizeOptions={[5, 10, 20]}
+                initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
+                rowHeight={60}
+                disableColumnMenu
+                disableRowSelectionOnClick
+                slots={{ pagination: DataGridFooter }}
+                sx={{
+                    border: 0,
+                    '& .MuiDataGrid-columnHeaderTitle': {
+                        overflow: 'visible',
+                        textOverflow: 'clip',
+                        whiteSpace: 'normal',
+                    },
+                    '& .MuiDataGrid-columnHeaders': {
+                        borderBottomColor: 'divider',
+                        backgroundColor: 'rgba(21, 106, 69, 0.04)',
+                    },
+                    '& .MuiDataGrid-row:hover': {
+                        backgroundColor: 'rgba(21, 106, 69, 0.04)',
+                    },
+                    '& .MuiDataGrid-cell': {
+                        display: 'flex',
+                        alignItems: 'center',
+                        px: 1,
+                    },
+                    '& .MuiDataGrid-cell:focus, & .MuiDataGrid-columnHeader:focus': {
+                        outline: 'none',
+                    },
+                }}
+            />
+        </Box>
     );
 };
 

@@ -5,6 +5,8 @@ import {
   Stack,
   Card,
   Chip,
+  Checkbox,
+  Button,
   IconButton,
   Tooltip,
   Divider,
@@ -12,44 +14,87 @@ import {
   Avatar,
   CircularProgress,
 } from '@mui/material';
-import { Eye, Clock, CheckCircle2, XCircle, Phone, Bell, MoreVertical } from 'lucide-react';
+import { Eye, Clock, CheckCircle2, XCircle, Phone, Bell, Trash2 } from 'lucide-react';
 import useColorMode from 'hooks/useColorMode';
+import type { NotificationState } from 'components/hooks/usePixelEyeNotificationsQuery';
 import { PIXELEYE_COLORS } from '../pixel-eye/pixelEyeUi';
 import dayjs from 'dayjs';
 
 interface NotificationTrackerListProps {
-  notifications: any[];
+  notifications: NotificationState[];
   loading?: boolean;
-  onViewDetails: (notification: any) => void;
+  onViewDetails: (notification: NotificationState) => void;
+  selectedNotificationIds: number[];
+  onToggleNotification: (notificationId: number) => void;
+  onToggleAllVisible: () => void;
+  allVisibleSelected: boolean;
+  canDeleteNotifications: boolean;
+  onDeleteSelected: () => void;
+  deleteDisabled: boolean;
 }
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; icon: any; bg: string }> = {
   scheduled: { label: 'Scheduled', color: '#EAB308', icon: Clock, bg: 'rgba(234, 179, 8, 0.1)' },
-  completed: {
-    label: 'Completed',
-    color: '#22C55E',
-    icon: CheckCircle2,
-    bg: 'rgba(34, 197, 94, 0.1)',
-  },
   cancelled: { label: 'Cancelled', color: '#EF4444', icon: XCircle, bg: 'rgba(239, 68, 68, 0.1)' },
   failed: { label: 'Failed', color: '#B91C1C', icon: XCircle, bg: 'rgba(185, 28, 28, 0.1)' },
+};
+
+const getReminderStatusConfig = (notification: NotificationState) => {
+  const state = String(notification?.state || '').trim().toLowerCase();
+  const completionSource = String(notification?.completion_source || '').trim().toLowerCase();
+
+  if (state === 'scheduled') {
+    return STATUS_CONFIG.scheduled;
+  }
+
+  if (state === 'completed') {
+    if (completionSource === 'manual_handled') {
+      return {
+        label: 'Manually Handled',
+        color: '#F59E0B',
+        icon: CheckCircle2,
+        bg: 'rgba(245, 158, 11, 0.1)',
+      };
+    }
+
+    return {
+      label: 'Notification Sent',
+      color: '#22C55E',
+      icon: CheckCircle2,
+      bg: 'rgba(34, 197, 94, 0.1)',
+    };
+  }
+
+  if (state === 'cancelled') {
+    return STATUS_CONFIG.cancelled;
+  }
+
+  if (state === 'failed') {
+    return STATUS_CONFIG.failed;
+  }
+
+  return {
+    label: notification?.state || 'New',
+    color: '#64748B',
+    icon: Bell,
+    bg: 'rgba(100, 116, 139, 0.1)',
+  };
 };
 
 const NotificationItem = ({
   notification,
   onViewDetails,
+  selected,
+  onToggleNotification,
 }: {
-  notification: any;
-  onViewDetails: (n: any) => void;
+  notification: NotificationState;
+  onViewDetails: (n: NotificationState) => void;
+  selected: boolean;
+  onToggleNotification: (notificationId: number) => void;
 }) => {
   const { mode } = useColorMode();
   const isDark = mode === 'dark';
-  const status = STATUS_CONFIG[notification.state?.toLowerCase()] || {
-    label: notification.state || 'New',
-    color: '#64748B',
-    icon: Bell,
-    bg: 'rgba(100, 116, 139, 0.1)',
-  };
+  const status = getReminderStatusConfig(notification);
   const { icon: StatusIcon, color, bg, label } = status;
 
   return (
@@ -76,6 +121,17 @@ const NotificationItem = ({
         {/* Status Indicator Area */}
         <Grid item xs={12} sm={3} md={2}>
           <Stack direction="row" spacing={2} alignItems="center">
+            <Checkbox
+              checked={selected}
+              onClick={(event) => event.stopPropagation()}
+              onChange={() => onToggleNotification(notification.id)}
+              sx={{
+                color: isDark ? '#86EFAC' : '#166534',
+                '&.Mui-checked': {
+                  color: isDark ? '#BBF7D0' : '#15803D',
+                },
+              }}
+            />
             <Box
               sx={{
                 p: 1.5,
@@ -248,12 +304,6 @@ const NotificationItem = ({
                 <Eye size={18} />
               </IconButton>
             </Tooltip>
-            <IconButton
-              size="small"
-              sx={{ color: isDark ? PIXELEYE_COLORS.mutedText : 'text.secondary' }}
-            >
-              <MoreVertical size={18} />
-            </IconButton>
           </Stack>
         </Grid>
       </Grid>
@@ -265,6 +315,13 @@ const NotificationTrackerList: React.FC<NotificationTrackerListProps> = ({
   notifications,
   loading,
   onViewDetails,
+  selectedNotificationIds,
+  onToggleNotification,
+  onToggleAllVisible,
+  allVisibleSelected,
+  canDeleteNotifications,
+  onDeleteSelected,
+  deleteDisabled,
 }) => {
   if (loading) {
     return (
@@ -300,15 +357,32 @@ const NotificationTrackerList: React.FC<NotificationTrackerListProps> = ({
   return (
     <Box sx={{ mt: 2 }}>
       <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>
-          Recent Activity{' '}
-          <Typography component="span" variant="caption" sx={{ color: 'text.secondary', ml: 1 }}>
-            showing {notifications.length} tracks
+        <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap">
+          <Checkbox
+            checked={allVisibleSelected}
+            disabled={notifications.length === 0}
+            onChange={onToggleAllVisible}
+          />
+          <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>
+            Recent Activity{' '}
+            <Typography component="span" variant="caption" sx={{ color: 'text.secondary', ml: 1 }}>
+              showing {notifications.length} tracks
+            </Typography>
           </Typography>
-        </Typography>
-        <Stack direction="row" spacing={1}>
+        </Stack>
+        <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
           <Chip label="Latest First" size="small" />
           <Chip label="All Channels" size="small" variant="outlined" />
+          <Button
+            variant="outlined"
+            color="error"
+            size="small"
+            startIcon={<Trash2 size={14} />}
+            disabled={deleteDisabled}
+            onClick={onDeleteSelected}
+          >
+            {canDeleteNotifications ? 'Delete Selected' : 'Selection Only'}
+          </Button>
         </Stack>
       </Stack>
 
@@ -317,6 +391,8 @@ const NotificationTrackerList: React.FC<NotificationTrackerListProps> = ({
           key={notification.id || index}
           notification={notification}
           onViewDetails={onViewDetails}
+          selected={selectedNotificationIds.includes(notification.id)}
+          onToggleNotification={onToggleNotification}
         />
       ))}
     </Box>

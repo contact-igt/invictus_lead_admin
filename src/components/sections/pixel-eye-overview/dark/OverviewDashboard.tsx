@@ -17,20 +17,26 @@ interface OverviewDashboardProps {
   leads?: any[];
   loading?: boolean;
   topKpiItems?: KPIItem[];
+  followUpKpiItems?: KPIItem[];
   filters?: DashboardFilters;
   availableAgents?: string[];
   onApplyFilters?: (filters: DashboardFilters) => void;
   onResetFilters?: () => void;
+  onTodayFollowUpsClick?: () => void;
+  onNotAnsweringClick?: () => void;
 }
 
 const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
   metrics = {},
   loading = false,
   topKpiItems,
+  followUpKpiItems,
   filters = { dateFrom: '', dateTo: '', agent: '' },
   availableAgents = [],
-  onApplyFilters = () => {},
-  onResetFilters = () => {},
+  onApplyFilters = () => { },
+  onResetFilters = () => { },
+  onTodayFollowUpsClick,
+  onNotAnsweringClick,
 }) => {
   const [activeFunnelStage, setActiveFunnelStage] = useState<FunnelStageItem['stage'] | null>(null);
   const mapStageToSeries = (stage?: string | null): 'contacted' | 'converted' | null => {
@@ -89,7 +95,21 @@ const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
           <KPIStrip items={kpiItems} />
         )}
 
-        <MiniStats metrics={metrics} loading={loading} />
+        {followUpKpiItems && followUpKpiItems.length > 0 && (
+          <Box>
+            <Typography variant="h6" sx={{ fontWeight: 900, mb: 2 }}>
+              Follow-up Performance
+            </Typography>
+            <DarkKPICards items={followUpKpiItems} loading={loading} />
+          </Box>
+        )}
+
+        <MiniStats
+          metrics={metrics}
+          loading={loading}
+          onTodayFollowUpsClick={onTodayFollowUpsClick}
+          onNotAnsweringClick={onNotAnsweringClick}
+        />
 
         <Grid container spacing={4}>
           <Grid item xs={12} lg={8}>

@@ -1,22 +1,27 @@
-import { useState, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   Box,
   Button,
   Chip,
   CircularProgress,
+  Dialog,
   Grid,
   MenuItem,
   Tooltip,
   Typography,
 } from '@mui/material';
-import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import { DataGrid, GridColDef, GridRowSelectionModel } from '@mui/x-data-grid';
+import { Trash2 } from 'lucide-react';
 import dayjs from 'dayjs';
 import useColorMode from 'hooks/useColorMode';
+import { useAuth } from 'redux/selectors/auth/authSelector';
 import {
+  useDeletePixelEyeNotificationsMutation,
   usePixelEyeNotificationsQuery,
   usePixelEyeNotificationsSummaryQuery,
 } from 'components/hooks/usePixelEyeNotificationsQuery';
+import ConfirmAlert from 'components/common/ConfirmAlert';
 import DataGridFooter from 'components/common/DataGridFooter';
 import { PixelEyeCard, getPixelEyeButtonSx, PIXELEYE_COLORS } from './pixelEyeUi';
 import PixelEyeField from './PixelEyeField';
@@ -89,21 +94,44 @@ const SummaryCard = ({
 );
 
 const NotificationTracker = ({ clientKey, searchText }: NotificationTrackerProps) => {
+  const { user } = useAuth();
   const { mode } = useColorMode();
+  const isSuperAdmin = String(user?.role || '').toLowerCase().trim() === 'super-admin';
+  const canDeleteNotifications = ['super-admin', 'admin', 'client'].includes(
+    String(user?.role || '').toLowerCase().trim(),
+  );
   const [stateFilter, setStateFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
+  const [selectedNotificationIds, setSelectedNotificationIds] = useState<number[]>([]);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+
+  const hasScopedClientContext = !isSuperAdmin || Boolean(clientKey);
 
   const {
     data: notifications = [],
     isLoading,
     isError,
     error,
-  } = usePixelEyeNotificationsQuery(clientKey);
+  } = usePixelEyeNotificationsQuery(clientKey, undefined, { enabled: hasScopedClientContext });
 
   const { data: summary, isLoading: summaryLoading } =
-    usePixelEyeNotificationsSummaryQuery(clientKey);
+    usePixelEyeNotificationsSummaryQuery(clientKey, { enabled: hasScopedClientContext });
+  const deleteNotificationsMutation = useDeletePixelEyeNotificationsMutation();
+
+  if (!hasScopedClientContext) {
+    return (
+      <PixelEyeCard sx={{ p: 3 }}>
+        <Typography variant="h6" sx={{ fontWeight: 800 }}>
+          Please select a client
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+          Select a client from route context to load notification tracker data.
+        </Typography>
+      </PixelEyeCard>
+    );
+  }
 
   const filtered = useMemo(() => {
     return notifications.filter((n) => {
@@ -142,9 +170,29 @@ const NotificationTracker = ({ clientKey, searchText }: NotificationTrackerProps
     });
   }, [dateFrom, dateTo, notifications, stateFilter, typeFilter, searchText]);
 
+  useEffect(() => {
+    setSelectedNotificationIds((current) =>
+      current.filter((id) => filtered.some((notification) => notification.id === id)),
+    );
+  }, [filtered]);
+
   const handleClearDateFilter = () => {
     setDateFrom('');
     setDateTo('');
+  };
+
+  const handleDeleteSelected = () => {
+    if (selectedNotificationIds.length === 0) return;
+
+    deleteNotificationsMutation.mutate(
+      { ids: selectedNotificationIds, clientKey },
+      {
+        onSuccess: () => {
+          setIsDeleteConfirmOpen(false);
+          setSelectedNotificationIds([]);
+        },
+      },
+    );
   };
 
   const columns: GridColDef[] = [
@@ -446,6 +494,31 @@ const NotificationTracker = ({ clientKey, searchText }: NotificationTrackerProps
 
           <Box sx={{ flex: 1 }} />
 
+          <Tooltip
+            title={
+              canDeleteNotifications
+                ? ''
+                : 'Only management roles can delete notification tracker rows.'
+            }
+          >
+            <Box>
+              <Button
+                variant="outlined"
+                color="error"
+                startIcon={<Trash2 size={16} />}
+                disabled={
+                  !canDeleteNotifications ||
+                  selectedNotificationIds.length === 0 ||
+                  deleteNotificationsMutation.isLoading
+                }
+                onClick={() => setIsDeleteConfirmOpen(true)}
+                sx={getPixelEyeButtonSx(mode, 'secondary')}
+              >
+                Delete Selected
+              </Button>
+            </Box>
+          </Tooltip>
+
           <Typography
             variant="caption"
             sx={{ color: mode === 'dark' ? PIXELEYE_COLORS.mutedText : 'text.secondary' }}
@@ -468,11 +541,45 @@ const NotificationTracker = ({ clientKey, searchText }: NotificationTrackerProps
 
       {(isLoading || filtered.length > 0) && (
         <PixelEyeCard>
+          <Box
+            sx={{
+              px: { xs: 2, md: 2.5 },
+              pt: { xs: 2, md: 2.5 },
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 1.5,
+              flexWrap: 'wrap',
+            }}
+          >
+            <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+              {selectedNotificationIds.length > 0
+                ? `${selectedNotificationIds.length} selected`
+                : 'Select rows to manage notifications'}
+            </Typography>
+            {selectedNotificationIds.length > 0 && (
+              <Chip
+                color={canDeleteNotifications ? 'error' : 'default'}
+                variant="outlined"
+                label={`${selectedNotificationIds.length} selected`}
+                sx={{ borderRadius: '14px', fontWeight: 700 }}
+              />
+            )}
+          </Box>
+
           <Box sx={{ width: '100%', overflowX: 'auto' }}>
             <DataGrid
               rows={filtered}
               columns={columns}
               loading={isLoading}
+              checkboxSelection
+              rowSelectionModel={selectedNotificationIds as GridRowSelectionModel}
+              onRowSelectionModelChange={(selectionModel) => {
+                const ids = Array.from(selectionModel)
+                  .map((value) => Number(value))
+                  .filter((value) => Number.isInteger(value) && value > 0);
+                setSelectedNotificationIds(ids);
+              }}
               autoHeight
               rowHeight={60}
               pageSizeOptions={[10, 25, 50]}
@@ -485,9 +592,9 @@ const NotificationTracker = ({ clientKey, searchText }: NotificationTrackerProps
                 border: 0,
                 backgroundColor: 'transparent',
                 '& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within, & .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-columnHeader:focus-within':
-                  {
-                    outline: 'none',
-                  },
+                {
+                  outline: 'none',
+                },
                 '& .MuiDataGrid-cell:focus-visible, & .MuiDataGrid-columnHeader:focus-visible': {
                   outline: 'none',
                 },
@@ -520,6 +627,18 @@ const NotificationTracker = ({ clientKey, searchText }: NotificationTrackerProps
                   borderBottom: `1px solid ${mode === 'dark' ? 'rgba(80, 120, 100, 0.18)' : '#E2E8F0'}`,
                   color: mode === 'dark' ? '#EAF7EE' : '#334155',
                 },
+                '& .MuiDataGrid-columnHeaderCheckbox, & .MuiDataGrid-cellCheckbox': {
+                  px: 0.5,
+                  justifyContent: 'center',
+                },
+                '& .MuiDataGrid-columnHeaderCheckbox .MuiCheckbox-root, & .MuiDataGrid-cellCheckbox .MuiCheckbox-root':
+                {
+                  color: mode === 'dark' ? '#86EFAC' : '#166534',
+                },
+                '& .MuiDataGrid-columnHeaderCheckbox .MuiCheckbox-root.Mui-checked, & .MuiDataGrid-cellCheckbox .MuiCheckbox-root.Mui-checked':
+                {
+                  color: mode === 'dark' ? '#BBF7D0' : '#15803D',
+                },
                 '& .MuiDataGrid-footerContainer': {
                   borderTop: `1px solid ${mode === 'dark' ? 'rgba(80, 120, 100, 0.22)' : '#E2E8F0'}`,
                   backgroundColor: 'transparent',
@@ -529,6 +648,25 @@ const NotificationTracker = ({ clientKey, searchText }: NotificationTrackerProps
           </Box>
         </PixelEyeCard>
       )}
+
+      <Dialog
+        open={isDeleteConfirmOpen}
+        onClose={() => {
+          if (!deleteNotificationsMutation.isLoading) {
+            setIsDeleteConfirmOpen(false);
+          }
+        }}
+        maxWidth="xs"
+        fullWidth
+      >
+        <ConfirmAlert
+          title={`Delete ${selectedNotificationIds.length} notification${selectedNotificationIds.length === 1 ? '' : 's'}?`}
+          message="This removes the selected tracker records from the notification table."
+          onConfirm={handleDeleteSelected}
+          onCancel={() => setIsDeleteConfirmOpen(false)}
+          isLoading={deleteNotificationsMutation.isLoading}
+        />
+      </Dialog>
     </Box>
   );
 };

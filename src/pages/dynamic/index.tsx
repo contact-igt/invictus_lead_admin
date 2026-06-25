@@ -12,10 +12,24 @@ import { resolveClientModuleKey } from 'utils/clientModuleResolver';
 const DynamicPage = () => {
   const { user } = useAuth();
   const { tableId, clientKey: urlClientKey } = useParams<{ tableId: string; clientKey?: string }>();
+  const isSuperAdmin = String(user?.role || '').toLowerCase().trim() === 'super-admin';
+
+  if (isSuperAdmin && !normalizeClientKey(urlClientKey)) {
+    return (
+      <Box p={4} textAlign="center">
+        <Typography variant="h5" color="primary" fontWeight={700}>
+          Please select a client
+        </Typography>
+        <Typography variant="body1" sx={{ mt: 1 }}>
+          Super-admin access requires explicit client route context.
+        </Typography>
+      </Box>
+    );
+  }
 
   // Super Admin can pass clientKey in URL. Regular clients use their own key.
   const rawClientKey =
-    user?.role === 'super-admin' && urlClientKey ? urlClientKey : user?.clientKey;
+    isSuperAdmin && urlClientKey ? urlClientKey : user?.clientKey;
   const activeClientKey = resolveClientModuleKey(rawClientKey);
   const tenantClientKey = normalizeClientKey(rawClientKey);
 
@@ -43,7 +57,7 @@ const DynamicPage = () => {
 
   if (tableId === 'notification-tracker') {
     return (
-      <NotificationTracker clientKey={user?.role === 'super-admin' ? tenantClientKey : undefined} />
+      <NotificationTracker clientKey={isSuperAdmin ? tenantClientKey : undefined} />
     );
   }
 

@@ -1,14 +1,16 @@
 import React from 'react';
-import { Box, Drawer, Grid, IconButton, Stack, Typography, Divider } from '@mui/material';
-import { AlertCircle, Calendar, Clock, Hash, Info, User, X } from 'lucide-react';
+import { Box, Drawer, Grid, IconButton, Stack, Typography, Divider, Tooltip } from '@mui/material';
+import { AlertCircle, Calendar, Clock, Hash, Info, Phone, User, X } from 'lucide-react';
 import dayjs from 'dayjs';
 import useColorMode from 'hooks/useColorMode';
+import type { NotificationState } from 'components/hooks/usePixelEyeNotificationsQuery';
 import { PIXELEYE_COLORS } from '../pixel-eye/pixelEyeUi';
+import { normalizePixelEyeStatus } from '../pixel-eye/pixelEyeStatuses';
 
 interface NotificationDetailsDrawerProps {
   open: boolean;
   onClose: () => void;
-  notification: any;
+  notification: NotificationState | null;
 }
 
 const DetailItem = ({
@@ -63,23 +65,119 @@ const DetailItem = ({
   );
 };
 
-const SectionHeader = ({ title, icon: Icon }: { title: string; icon?: any }) => (
-  <Stack direction="row" spacing={1} alignItems="center" mb={2} mt={1}>
-    {Icon && <Icon size={18} style={{ color: PIXELEYE_COLORS.primary }} />}
-    <Typography
-      variant="subtitle2"
-      sx={{
-        fontWeight: 800,
-        color: PIXELEYE_COLORS.primary,
-        textTransform: 'uppercase',
-        letterSpacing: '0.1em',
-        fontSize: '0.75rem',
-      }}
-    >
-      {title}
-    </Typography>
-  </Stack>
+const SectionHeader = ({
+  title,
+  icon: Icon,
+  helperText,
+}: {
+  title: string;
+  icon?: any;
+  helperText?: string;
+}) => (
+  <Box sx={{ mb: 2, mt: 1 }}>
+    <Stack direction="row" spacing={1} alignItems="center">
+      {Icon && <Icon size={18} style={{ color: PIXELEYE_COLORS.primary }} />}
+      <Typography
+        variant="subtitle2"
+        sx={{
+          fontWeight: 800,
+          color: PIXELEYE_COLORS.primary,
+          textTransform: 'uppercase',
+          letterSpacing: '0.1em',
+          fontSize: '0.75rem',
+        }}
+      >
+        {title}
+      </Typography>
+      {helperText && (
+        <Tooltip title={helperText} arrow placement="top">
+          <Box
+            component="span"
+            sx={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 18,
+              height: 18,
+              borderRadius: '50%',
+              border: `1px solid ${PIXELEYE_COLORS.border}`,
+              color: PIXELEYE_COLORS.mutedText,
+              fontSize: '0.7rem',
+              fontWeight: 800,
+              cursor: 'help',
+              flexShrink: 0,
+            }}
+          >
+            ?
+          </Box>
+        </Tooltip>
+      )}
+    </Stack>
+    {helperText && (
+      <Typography
+        variant="caption"
+        sx={{
+          display: 'block',
+          mt: 0.5,
+          color: PIXELEYE_COLORS.mutedText,
+          lineHeight: 1.4,
+          fontSize: '0.72rem',
+        }}
+      >
+        {helperText}
+      </Typography>
+    )}
+  </Box>
 );
+
+const getReminderStatusLabel = (notification: NotificationState): string => {
+  const state = String(notification?.state || '').trim().toLowerCase();
+  const completionSource = String(notification?.completion_source || '').trim().toLowerCase();
+
+  if (state === 'scheduled') return 'Scheduled';
+  if (state === 'completed' && completionSource === 'manual_handled') return 'Manually Handled';
+  if (state === 'completed') return 'Notification Sent';
+  if (state === 'cancelled') return 'Cancelled';
+  return notification?.state ? String(notification.state) : 'Not Available';
+};
+
+const getCallStatusLabel = (notification: NotificationState): string => {
+  if (notification.compliance_status === null || notification.compliance_status === undefined) {
+    return 'Not Available';
+  }
+
+  const status = String(notification?.compliance_status || '').trim().toUpperCase();
+  if (!status) return 'Not Available';
+  if (status === 'CALLED') return 'Call Done';
+  if (status === 'PENDING') return 'Call Pending';
+  if (status === 'MISSED') return 'Missed';
+  if (status === 'CANCELLED') return 'Cancelled';
+  if (status === 'IGNORED') return 'Ignored';
+  return status;
+};
+
+const getOutcomeStatusLabel = (notification: NotificationState): string => {
+  if (notification.outcome_status === 'Outcome Updated' || notification.outcome_status === 'Outcome Pending') {
+    return notification.outcome_status;
+  }
+
+  const outcomeKeys = ['day_1', 'day_2', 'day_3', 'day_4', 'day_5'] as const;
+  const hasOutcomeValue = outcomeKeys.some((key) => {
+    const value = notification?.[key];
+    return typeof value === 'string' ? Boolean(value.trim()) : Boolean(value);
+  });
+
+  return hasOutcomeValue ? 'Outcome Updated' : 'Outcome Pending';
+};
+
+const getLatestOutcomeValue = (notification: NotificationState): string => {
+  const outcomeKeys = ['day_5', 'day_4', 'day_3', 'day_2', 'day_1'] as const;
+  for (const key of outcomeKeys) {
+    const value = normalizePixelEyeStatus(notification?.[key]);
+    if (value) return value;
+  }
+  return '-';
+};
 
 const NotificationDetailsDrawer: React.FC<NotificationDetailsDrawerProps> = ({
   open,
@@ -169,33 +267,28 @@ const NotificationDetailsDrawer: React.FC<NotificationDetailsDrawerProps> = ({
             />
           </Grid>
           <Grid item xs={6}>
-            <DetailItem label="Last Status" value={notification.last_status} />
+            <DetailItem label="Last Status" value={normalizePixelEyeStatus(notification.last_status)} />
           </Grid>
         </Grid>
 
         <Divider sx={{ my: 3, borderColor: PIXELEYE_COLORS.border, opacity: 0.5 }} />
 
-        <SectionHeader title="Schedule Information" icon={Calendar} />
+        <SectionHeader
+          title="Schedule Information"
+          icon={Calendar}
+          helperText="Shows whether the follow-up reminder/notification was scheduled or sent."
+        />
         <Grid container spacing={1}>
           <Grid item xs={6}>
             <DetailItem
-              label="Schedule Type"
-              value={notification.schedule_type?.replace(/_/g, ' ') || '-'}
+              label="Reminder Status"
+              value={getReminderStatusLabel(notification)}
             />
           </Grid>
           <Grid item xs={6}>
             <DetailItem
-              label="State"
-              value={notification.state?.toUpperCase()}
-              color={
-                notification.state === 'completed'
-                  ? '#4ade80'
-                  : notification.state === 'scheduled'
-                    ? '#fbbf24'
-                    : notification.state === 'cancelled'
-                      ? '#f87171'
-                      : undefined
-              }
+              label="Schedule Type"
+              value={notification.schedule_type?.replace(/_/g, ' ') || '-'}
             />
           </Grid>
           <Grid item xs={12}>
@@ -213,6 +306,47 @@ const NotificationDetailsDrawer: React.FC<NotificationDetailsDrawerProps> = ({
           </Grid>
           <Grid item xs={6}>
             <DetailItem label="Sent At" value={formatDate(notification.notification_sent_at)} />
+          </Grid>
+        </Grid>
+
+        <Divider sx={{ my: 3, borderColor: PIXELEYE_COLORS.border, opacity: 0.5 }} />
+
+        <SectionHeader
+          title="Call Status"
+          icon={Phone}
+          helperText="Shows whether the customer was actually called, based on Runo call log matching."
+        />
+        <Grid container spacing={1}>
+          <Grid item xs={6}>
+            <DetailItem label="Call Status" value={getCallStatusLabel(notification)} />
+          </Grid>
+          <Grid item xs={6}>
+            <DetailItem
+              label="Call Evidence"
+              value={notification.compliance_status ? 'Matched' : 'Not Available'}
+            />
+          </Grid>
+        </Grid>
+
+        <Divider sx={{ my: 3, borderColor: PIXELEYE_COLORS.border, opacity: 0.5 }} />
+
+        <SectionHeader
+          title="Outcome Status"
+          icon={Info}
+          helperText="Shows whether the agent saved the customer result using Update Outcome."
+        />
+        <Grid container spacing={1}>
+          <Grid item xs={6}>
+            <DetailItem label="Outcome Status" value={getOutcomeStatusLabel(notification)} />
+          </Grid>
+          <Grid item xs={6}>
+            <DetailItem label="Latest Outcome" value={getLatestOutcomeValue(notification)} />
+          </Grid>
+          <Grid item xs={6}>
+            <DetailItem
+              label="Outcome Updated At"
+              value={formatDate(notification.updatedAt)}
+            />
           </Grid>
         </Grid>
 

@@ -1,4 +1,4 @@
-export interface LeadRecord {
+﻿export interface LeadRecord {
   id: number;
   client_id?: number | null;
   date?: string | null;
@@ -10,14 +10,25 @@ export interface LeadRecord {
   source?: string | null;
   type_of_enquiry?: string | null;
   follow_up_date?: string | null;
+  followup_highlight_state?: string | null;
+  called_outcome_missing?: boolean | null;
+  compliance_status?: string | null;
+  latest_raw_status?: string | null;
+  latest_call_time?: string | null;
+  matched_call_log_id?: number | null;
+  matched_call_id?: string | null;
+  matched_call_started_at?: string | null;
   status?: string | null;
   followup_state?: 'scheduled' | 'completed' | 'cancelled' | 'baseline' | 'new' | null;
+  followup_completion_source?: 'NOTIFICATION_SENT' | 'MANUAL_HANDLED' | null;
   reminder_schedule_type?: 'THIRTY_MIN' | 'DNP2' | 'TWENTY_FOUR_HR' | 'FORTY_EIGHT_HR' | 'MANUAL' | null;
   reminder_scheduled_at?: string | null;
   reminder_notification_sent?: boolean | null;
   reminder_notification_sent_at?: string | null;
   reminder_reason?: string | null;
   reminder_permanently_closed?: boolean | null;
+  follow_up_change_count?: number | string | null;
+  latest_follow_up_change_at?: string | null;
   reminder_cancel_reason?: string | null;
   day_1?: string | null;
   day_2?: string | null;
@@ -43,6 +54,7 @@ export interface KPIItem {
   icon: string;
   color: 'primary' | 'success' | 'warning' | 'error';
   subtext?: string;
+  onClick?: () => void;
 }
 
 export interface StatusCategoryItem {
@@ -79,8 +91,14 @@ export interface FollowUpReminder {
   agent_name: string;
   status: string;
   follow_up_date: string;
+  followup_highlight_state?: string | null;
+  called_outcome_missing?: boolean | null;
   followup_state?: string | null;
+  followup_completion_source?: 'NOTIFICATION_SENT' | 'MANUAL_HANDLED' | null;
   source?: string;
+  latest_raw_status?: string | null;
+  latest_call_time?: string | null;
+  compliance_status?: string | null;
   type_of_enquiry?: string;
   daysRelative: number; // negative = overdue, 0 = today, positive = upcoming
 }
@@ -120,6 +138,30 @@ export interface FollowUpPageBuckets {
   allLeads: FollowUpReminder[];
 }
 
+export interface FollowUpComplianceSummary {
+  total: number;
+  pending: number;
+  called: number;
+  missed: number;
+  ignored: number;
+  cancelled: number;
+}
+
+export interface FollowUpSummaryMetrics {
+  totalFollowUps: number;
+  pendingFollowUps: number;
+  dueToday: number;
+  overdueCount: number;
+  overdueOrMissed: number;
+  notificationSent: number;
+  callDone: number;
+  outcomePending: number;
+  outcomeUpdated: number;
+  successfulOutcomes: number;
+  rescheduled: number;
+  closedOrCancelled: number;
+}
+
 export interface FollowUpBucketSection {
   key: 'overdue' | 'today' | 'tomorrow' | 'week' | 'all';
   label: string;
@@ -153,4 +195,7 @@ export interface DashboardMetrics {
     highPriorityLeads: HighPriorityLead[];
   };
   followUps: FollowUpMetrics;
+  followUpSummary: FollowUpSummaryMetrics;
 }
+
+

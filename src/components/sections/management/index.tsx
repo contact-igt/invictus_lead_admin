@@ -15,8 +15,7 @@ import { useAuth } from 'redux/selectors/auth/authSelector';
 import { Popup } from 'components/common/Popup';
 import ConfirmAlert from 'components/common/ConfirmAlert';
 import UserForm from './UserForm';
-import { Box, Button, Drawer } from '@mui/material';
-import IconifyIcon from 'components/base/IconifyIcon';
+import { Drawer } from '@mui/material';
 
 const ManagementSection = () => {
     const { user } = useAuth();
@@ -84,25 +83,24 @@ const ManagementSection = () => {
 
     return (
         <>
-            <Stack direction="column" spacing={1} width={1}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <PageTitle
-                        title="User Management"
-                        searchText={searchText}
-                        handleInputChange={handleInputChange}
-                    />
-                    {user?.role === 'super-admin' && (
-                        <Button
-                            variant="contained"
-                            startIcon={<IconifyIcon icon="mingcute:user-add-line" />}
-                            onClick={() => handleOpenFormModal()}
-                            sx={{ height: 45 }}
-                        >
-                            Add New User
-                        </Button>
-                    )}
-                </Box>
-                <Paper sx={{ mt: 1.5, p: 0, pb: 0.75, minHeight: 411, width: 1 }}>
+            <Stack direction="column" spacing={2.5} width={1}>
+                <PageTitle
+                    title="User Management"
+                    searchText={searchText}
+                    handleInputChange={handleInputChange}
+                    isAddEnable={user?.role === 'super-admin'}
+                    btnText="Add New User"
+                    openModal={() => handleOpenFormModal()}
+                />
+                <Paper
+                    sx={{
+                        p: 0,
+                        pb: 0.75,
+                        width: 1,
+                        overflow: 'hidden',
+                        borderRadius: 3,
+                    }}
+                >
                     <ManagementTable
                         searchText={searchText}
                         usersData={usersData?.data}
@@ -127,7 +125,12 @@ const ManagementSection = () => {
                 open={openFormModal}
                 onClose={handleCloseFormModal}
                 PaperProps={{
-                    sx: { width: { xs: '100vw', sm: 500 }, borderLeft: 0 }
+                    sx: {
+                        width: { xs: '100vw', sm: 520 },
+                        maxWidth: '100vw',
+                        borderLeft: 0,
+                        bgcolor: 'background.paper',
+                    }
                 }}
             >
                 <UserForm

@@ -29,6 +29,7 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
 
   let requiredKey = currentItem?.clientKey || '';
   const routeId = currentItem?.id;
+  const pixelEyeFollowUpsMatch = location.pathname.match(/^\/pixel-eye\/follow-ups$/);
   const pixelEyeLeadDetailMatch = location.pathname.match(/^\/pixel-eye\/leads\/[^/]+$/);
   const pixelEyeNotificationDetailMatch = location.pathname.match(
     /^\/pages\/d\/[^/]+\/notification\/[^/]+$/,
@@ -43,6 +44,10 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   }
 
   if (!requiredKey && pixelEyeLeadDetailMatch) {
+    requiredKey = 'pixeleye';
+  }
+
+  if (!requiredKey && pixelEyeFollowUpsMatch) {
     requiredKey = 'pixeleye';
   }
 

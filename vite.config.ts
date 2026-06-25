@@ -26,7 +26,7 @@ export default defineConfig({
   },
 
   build: {
-    sourcemap: true,
+    sourcemap: false,
     rollupOptions: {
       output: {
         // No manualChunks — letting Rollup resolve dependency order
