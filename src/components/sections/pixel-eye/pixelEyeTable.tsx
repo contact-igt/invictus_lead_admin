@@ -16,7 +16,7 @@ import {
   TWENTY_FOUR_HR_STATUSES,
   canClientSetInitialFollowUpDate,
   getDayDropdownStatuses,
-  getNextStructuredDayNumber,
+  getNextStructuredDayNumberForDayRows,
   isLeadFollowUpLocked,
 } from './pixelEyeStatuses';
 import IconifyIcon from 'components/base/IconifyIcon';
@@ -567,7 +567,7 @@ const getColumns = (
         const dayNumber = idx + 1;
         const row = params.row as PixelEyeRow;
         const leadLocked = isLeadFollowUpLocked(row);
-        const nextStructuredDayNumber = getNextStructuredDayNumber({
+        const nextStructuredDayNumber = getNextStructuredDayNumberForDayRows({
           status: row.status,
           followup_state: row.followup_state,
           reminder_permanently_closed: row.reminder_permanently_closed,
@@ -580,7 +580,7 @@ const getColumns = (
         const isAdminEdit = userRole === 'super-admin' || userRole === 'admin';
         const isClientEdit =
           userRole === 'client' && !leadLocked && nextStructuredDayNumber === dayNumber;
-        const isDisabled = isAdminEdit ? leadLocked : !isClientEdit;
+        const isDisabled = isAdminEdit ? false : !isClientEdit;
 
         return (
           <DayCell

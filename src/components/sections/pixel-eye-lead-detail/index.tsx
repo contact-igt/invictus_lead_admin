@@ -56,7 +56,7 @@ import {
   FORTY_EIGHT_HR_STATUSES,
   NO_REMINDER_STATUSES,
   getDayDropdownStatuses,
-  getNextStructuredDayNumber,
+  getNextStructuredDayNumberForDayRows,
   isLeadFollowUpLocked,
   isStatusTerminalForDays,
 } from '../pixel-eye/pixelEyeStatuses';
@@ -580,7 +580,7 @@ const PixelEyeLeadDetailPage = () => {
 
   const nextStructuredOutcomeDayNumber = useMemo(
     () =>
-      getNextStructuredDayNumber({
+      getNextStructuredDayNumberForDayRows({
         status: lead?.status,
         followup_state: lead?.followup_state,
         followup_completion_source: lead?.followup_completion_source,
@@ -913,11 +913,8 @@ const PixelEyeLeadDetailPage = () => {
                         hasPreviousDayTerminal ||
                         (idx > 0 && !pipelineDays[idx - 1]?.value);
                       const canClientEditDay =
-                        canUseStructuredOutcome &&
-                        !leadWorkflowClosed &&
-                        nextStructuredOutcomeDayNumber === idx + 1 &&
-                        !isCompleted;
-                      const canQuickEditDay = !leadWorkflowClosed && (canEditDayFields || canClientEditDay);
+                        canUseStructuredOutcome && nextStructuredOutcomeDayNumber === idx + 1 && !isCompleted;
+                      const canQuickEditDay = canEditDayFields || canClientEditDay;
 
                       const stageLabel = isLocked
                         ? leadWorkflowClosed
@@ -1173,7 +1170,7 @@ const PixelEyeLeadDetailPage = () => {
                                     ? handleDayValueChange(day.field, e.target.value)
                                     : handleStructuredDayValueChange(e.target.value)
                                 }
-                                disabled={leadWorkflowClosed}
+                                disabled={false}
                                 sx={{
                                   ...getFieldSx(mode),
                                   '& .MuiInputBase-root': {

@@ -249,6 +249,36 @@ export const getNextStructuredDayNumber = (
   return null;
 };
 
+export const getNextStructuredDayNumberForDayRows = (
+  lead?:
+    | PixelEyeLeadWorkflowLike
+    | null,
+): number | null => {
+  for (let index = 0; index < PIXEL_EYE_DAY_FIELDS.length; index += 1) {
+    const currentField = PIXEL_EYE_DAY_FIELDS[index];
+    const currentValue = String(lead?.[currentField] || '').trim();
+
+    if (index > 0) {
+      const previousField = PIXEL_EYE_DAY_FIELDS[index - 1];
+      const previousValue = String(lead?.[previousField] || '').trim();
+
+      if (!previousValue) {
+        return null;
+      }
+
+      if (isStatusTerminalForDays(previousValue)) {
+        return null;
+      }
+    }
+
+    if (!currentValue) {
+      return index + 1;
+    }
+  }
+
+  return null;
+};
+
 export type PixelEyeStatus = (typeof ALL_STATUSES)[number];
 
 export const isFinalStatus = (status: string | null): boolean => {
