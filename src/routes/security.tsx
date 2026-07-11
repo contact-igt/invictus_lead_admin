@@ -1,4 +1,4 @@
-import { Navigate, useLocation } from 'react-router-dom';
+﻿import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from 'redux/selectors/auth/authSelector';
 import paths from './paths';
 import sitemap from './sitemap';
@@ -9,7 +9,16 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   const location = useLocation();
   const { token, user } = useAuth();
   const userModuleKey = resolveClientModuleKey(user?.clientKey);
-  const clientHomePath = userModuleKey ? `/pages/d/${userModuleKey}/overview` : '/';
+  const clientHomePath =
+    userModuleKey === 'aarav_eye_care'
+      ? paths.aaravEyeCare(userModuleKey)
+      : userModuleKey === 'antardrashti_netralaya'
+        ? paths.antardrashtiNetralaya(userModuleKey)
+        : userModuleKey === 'rio'
+          ? paths.rio(userModuleKey)
+          : userModuleKey
+        ? `/pages/d/${userModuleKey}/overview`
+        : '/';
 
   if (!token) {
     return <Navigate to={`${paths.signin}`} state={{ from: location }} replace />;
@@ -114,3 +123,5 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
 };
 
 export default ProtectedRoute;
+
+

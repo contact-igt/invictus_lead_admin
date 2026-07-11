@@ -12,6 +12,7 @@ import DynamicForm from './DynamicForm';
 import FollowUpHistoryModal from 'components/sections/pixel-eye-follow-ups/FollowUpHistoryModal';
 import { TableConfig } from 'config/clients';
 import { _axios } from 'helper/axios';
+import { useAuth } from 'redux/selectors/auth/authSelector';
 
 interface DynamicSectionProps {
   config: TableConfig;
@@ -64,6 +65,7 @@ const extractFileName = (contentDisposition?: string): string | null => {
 const DynamicSection = ({ config, clientKey }: DynamicSectionProps) => {
   const queryClient = useQueryClient();
   const { enqueueSnackbar } = useSnackbar();
+  const { user } = useAuth();
   const [searchText, setSearchText] = useState('');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isViewOnly, setIsViewOnly] = useState(false);
@@ -77,7 +79,9 @@ const DynamicSection = ({ config, clientKey }: DynamicSectionProps) => {
   const [selectedFollowUpHistoryLead, setSelectedFollowUpHistoryLead] = useState<any | null>(null);
 
   const isPixelEyeLeads = config.endpoint === '/pixeleye' && config.id === 'leads';
-  const queryParams = isPixelEyeLeads && clientKey ? { _client_key: clientKey } : undefined;
+  const clientContextParams =
+    user?.role === 'super-admin' && clientKey ? { _client_key: clientKey } : undefined;
+  const queryParams = clientContextParams;
   const queryKey = [`dynamic_data_${config.id}`, config.endpoint, clientKey ?? null];
 
   const { data, isLoading } = useQuery(
@@ -115,11 +119,11 @@ const DynamicSection = ({ config, clientKey }: DynamicSectionProps) => {
   const mutation = useMutation(
     (payload: any) => {
       if (selectedRecord) {
-        return _axios('patch', `${config.endpoint}/${selectedRecord.id}`, payload);
+        return _axios('patch', `${config.endpoint}/${selectedRecord.id}`, payload, 'application/json', clientContextParams);
       }
       // Include _client_key so the backend can resolve client_id for super-admin
-      const createPayload = clientKey ? { ...payload, _client_key: clientKey } : payload;
-      return _axios('post', config.endpoint, createPayload);
+      const createPayload = clientContextParams ? { ...payload, _client_key: clientKey } : payload;
+      return _axios('post', config.endpoint, createPayload, 'application/json', clientContextParams);
     },
     {
       onSuccess: () => {
@@ -133,7 +137,7 @@ const DynamicSection = ({ config, clientKey }: DynamicSectionProps) => {
   );
 
   const deleteMutation = useMutation(
-    (id: number | string) => _axios('delete', `${config.endpoint}/${id}`),
+    (id: number | string) => _axios('delete', `${config.endpoint}/${id}`, undefined, 'application/json', clientContextParams),
     {
       onSuccess: () => {
         queryClient.invalidateQueries(queryKey);
@@ -143,7 +147,7 @@ const DynamicSection = ({ config, clientKey }: DynamicSectionProps) => {
 
   const inlineUpdateMutation = useMutation(
     ({ id, field, value }: { id: number | string; field: string; value: string }) =>
-      _axios('patch', `${config.endpoint}/${id}`, { [field]: value }),
+      _axios('patch', `${config.endpoint}/${id}`, { [field]: value }, 'application/json', clientContextParams),
     {
       onSuccess: () => {
         queryClient.invalidateQueries(queryKey);

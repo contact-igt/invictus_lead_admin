@@ -8,6 +8,7 @@ import { setAuthData } from 'redux/slices/auth/authSlice';
 import { useSnackbar } from 'notistack';
 import { AxiosError } from 'axios';
 import { resolveClientModuleKey } from 'utils/clientModuleResolver';
+import paths from 'routes/paths';
 
 const { login } = new AuthApis();
 
@@ -36,7 +37,15 @@ export const useLoginMutation = () => {
       if (data.user?.role === 'client') {
         const moduleKey = resolveClientModuleKey(data.user?.clientKey);
         if (moduleKey) {
-          navigate(`/pages/d/${moduleKey}/overview`);
+          navigate(
+            moduleKey === 'aarav_eye_care'
+              ? paths.aaravEyeCare(moduleKey)
+              : moduleKey === 'antardrashti_netralaya'
+                ? paths.antardrashtiNetralaya(moduleKey)
+                : moduleKey === 'rio'
+                  ? paths.rio(moduleKey)
+                  : `/pages/d/${moduleKey}/overview`,
+          );
           return;
         }
       }

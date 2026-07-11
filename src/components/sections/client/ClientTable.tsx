@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+﻿import { useEffect } from 'react';
 import { DataGrid, GridColDef, useGridApiRef, GridApi } from '@mui/x-data-grid';
 import { Chip } from '@mui/material';
 import DataGridFooter from 'components/common/DataGridFooter';
@@ -12,10 +12,11 @@ interface ClientTableProps {
   searchText: string;
   isLoading: boolean;
   onEdit: (row: ClientRecord) => void;
+  onView: (row: ClientRecord) => void;
   onDelete: (id: number | string) => void;
 }
 
-const ClientTable = ({ rows, searchText, isLoading, onEdit, onDelete }: ClientTableProps) => {
+const ClientTable = ({ rows, searchText, isLoading, onEdit, onView, onDelete }: ClientTableProps) => {
   const apiRef = useGridApiRef<GridApi>();
 
   useEffect(() => {
@@ -56,7 +57,7 @@ const ClientTable = ({ rows, searchText, isLoading, onEdit, onDelete }: ClientTa
             sx={{ fontFamily: 'monospace', fontSize: '0.78rem', borderRadius: 1.5 }}
           />
         ) : (
-          <span style={{ color: 'var(--mui-palette-text-disabled, rgba(0,0,0,0.38))' }}>—</span>
+          <span style={{ color: 'var(--mui-palette-text-disabled, rgba(0,0,0,0.38))' }}>â€”</span>
         ),
     },
     {
@@ -77,7 +78,7 @@ const ClientTable = ({ rows, searchText, isLoading, onEdit, onDelete }: ClientTa
             sx={{ fontSize: '0.72rem', borderRadius: 1.5 }}
           />
         ) : (
-          <span style={{ color: 'var(--mui-palette-text-disabled, rgba(0,0,0,0.38))' }}>—</span>
+          <span style={{ color: 'var(--mui-palette-text-disabled, rgba(0,0,0,0.38))' }}>â€”</span>
         ),
     },
     {
@@ -88,7 +89,7 @@ const ClientTable = ({ rows, searchText, isLoading, onEdit, onDelete }: ClientTa
       align: 'center',
       headerAlign: 'center',
       renderCell: (params) =>
-        params.value ? dayjs(params.value).format('DD MMM YYYY') : '—',
+        params.value ? dayjs(params.value).format('DD MMM YYYY') : 'â€”',
     },
     {
       field: 'actions',
@@ -101,6 +102,7 @@ const ClientTable = ({ rows, searchText, isLoading, onEdit, onDelete }: ClientTa
       renderCell: (params) => (
         <ActionMenu
           onEdit={() => onEdit(params.row as ClientRecord)}
+          onView={() => onView(params.row as ClientRecord)}
           onRemove={() => onDelete(params.row.id)}
         />
       ),
@@ -148,3 +150,6 @@ const ClientTable = ({ rows, searchText, isLoading, onEdit, onDelete }: ClientTa
 };
 
 export default ClientTable;
+
+
+

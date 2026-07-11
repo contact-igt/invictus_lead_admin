@@ -1,4 +1,4 @@
-import { useState, ChangeEvent } from 'react';
+﻿import { useState, ChangeEvent } from 'react';
 import { Drawer, Paper, Stack } from '@mui/material';
 import PageTitle from 'components/common/PageTitle';
 import PageLoader from 'components/loader/PageLoader';
@@ -99,6 +99,7 @@ const ClientSection = () => {
             searchText={searchText}
             isLoading={isLoading}
             onEdit={(row) => openDrawer(row)}
+            onView={(row) => openDrawer(row, true)}
             onDelete={openConfirm}
           />
         </Paper>
@@ -141,3 +142,4 @@ const ClientSection = () => {
 };
 
 export default ClientSection;
+

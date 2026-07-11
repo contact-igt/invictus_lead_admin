@@ -57,8 +57,6 @@ export const _axios = async (
   }
 
   const isFormData = body instanceof FormData;
-  // Add a timestamp to all GET requests so stale/proxy cache does not affect any client module.
-  const requestParams = isGetRequest ? { ...(params || {}), _ts: Date.now() } : params;
 
   try {
     const res = await axios({
@@ -77,7 +75,7 @@ export const _axios = async (
       method: method,
       url: endpoint,
       data: body,
-      params: requestParams,
+      params,
       responseType: options?.responseType,
     });
     if (options?.returnRawResponse) {

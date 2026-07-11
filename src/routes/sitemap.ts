@@ -22,7 +22,6 @@ export interface MenuItem {
   items?: SubMenuItem[];
 }
 
-// Base hardcoded menus (like Dashboard and User Management)
 const baseSitemap: MenuItem[] = [
   {
     id: 'dashboard',
@@ -49,7 +48,6 @@ const clientManagementSitemap: MenuItem = {
   active: true,
 };
 
-// Dynamically generate client menus from the Registry
 const generateDynamicClientMenus = (): MenuItem[] => {
   return Object.entries(ClientRegistry).map(([clientKey, config]: [string, ClientConfig]) => {
     const overviewItem: SubMenuItem = {
@@ -64,8 +62,19 @@ const generateDynamicClientMenus = (): MenuItem[] => {
       path: `/pages/d/${clientKey}/${table.id}`,
     }));
 
-    const items: SubMenuItem[] = [overviewItem];
-    items.push(...tableItems);
+    const isDedicatedLeadModule = ['aarav_eye_care', 'antardrashti_netralaya', 'rio'].includes(clientKey);
+    const items: SubMenuItem[] = isDedicatedLeadModule ? tableItems : [overviewItem];
+    if (!isDedicatedLeadModule) {
+      items.push(...tableItems);
+    }
+
+    if (clientKey === 'vls_law') {
+      items.push({
+        name: 'MACT Master Class',
+        pathName: `/pages/d/${clientKey}/vls/mact-master-class`,
+        path: `/pages/d/${clientKey}/vls/mact-master-class`,
+      });
+    }
 
     if (clientKey === 'pixeleye') {
       items.push({
@@ -77,6 +86,11 @@ const generateDynamicClientMenus = (): MenuItem[] => {
         name: 'Notification Tracker',
         pathName: `/pages/d/${clientKey}/notification-tracker`,
         path: `/pages/d/${clientKey}/notification-tracker`,
+      });
+      items.push({
+        name: 'Website Leads',
+        pathName: `/pages/d/${clientKey}/pixel-eye/website-leads`,
+        path: `/pages/d/${clientKey}/pixel-eye/website-leads`,
       });
     }
 
@@ -99,3 +113,5 @@ const sitemap: MenuItem[] = [
 ];
 
 export default sitemap;
+
+

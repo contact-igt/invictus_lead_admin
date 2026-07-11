@@ -1,8 +1,10 @@
-import { useQuery, useMutation, useQueryClient } from 'react-query';
+﻿import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { _axios } from 'helper/axios';
 import { ClientPayload } from 'services/client';
 import { useSnackbar } from 'notistack';
 import { AxiosError } from 'axios';
+
+interface ClientErrorPayload { message?: string }
 
 export interface ClientRecord {
   id: number;
@@ -10,14 +12,22 @@ export interface ClientRecord {
   client_key?: string | null;
   created_at?: string;
   updated_at?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 const QUERY_KEY = ['clients'];
 
+const normalizeClientRecord = (record: ClientRecord): ClientRecord => ({
+  ...record,
+  created_at: record.created_at ?? record.createdAt,
+  updated_at: record.updated_at ?? record.updatedAt,
+});
+
 export const useClientQuery = () =>
   useQuery<ClientRecord[]>(QUERY_KEY, async () => {
     const res = await _axios('get', '/clients');
-    return (res?.data ?? []) as ClientRecord[];
+    return ((res?.data ?? []) as ClientRecord[]).map(normalizeClientRecord);
   });
 
 export const useCreateClientMutation = () => {
@@ -31,8 +41,8 @@ export const useCreateClientMutation = () => {
         enqueueSnackbar('Client created successfully', { variant: 'success' });
         qc.invalidateQueries(QUERY_KEY);
       },
-      onError: (error: any) => {
-        const err = error as AxiosError<any>;
+      onError: (error: unknown) => {
+        const err = error as AxiosError<ClientErrorPayload>;
         enqueueSnackbar(err.response?.data?.message || 'Failed to create client', {
           variant: 'error',
         });
@@ -53,8 +63,8 @@ export const useUpdateClientMutation = () => {
         enqueueSnackbar('Client updated successfully', { variant: 'success' });
         qc.invalidateQueries(QUERY_KEY);
       },
-      onError: (error: any) => {
-        const err = error as AxiosError<any>;
+      onError: (error: unknown) => {
+        const err = error as AxiosError<ClientErrorPayload>;
         enqueueSnackbar(err.response?.data?.message || 'Failed to update client', {
           variant: 'error',
         });
@@ -74,8 +84,8 @@ export const useDeleteClientMutation = () => {
         enqueueSnackbar('Client deleted successfully', { variant: 'success' });
         qc.invalidateQueries(QUERY_KEY);
       },
-      onError: (error: any) => {
-        const err = error as AxiosError<any>;
+      onError: (error: unknown) => {
+        const err = error as AxiosError<ClientErrorPayload>;
         enqueueSnackbar(err.response?.data?.message || 'Failed to delete client', {
           variant: 'error',
         });
@@ -83,3 +93,5 @@ export const useDeleteClientMutation = () => {
     },
   );
 };
+
+
