@@ -1,4 +1,4 @@
-export type FieldType = 'text' | 'email' | 'phone' | 'date' | 'time' | 'select' | 'status_chip' | 'textarea';
+﻿export type FieldType = 'text' | 'email' | 'phone' | 'date' | 'time' | 'select' | 'status_chip' | 'textarea';
 
 export interface ColumnConfig {
   field: string;
@@ -76,12 +76,61 @@ export const ClientRegistry: Record<string, ClientConfig> = {
       },
     ],
   },
-  vls_law: {
+  aarav_eye_care: {
+    appName: "Aarav Eye Care",
+    theme: { primaryColor: "#0B7285" },
+    tables: [
+      {
+        id: "aarav-eye-care",
+        title: "Aarav Eye Care Leads",
+        endpoint: "/aarav-eye-care",
+        columns: [
+          { field: "name", header: "Name", type: "text", required: true, minWidth: 180, flex: 1.3 },
+          { field: "mobile_number", header: "Mobile Number", type: "phone", required: true, minWidth: 150, flex: 1 },
+          { field: "service", header: "Service", type: "text", minWidth: 140, flex: 1 },
+          { field: "ip_address", header: "IP Address", type: "text", minWidth: 145, flex: 1 },
+          { field: "utm_source", header: "UTM Source", type: "text", minWidth: 130, flex: 0.9 },
+          { field: "created_at", header: "Created At", type: "date", minWidth: 180, flex: 1 },
+          { field: "updated_at", header: "Updated At", type: "date", minWidth: 180, flex: 1 },
+        ],
+      },
+    ],
+  },
+  rio: {
+    appName: "Rio", theme: { primaryColor: "#B45309" },
+    tables: [{ id: "rio", title: "Rio Leads", endpoint: "/rio", columns: [
+      { field: "name", header: "Name", type: "text", required: true },
+      { field: "mobile_number", header: "Mobile Number", type: "phone", required: true },
+      { field: "service", header: "Service", type: "select" },
+      { field: "branch", header: "Branch", type: "select" },
+      { field: "message", header: "Message", type: "textarea" },
+    ] }],
+  },
+  antardrashti_netralaya: {
+    appName: "Antardrashti Netralaya",
+    theme: { primaryColor: "#256B5E" },
+    tables: [
+      {
+        id: "antardrashti-netralaya",
+        title: "Antardrashti Leads",
+        endpoint: "/antardrashti-netralaya",
+        columns: [
+          { field: "name", header: "Name", type: "text", required: true, minWidth: 180, flex: 1.3 },
+          { field: "mobile_number", header: "Mobile Number", type: "phone", required: true, minWidth: 150, flex: 1 },
+          { field: "service", header: "Service", type: "text", minWidth: 140, flex: 1 },
+          { field: "ip_address", header: "IP Address", type: "text", minWidth: 145, flex: 1 },
+          { field: "utm_source", header: "UTM Source", type: "text", minWidth: 130, flex: 0.9 },
+          { field: "created_at", header: "Created At", type: "date", minWidth: 180, flex: 1 },
+          { field: "updated_at", header: "Updated At", type: "date", minWidth: 180, flex: 1 },
+        ],
+      },
+    ],
+  },  vls_law: {
     appName: "VLS Law",
     theme: { primaryColor: "#800020" },
     tables: [
 
-      // ── TABLE 1: LAW PRACTICE ──────────────────────────────────────────────
+      // â”€â”€ TABLE 1: LAW PRACTICE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       {
         id: "practice",
         title: "Law Practice Enrollments",
@@ -90,7 +139,7 @@ export const ClientRegistry: Record<string, ClientConfig> = {
           { field: "name", header: "Name", type: "text", flex: 1.3, minWidth: 150, required: true },
           { field: "mobile", header: "Mobile", type: "phone", flex: 1.1, minWidth: 130 },
           { field: "email", header: "Email", type: "email", flex: 1.3, minWidth: 160 },
-          { field: "amount", header: "Amount (₹)", type: "text", flex: 0.9, minWidth: 110 },
+          { field: "amount", header: "Amount (â‚¹)", type: "text", flex: 0.9, minWidth: 110 },
           { field: "registered_date", header: "Registered On", type: "date", flex: 1, minWidth: 130, required: true },
           { field: "programm_date", header: "Program Date", type: "date", flex: 1, minWidth: 130, required: true },
           {
@@ -125,7 +174,7 @@ export const ClientRegistry: Record<string, ClientConfig> = {
         ],
       },
 
-      // ── TABLE 2: LAW ACADEMY ───────────────────────────────────────────────
+      // â”€â”€ TABLE 2: LAW ACADEMY â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       {
         id: "academy",
         title: "Law Academy Inquiries",
@@ -145,7 +194,7 @@ export const ClientRegistry: Record<string, ClientConfig> = {
         ],
       },
 
-      // ── TABLE 3: AIBE ──────────────────────────────────────────────────────
+      // â”€â”€ TABLE 3: AIBE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       {
         id: "aibe",
         title: "AIBE Exam Registrations",
@@ -154,7 +203,7 @@ export const ClientRegistry: Record<string, ClientConfig> = {
           { field: "name", header: "Name", type: "text", flex: 1.3, minWidth: 150 },
           { field: "mobile", header: "Mobile", type: "phone", flex: 1.1, minWidth: 130 },
           { field: "email", header: "Email", type: "email", flex: 1.3, minWidth: 160 },
-          { field: "amount", header: "Amount (₹)", type: "text", flex: 0.9, minWidth: 110 },
+          { field: "amount", header: "Amount (â‚¹)", type: "text", flex: 0.9, minWidth: 110 },
           { field: "registered_date", header: "Registered On", type: "date", flex: 1, minWidth: 130, required: true },
           { field: "programm_start_date", header: "Program Start", type: "date", flex: 1, minWidth: 130, required: true },
           { field: "programm_end_date", header: "Program End", type: "date", flex: 1, minWidth: 130, required: true },
@@ -180,7 +229,7 @@ export const ClientRegistry: Record<string, ClientConfig> = {
         ],
       },
 
-      // ── TABLE 4: PROPERTY LAW ──────────────────────────────────────────────
+      // â”€â”€ TABLE 4: PROPERTY LAW â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       {
         id: "property-law",
         title: "Property Law Masterclass",
@@ -190,7 +239,7 @@ export const ClientRegistry: Record<string, ClientConfig> = {
           { field: "mobile", header: "Mobile", type: "phone", flex: 1.1, minWidth: 130 },
           { field: "email", header: "Email", type: "email", flex: 1.3, minWidth: 160 },
           { field: "years_of_practice", header: "Years of Practice", type: "text", flex: 1, minWidth: 130 },
-          { field: "amount", header: "Amount (₹)", type: "text", flex: 0.9, minWidth: 110 },
+          { field: "amount", header: "Amount (â‚¹)", type: "text", flex: 0.9, minWidth: 110 },
           { field: "registered_date", header: "Registered On", type: "date", flex: 1, minWidth: 130 },
           { field: "programm_date", header: "Program Date", type: "date", flex: 1, minWidth: 130 },
           {
@@ -220,7 +269,7 @@ export const ClientRegistry: Record<string, ClientConfig> = {
         ],
       },
 
-      // ── TABLE 5: FAMILY LAW ───────────────────────────────────────────────
+      // â”€â”€ TABLE 5: FAMILY LAW â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       {
         id: "family-law",
         title: "Family Law Masterclass",
@@ -230,7 +279,7 @@ export const ClientRegistry: Record<string, ClientConfig> = {
           { field: "mobile", header: "Mobile", type: "phone", flex: 1.1, minWidth: 130 },
           { field: "email", header: "Email", type: "email", flex: 1.3, minWidth: 160 },
           { field: "years_of_practice", header: "Years of Practice", type: "text", flex: 1, minWidth: 130 },
-          { field: "amount", header: "Amount (₹)", type: "text", flex: 0.9, minWidth: 110 },
+          { field: "amount", header: "Amount (â‚¹)", type: "text", flex: 0.9, minWidth: 110 },
           { field: "registered_date", header: "Registered On", type: "date", flex: 1, minWidth: 130 },
           { field: "programm_date", header: "Program Date", type: "date", flex: 1, minWidth: 130 },
           {
@@ -263,3 +312,4 @@ export const ClientRegistry: Record<string, ClientConfig> = {
     ]
   }
 };
+

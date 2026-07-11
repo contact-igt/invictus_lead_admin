@@ -1,10 +1,8 @@
-/* eslint-disable react-refresh/only-export-components */
 import { Suspense, lazy } from 'react';
 import { Outlet, createBrowserRouter } from 'react-router-dom';
 import paths, { rootPaths } from './paths';
 import PageLoader from 'components/loader/PageLoader';
 
-// Lazy-load MUI/Emotion-heavy modules to avoid initialization issues.
 const MainLayout = lazy(() => import('layouts/main-layout'));
 const AuthLayout = lazy(() => import('layouts/auth-layout'));
 const ProtectedRoute = lazy(async () => {
@@ -22,9 +20,14 @@ const DynamicPage = lazy(() => import('pages/dynamic'));
 const PixelEyePage = lazy(() => import('pages/pixel-eye'));
 const PixelEyeLeadDetailPage = lazy(() => import('pages/pixel-eye/lead-detail'));
 const PixelEyeFollowUpsPage = lazy(() => import('pages/pixel-eye/follow-ups'));
+const PixelEyeWebsiteLeadsPage = lazy(() => import('pages/pixel-eye/website-leads'));
 const NotificationTrackerPage = lazy(() => import('pages/notifications/NotificationTracker'));
 const NotificationDetailsPage = lazy(() => import('pages/notifications/NotificationDetails'));
 const SettingsPage = lazy(() => import('pages/settings'));
+const AaravEyeCarePage = lazy(() => import('pages/aaravEyeCare'));
+const AntardrashtiNetralayaPage = lazy(() => import('pages/antardrashtiNetralaya'));
+const RioPage = lazy(() => import('pages/rio'));
+const VlsMactMasterClassPage = lazy(() => import('pages/vls/mact-master-class'));
 
 const router = createBrowserRouter(
   [
@@ -81,12 +84,32 @@ const router = createBrowserRouter(
               element: <PixelEyeLeadDetailPage />,
             },
             {
+              path: paths.pixelEyeScopedWebsiteLeads,
+              element: <PixelEyeWebsiteLeadsPage />,
+            },
+            {
               path: paths.notificationTracker,
               element: <NotificationTrackerPage />,
             },
             {
               path: paths.notificationDetails,
               element: <NotificationDetailsPage />,
+            },
+            {
+              path: paths.aaravEyeCare(':clientKey'),
+              element: <AaravEyeCarePage />,
+            },
+            {
+              path: paths.antardrashtiNetralaya(':clientKey'),
+              element: <AntardrashtiNetralayaPage />,
+            },
+            {
+              path: paths.rio(':clientKey'),
+              element: <RioPage />,
+            },
+            {
+              path: paths.vlsMactMasterClass,
+              element: <VlsMactMasterClassPage />,
             },
             {
               path: paths.dynamicTable,
@@ -161,3 +184,7 @@ const router = createBrowserRouter(
 );
 
 export default router;
+
+
+
+

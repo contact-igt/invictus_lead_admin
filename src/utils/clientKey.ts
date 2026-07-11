@@ -1,14 +1,20 @@
-const CLIENT_KEY_ALIASES: Record<string, string> = {
+﻿const CLIENT_KEY_ALIASES: Record<string, string> = {
     pixel_eye: 'pixeleye',
     vlslaw: 'vls_law',
+    aaraveyecare: 'aarav_eye_care',
+    antardrashtinetralaya: 'antardrashti_netralaya',
+    riohospital: 'rio',
 };
 
-export const SUPPORTED_CLIENT_MODULES = ['pixeleye', 'vls_law'] as const;
+export const SUPPORTED_CLIENT_MODULES = ['pixeleye', 'vls_law', 'aarav_eye_care', 'antardrashti_netralaya', 'rio'] as const;
 export type SupportedClientModule = typeof SUPPORTED_CLIENT_MODULES[number];
 
 export const CLIENT_MODULE_OPTIONS: Array<{ label: string; value: SupportedClientModule }> = [
     { label: 'PixelEye', value: 'pixeleye' },
     { label: 'VLS Law', value: 'vls_law' },
+    { label: 'Aarav Eye Care', value: 'aarav_eye_care' },
+    { label: 'Antardrashti Netralaya', value: 'antardrashti_netralaya' },
+    { label: 'Rio', value: 'rio' },
 ];
 
 export const normalizeClientKey = (key?: string | null): string => {
@@ -55,3 +61,4 @@ export const buildClientKey = (moduleKey: SupportedClientModule, tenantKey?: str
     const normalizedTenant = normalizeClientSegment(tenantKey);
     return normalizedTenant ? `${normalizedModule}_${normalizedTenant}` : normalizedModule;
 };
+
