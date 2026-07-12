@@ -17,18 +17,37 @@ const ConfirmAlert = ({ title, message, isLoading, onConfirm, onCancel }: Confir
       justifyContent={'center'}
       alignItems="center"
       spacing={2}
-      sx={{ padding: 4 }}
+      sx={{ padding: { xs: 2, sm: 3 }, color: 'text.primary' }}
     >
       <Box sx={{ color: 'error.main', mb: 1, fontSize: 72 }}>
         <IconifyIcon icon="hugeicons:alert-02" width={72} height={72} />
       </Box>
-     <Typography textAlign={'center'} variant="h4" sx={{width: '100%', maxWidth: "300px"}}>
+      <Typography
+        textAlign={'center'}
+        variant="h4"
+        sx={{
+          width: '100%',
+          maxWidth: '360px',
+          color: 'text.primary',
+          lineHeight: 1.45,
+          overflowWrap: 'anywhere',
+        }}
+      >
         {title}
       </Typography>
-      <Typography variant="subtitle2">
+      <Typography
+        variant="subtitle2"
+        textAlign="center"
+        sx={{
+          width: '100%',
+          color: 'text.secondary',
+          lineHeight: 1.6,
+          overflowWrap: 'anywhere',
+        }}
+      >
         {message}
       </Typography>
-      <Stack direction="row" spacing={3} width={"100%"}>
+      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} width={"100%"}>
         <AppFormButton
           label="Confirm"
           size="medium"
@@ -37,9 +56,10 @@ const ConfirmAlert = ({ title, message, isLoading, onConfirm, onCancel }: Confir
           isLoading={isLoading}
           bg="#CC3300"
         />
-        <AppFormButton label="Cancel" size="medium" onClick={onCancel} fullWidth={true}/>
+        <AppFormButton label="Cancel" size="medium" onClick={onCancel} fullWidth={true} />
       </Stack>
     </Stack>
   );
 };
+
 export default ConfirmAlert;
