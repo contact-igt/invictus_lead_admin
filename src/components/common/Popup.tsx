@@ -46,17 +46,20 @@ export const Popup = ({
     >
       <Box
         sx={{
-          backgroundColor: "#fff",
+          backgroundColor: "background.paper",
+          color: "text.primary",
           borderRadius: "15px",
-          width: "fit-content",
-          maxWidth: "min(960px, calc(100vw - 32px))",
+          width: "100%",
+          maxWidth: "min(560px, calc(100vw - 32px))",
           height: "fit-content",
           maxHeight: "90vh",
-          display: "inline-block",
+          display: "block",
           boxShadow: 3,
-          p: 2,
+          border: "1px solid",
+          borderColor: "divider",
+          p: { xs: 2, sm: 2.5 },
           position: "relative",
-          overflow: "hidden",
+          overflow: "visible",
         }}
       >
         <IconifyIcon
@@ -86,7 +89,6 @@ export const Popup = ({
             height: "fit-content",
             maxHeight: "80vh",
             overflowY: "auto",
-            pr: 1,
             maxWidth: "100%",
           }}
         >
