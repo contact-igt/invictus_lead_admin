@@ -57,7 +57,7 @@ const ClientTable = ({ rows, searchText, isLoading, onEdit, onView, onDelete }: 
             sx={{ fontFamily: 'monospace', fontSize: '0.78rem', borderRadius: 1.5 }}
           />
         ) : (
-          <span style={{ color: 'var(--mui-palette-text-disabled, rgba(0,0,0,0.38))' }}>â€”</span>
+          <span style={{ color: 'var(--mui-palette-text-disabled, rgba(0,0,0,0.38))' }}>-</span>
         ),
     },
     {
@@ -78,7 +78,7 @@ const ClientTable = ({ rows, searchText, isLoading, onEdit, onView, onDelete }: 
             sx={{ fontSize: '0.72rem', borderRadius: 1.5 }}
           />
         ) : (
-          <span style={{ color: 'var(--mui-palette-text-disabled, rgba(0,0,0,0.38))' }}>â€”</span>
+          <span style={{ color: 'var(--mui-palette-text-disabled, rgba(0,0,0,0.38))' }}>-</span>
         ),
     },
     {
@@ -89,7 +89,7 @@ const ClientTable = ({ rows, searchText, isLoading, onEdit, onView, onDelete }: 
       align: 'center',
       headerAlign: 'center',
       renderCell: (params) =>
-        params.value ? dayjs(params.value).format('DD MMM YYYY') : 'â€”',
+        params.value ? dayjs(params.value).format('DD MMM YYYY') : '-',
     },
     {
       field: 'actions',

@@ -142,7 +142,7 @@ const UserForm = ({ initialValues, onSubmit, onCancel, isLoading, isReadOnly }: 
 
             {/* Body */}
             <Box sx={{ flexGrow: 1, overflowY: 'auto', px: { xs: 2, sm: 3 }, py: 3 }}>
-                {/* Row 1 â€“ Title + Username */}
+                {/* Row 1 - Title + Username */}
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} mb={2.5} alignItems="stretch">
                     <FormControl disabled={isReadOnly} sx={{ width: { xs: '100%', sm: 140 }, ...ctrl }}>
                         <InputLabel id="title-label">Title</InputLabel>
@@ -165,7 +165,7 @@ const UserForm = ({ initialValues, onSubmit, onCancel, isLoading, isReadOnly }: 
                     />
                 </Stack>
 
-                {/* Row 2 â€“ Email */}
+                {/* Row 2 - Email */}
                 <TextField
                     fullWidth
                     name="email"
@@ -178,7 +178,7 @@ const UserForm = ({ initialValues, onSubmit, onCancel, isLoading, isReadOnly }: 
                     sx={{ ...ctrl, mb: 2.5 }}
                 />
 
-                {/* Row 3 â€“ Country code + Mobile */}
+                {/* Row 3 - Country code + Mobile */}
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} mb={2.5} alignItems="stretch">
                     <FormControl disabled={isReadOnly} sx={{ width: { xs: '100%', sm: 160 }, ...ctrl }}>
                         <InputLabel id="cc-label">Code</InputLabel>
@@ -204,7 +204,7 @@ const UserForm = ({ initialValues, onSubmit, onCancel, isLoading, isReadOnly }: 
                     />
                 </Stack>
 
-                {/* Row 4 â€“ Password (create / edit only) */}
+                {/* Row 4 - Password (create / edit only) */}
                 {!isReadOnly && (
                     <TextField
                         fullWidth
@@ -228,7 +228,7 @@ const UserForm = ({ initialValues, onSubmit, onCancel, isLoading, isReadOnly }: 
                     />
                 )}
 
-                {/* Row 5 â€“ Role + Client (when role = client) */}
+                {/* Row 5 - Role + Client (when role = client) */}
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="stretch">
                     <FormControl disabled={isReadOnly} sx={{ flex: 1, ...ctrl }}>
                         <InputLabel id="role-label">Account Role</InputLabel>
@@ -303,7 +303,7 @@ const UserForm = ({ initialValues, onSubmit, onCancel, isLoading, isReadOnly }: 
                             '&:hover': { backgroundColor: '#1F6B40', boxShadow: 'none' },
                         }}
                     >
-                        {isLoading ? 'Savingâ€¦' : (isEdit ? 'Save Changes' : 'Create User')}
+                        {isLoading ? 'Saving...' : (isEdit ? 'Save Changes' : 'Create User')}
                     </Button>
                 )}
             </Box>

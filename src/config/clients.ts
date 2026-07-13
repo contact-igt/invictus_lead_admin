@@ -130,7 +130,7 @@ export const ClientRegistry: Record<string, ClientConfig> = {
     theme: { primaryColor: "#800020" },
     tables: [
 
-      // â”€â”€ TABLE 1: LAW PRACTICE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // -- TABLE 1: LAW PRACTICE ----------------------------------------------
       {
         id: "practice",
         title: "Law Practice Enrollments",
@@ -139,7 +139,7 @@ export const ClientRegistry: Record<string, ClientConfig> = {
           { field: "name", header: "Name", type: "text", flex: 1.3, minWidth: 150, required: true },
           { field: "mobile", header: "Mobile", type: "phone", flex: 1.1, minWidth: 130 },
           { field: "email", header: "Email", type: "email", flex: 1.3, minWidth: 160 },
-          { field: "amount", header: "Amount (â‚¹)", type: "text", flex: 0.9, minWidth: 110 },
+          { field: "amount", header: "Amount (\u20B9)", type: "text", flex: 0.9, minWidth: 110 },
           { field: "registered_date", header: "Registered On", type: "date", flex: 1, minWidth: 130, required: true },
           { field: "programm_date", header: "Program Date", type: "date", flex: 1, minWidth: 130, required: true },
           {
@@ -174,7 +174,7 @@ export const ClientRegistry: Record<string, ClientConfig> = {
         ],
       },
 
-      // â”€â”€ TABLE 2: LAW ACADEMY â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // -- TABLE 2: LAW ACADEMY -----------------------------------------------
       {
         id: "academy",
         title: "Law Academy Inquiries",
@@ -194,7 +194,7 @@ export const ClientRegistry: Record<string, ClientConfig> = {
         ],
       },
 
-      // â”€â”€ TABLE 3: AIBE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // -- TABLE 3: AIBE ------------------------------------------------------
       {
         id: "aibe",
         title: "AIBE Exam Registrations",
@@ -203,7 +203,7 @@ export const ClientRegistry: Record<string, ClientConfig> = {
           { field: "name", header: "Name", type: "text", flex: 1.3, minWidth: 150 },
           { field: "mobile", header: "Mobile", type: "phone", flex: 1.1, minWidth: 130 },
           { field: "email", header: "Email", type: "email", flex: 1.3, minWidth: 160 },
-          { field: "amount", header: "Amount (â‚¹)", type: "text", flex: 0.9, minWidth: 110 },
+          { field: "amount", header: "Amount (\u20B9)", type: "text", flex: 0.9, minWidth: 110 },
           { field: "registered_date", header: "Registered On", type: "date", flex: 1, minWidth: 130, required: true },
           { field: "programm_start_date", header: "Program Start", type: "date", flex: 1, minWidth: 130, required: true },
           { field: "programm_end_date", header: "Program End", type: "date", flex: 1, minWidth: 130, required: true },
@@ -229,7 +229,7 @@ export const ClientRegistry: Record<string, ClientConfig> = {
         ],
       },
 
-      // â”€â”€ TABLE 4: PROPERTY LAW â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // -- TABLE 4: PROPERTY LAW ----------------------------------------------
       {
         id: "property-law",
         title: "Property Law Masterclass",
@@ -239,7 +239,7 @@ export const ClientRegistry: Record<string, ClientConfig> = {
           { field: "mobile", header: "Mobile", type: "phone", flex: 1.1, minWidth: 130 },
           { field: "email", header: "Email", type: "email", flex: 1.3, minWidth: 160 },
           { field: "years_of_practice", header: "Years of Practice", type: "text", flex: 1, minWidth: 130 },
-          { field: "amount", header: "Amount (â‚¹)", type: "text", flex: 0.9, minWidth: 110 },
+          { field: "amount", header: "Amount (\u20B9)", type: "text", flex: 0.9, minWidth: 110 },
           { field: "registered_date", header: "Registered On", type: "date", flex: 1, minWidth: 130 },
           { field: "programm_date", header: "Program Date", type: "date", flex: 1, minWidth: 130 },
           {
@@ -269,7 +269,7 @@ export const ClientRegistry: Record<string, ClientConfig> = {
         ],
       },
 
-      // â”€â”€ TABLE 5: FAMILY LAW â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // -- TABLE 5: FAMILY LAW -----------------------------------------------
       {
         id: "family-law",
         title: "Family Law Masterclass",
@@ -279,7 +279,7 @@ export const ClientRegistry: Record<string, ClientConfig> = {
           { field: "mobile", header: "Mobile", type: "phone", flex: 1.1, minWidth: 130 },
           { field: "email", header: "Email", type: "email", flex: 1.3, minWidth: 160 },
           { field: "years_of_practice", header: "Years of Practice", type: "text", flex: 1, minWidth: 130 },
-          { field: "amount", header: "Amount (â‚¹)", type: "text", flex: 0.9, minWidth: 110 },
+          { field: "amount", header: "Amount (\u20B9)", type: "text", flex: 0.9, minWidth: 110 },
           { field: "registered_date", header: "Registered On", type: "date", flex: 1, minWidth: 130 },
           { field: "programm_date", header: "Program Date", type: "date", flex: 1, minWidth: 130 },
           {
