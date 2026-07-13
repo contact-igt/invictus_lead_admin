@@ -455,25 +455,25 @@ const AaravEyeCareSection = () => {
       >
         <SummaryCard
           label="Total Leads"
-          value={summaryUnavailable ? '�' : summary.total_leads}
+          value={summaryUnavailable ? '-' : summary.total_leads}
           icon="hugeicons:user-multiple"
           loading={summaryLoading}
         />
         <SummaryCard
-          label="Today�s Leads"
-          value={summaryUnavailable ? '�' : summary.today_leads}
+          label="Today's Leads"
+          value={summaryUnavailable ? '-' : summary.today_leads}
           icon="hugeicons:calendar-03"
           loading={summaryLoading}
         />
         <SummaryCard
           label="This Month"
-          value={summaryUnavailable ? '�' : summary.this_month_leads}
+          value={summaryUnavailable ? '-' : summary.this_month_leads}
           icon="hugeicons:calendar-04"
           loading={summaryLoading}
         />
         <SummaryCard
           label="Top Service"
-          value={summaryUnavailable ? '�' : summary.top_service || 'No data'}
+          value={summaryUnavailable ? '-' : summary.top_service || 'No data'}
           helperText={
             summaryUnavailable
               ? undefined

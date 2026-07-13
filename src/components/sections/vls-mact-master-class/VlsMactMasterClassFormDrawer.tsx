@@ -1,3 +1,5 @@
+import dayjs, { Dayjs } from 'dayjs';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { useFormik } from 'formik';
 import {
   Box,
@@ -56,11 +58,17 @@ const VlsMactMasterClassFormDrawer = ({
           name: registration.name ?? '',
           mobile: registration.mobile ?? '',
           email: registration.email ?? '',
-          amount: registration.amount === null || registration.amount === undefined ? '' : String(registration.amount),
+          amount:
+            registration.amount === null || registration.amount === undefined
+              ? ''
+              : String(registration.amount),
           registered_date: toDateInput(registration.registered_date),
           programm_date: toDateInput(registration.programm_date),
           payment_status: registration.payment_status ?? '',
-          captured: registration.captured === null || registration.captured === undefined ? '' : String(registration.captured) as 'true' | 'false',
+          captured:
+            registration.captured === null || registration.captured === undefined
+              ? ''
+              : (String(registration.captured) as 'true' | 'false'),
           page_name: registration.page_name ?? '',
           ip_address: registration.ip_address ?? '',
           utm_source: registration.utm_source ?? '',
@@ -97,8 +105,37 @@ const VlsMactMasterClassFormDrawer = ({
         error={formik.touched[name] && Boolean(formik.errors[name])}
         helperText={formik.touched[name] ? formik.errors[name] : undefined}
         disabled={isLoading}
-        InputLabelProps={type === 'date' ? { shrink: true } : undefined}
-        inputProps={{ maxLength: name === 'mobile' ? 20 : undefined, step: name === 'amount' ? '0.01' : undefined }}
+        inputProps={{
+          maxLength: name === 'mobile' ? 20 : undefined,
+          step: name === 'amount' ? '0.01' : undefined,
+        }}
+      />
+    </Grid>
+  );
+
+  const renderDateField = (name: 'registered_date' | 'programm_date', label: string) => (
+    <Grid item xs={12} sm={6}>
+      <DatePicker
+        label={label}
+        value={formik.values[name] ? dayjs(formik.values[name]) : null}
+        onChange={(value: Dayjs | null) => {
+          void formik.setFieldValue(name, value?.isValid() ? value.format('YYYY-MM-DD') : '');
+        }}
+        onClose={() => {
+          void formik.setFieldTouched(name, true, true);
+        }}
+        disabled={isLoading}
+        slotProps={{
+          textField: {
+            fullWidth: true,
+            onBlur: formik.handleBlur,
+            error: formik.touched[name] && Boolean(formik.errors[name]),
+            helperText: formik.touched[name] ? formik.errors[name] : undefined,
+          },
+          actionBar: {
+            actions: ['clear'],
+          },
+        }}
       />
     </Grid>
   );
@@ -108,20 +145,30 @@ const VlsMactMasterClassFormDrawer = ({
       <Typography variant="caption" color="text.secondary" fontWeight={700}>
         {label}
       </Typography>
-      <Typography variant="body1" mt={0.5} sx={{ fontFamily: monospace ? 'monospace' : 'inherit', overflowWrap: 'anywhere' }}>
+      <Typography
+        variant="body1"
+        mt={0.5}
+        sx={{ fontFamily: monospace ? 'monospace' : 'inherit', overflowWrap: 'anywhere' }}
+      >
         {value || '-'}
       </Typography>
     </Box>
   );
 
-  const title = isView ? 'MACT Master Class Registration' : isEdit ? 'Edit MACT Registration' : 'Add MACT Registration';
+  const title = isView
+    ? 'MACT Master Class Registration'
+    : isEdit
+      ? 'Edit MACT Registration'
+      : 'Add MACT Registration';
 
   return (
     <Drawer
       anchor="right"
       open={open}
       onClose={closeDrawer}
-      PaperProps={{ sx: { width: { xs: '100vw', sm: 620 }, maxWidth: '100vw', bgcolor: 'background.paper' } }}
+      PaperProps={{
+        sx: { width: { xs: '100vw', sm: 620 }, maxWidth: '100vw', bgcolor: 'background.paper' },
+      }}
     >
       <Box
         component={isView ? 'div' : 'form'}
@@ -132,9 +179,15 @@ const VlsMactMasterClassFormDrawer = ({
         <Box sx={{ px: { xs: 2, sm: 3 }, py: 2.5 }}>
           <Stack direction="row" alignItems="flex-start" justifyContent="space-between" spacing={2}>
             <Box>
-              <Typography variant="h5" fontWeight={750}>{title}</Typography>
+              <Typography variant="h5" fontWeight={750}>
+                {title}
+              </Typography>
               <Typography variant="body2" color="text.secondary" mt={0.5}>
-                {isView ? 'Read-only registration details' : isEdit ? 'Update the registration information below' : 'Create a new MACT Master Class registration'}
+                {isView
+                  ? 'Read-only registration details'
+                  : isEdit
+                    ? 'Update the registration information below'
+                    : 'Create a new MACT Master Class registration'}
               </Typography>
             </Box>
             <IconButton onClick={closeDrawer} disabled={isLoading} aria-label="Close drawer">
@@ -148,7 +201,9 @@ const VlsMactMasterClassFormDrawer = ({
         <Box sx={{ flex: 1, overflowY: 'auto', px: { xs: 2, sm: 3 }, py: 3 }}>
           {isView ? (
             <Stack spacing={3}>
-              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 3 }}>
+              <Box
+                sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 3 }}
+              >
                 {viewItem('Name', registration?.name)}
                 {viewItem('Mobile', registration?.mobile)}
                 {viewItem('Email', registration?.email)}
@@ -162,7 +217,9 @@ const VlsMactMasterClassFormDrawer = ({
                 {viewItem('UTM Source', registration?.utm_source)}
               </Box>
               <Divider />
-              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 3 }}>
+              <Box
+                sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 3 }}
+              >
                 {viewItem('Created At', formatVlsMactDateTime(registration?.created_at))}
                 {viewItem('Updated At', formatVlsMactDateTime(registration?.updated_at))}
               </Box>
@@ -173,8 +230,8 @@ const VlsMactMasterClassFormDrawer = ({
               {renderTextField('mobile', 'Mobile', 'tel', true)}
               {renderTextField('email', 'Email', 'email')}
               {renderTextField('amount', 'Amount', 'number')}
-              {renderTextField('registered_date', 'Registered Date', 'date')}
-              {renderTextField('programm_date', 'Programme Date', 'date')}
+              {renderDateField('registered_date', 'Registered Date')}
+              {renderDateField('programm_date', 'Programme Date')}
               <Grid item xs={12} sm={6}>
                 <TextField
                   select
@@ -186,12 +243,18 @@ const VlsMactMasterClassFormDrawer = ({
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
                   error={formik.touched.payment_status && Boolean(formik.errors.payment_status)}
-                  helperText={formik.touched.payment_status ? formik.errors.payment_status : undefined}
+                  helperText={
+                    formik.touched.payment_status ? formik.errors.payment_status : undefined
+                  }
                   disabled={isLoading}
                 >
-                  <MenuItem value=""><em>Select payment status</em></MenuItem>
+                  <MenuItem value="">
+                    <em>Select payment status</em>
+                  </MenuItem>
                   {VLS_MACT_PAYMENT_STATUS_OPTIONS.map((status) => (
-                    <MenuItem key={status} value={status}>{status}</MenuItem>
+                    <MenuItem key={status} value={status}>
+                      {status}
+                    </MenuItem>
                   ))}
                 </TextField>
               </Grid>
@@ -209,7 +272,9 @@ const VlsMactMasterClassFormDrawer = ({
                   helperText={formik.touched.captured ? formik.errors.captured : undefined}
                   disabled={isLoading}
                 >
-                  <MenuItem value=""><em>Select captured state</em></MenuItem>
+                  <MenuItem value="">
+                    <em>Select captured state</em>
+                  </MenuItem>
                   <MenuItem value="true">Yes</MenuItem>
                   <MenuItem value="false">No</MenuItem>
                 </TextField>
@@ -224,12 +289,21 @@ const VlsMactMasterClassFormDrawer = ({
         <Divider />
 
         <Box sx={{ px: { xs: 2, sm: 3 }, py: 2.5 }}>
-          <Stack direction={{ xs: 'column-reverse', sm: 'row' }} justifyContent="flex-end" spacing={1.5}>
+          <Stack
+            direction={{ xs: 'column-reverse', sm: 'row' }}
+            justifyContent="flex-end"
+            spacing={1.5}
+          >
             <Button variant="outlined" color="inherit" onClick={closeDrawer} disabled={isLoading}>
               {isView ? 'Close' : 'Cancel'}
             </Button>
             {!isView && (
-              <Button type="submit" variant="contained" disabled={isLoading || !formik.isValid || !formik.dirty} startIcon={isLoading ? <IconifyIcon icon="eos-icons:loading" /> : undefined}>
+              <Button
+                type="submit"
+                variant="contained"
+                disabled={isLoading || !formik.isValid || !formik.dirty}
+                startIcon={isLoading ? <IconifyIcon icon="eos-icons:loading" /> : undefined}
+              >
                 {isLoading ? 'Saving...' : isEdit ? 'Save Changes' : 'Create Registration'}
               </Button>
             )}

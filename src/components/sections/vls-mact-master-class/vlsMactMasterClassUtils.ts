@@ -1,6 +1,9 @@
 import axios, { AxiosError } from 'axios';
 import dayjs from 'dayjs';
-import type { CreateVlsMactMasterClassPayload, VlsMactMasterClassListParams } from 'types/vlsMactMasterClass';
+import type {
+  CreateVlsMactMasterClassPayload,
+  VlsMactMasterClassListParams,
+} from 'types/vlsMactMasterClass';
 import type { VlsMactMasterClassFormValues } from 'schemas/vlsMactMasterClassSchema';
 
 interface BackendErrorPayload {
@@ -9,7 +12,12 @@ interface BackendErrorPayload {
 }
 
 export const VLS_MACT_COLOR = '#1F6B40';
-export const VLS_MACT_PAYMENT_STATUS_OPTIONS = ['paid', 'attempted', 'failed', 'cancelled'] as const;
+export const VLS_MACT_PAYMENT_STATUS_OPTIONS = [
+  'paid',
+  'attempted',
+  'failed',
+  'cancelled',
+] as const;
 
 export const formatVlsMactDateTime = (value?: string | null): string => {
   if (!value) return '-';
@@ -27,7 +35,7 @@ export const formatVlsMactAmount = (value?: string | number | null): string => {
   if (value === null || value === undefined || value === '') return '-';
   const numeric = Number(value);
   if (Number.isNaN(numeric)) return String(value);
-  return `?${numeric.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return `\u20B9${numeric.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
 export const formatCaptured = (value?: boolean | null): string => {
@@ -40,7 +48,9 @@ const toOptionalText = (value: string): string | null => {
   return trimmed || null;
 };
 
-export const cleanVlsMactPayload = (values: VlsMactMasterClassFormValues): CreateVlsMactMasterClassPayload => ({
+export const cleanVlsMactPayload = (
+  values: VlsMactMasterClassFormValues,
+): CreateVlsMactMasterClassPayload => ({
   name: values.name.trim(),
   mobile: values.mobile.trim(),
   email: toOptionalText(values.email),
@@ -58,7 +68,7 @@ export const hasVlsMactFilters = (params: VlsMactMasterClassListParams): boolean
   Boolean(
     params.search ||
       params.payment_status ||
-      params.captured !== undefined && params.captured !== '' ||
+      (params.captured !== undefined && params.captured !== '') ||
       params.page_name ||
       params.utm_source ||
       params.registered_start_date ||
@@ -98,7 +108,10 @@ export const getVlsMactExportErrorMessage = (error: unknown): string => {
   return getVlsMactErrorMessage(error, 'Unable to export MACT Master Class registrations.');
 };
 
-export const extractDownloadFilename = (contentDisposition?: string, fallback = 'download'): string => {
+export const extractDownloadFilename = (
+  contentDisposition?: string,
+  fallback = 'download',
+): string => {
   if (!contentDisposition) return fallback;
   const utfMatch = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i);
   if (utfMatch?.[1]) return decodeURIComponent(utfMatch[1]);
@@ -111,4 +124,3 @@ export const getVlsMactExportFallbackName = (format: 'csv' | 'pdf'): string => {
   const date = dayjs().format('YYYY-MM-DD');
   return `vls-mact-master-class-registrations-${date}.${format}`;
 };
-
