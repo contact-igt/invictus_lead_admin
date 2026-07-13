@@ -166,7 +166,7 @@ const VlsMactMasterClassTable = ({
   }
 
   return (
-    <Box sx={{ width: '100%', maxWidth: '100%', minWidth: 0, overflowX: 'auto' }}>
+    <Box sx={{ width: '100%', maxWidth: '100%', minWidth: 0, overflow: 'hidden' }}>
       <DataGrid
         autoHeight
         rows={tableRows}
@@ -196,3 +196,4 @@ const VlsMactMasterClassTable = ({
 };
 
 export default VlsMactMasterClassTable;
+
