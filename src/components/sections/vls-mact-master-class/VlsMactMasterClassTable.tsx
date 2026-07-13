@@ -166,7 +166,7 @@ const VlsMactMasterClassTable = ({
   }
 
   return (
-    <Box sx={{ width: '100%', maxWidth: '100%', minWidth: 0, overflow: 'hidden' }}>
+    <Box sx={{ width: '100%', maxWidth: '100%', minWidth: 0, overflowX: 'auto' }}>
       <DataGrid
         autoHeight
         rows={tableRows}
@@ -182,13 +182,19 @@ const VlsMactMasterClassTable = ({
         rowHeight={62}
         sx={{
           width: '100%',
-          minWidth: 1480,
+          minWidth: 1900,
           border: 0,
           minHeight: 360,
           '& .MuiDataGrid-columnHeaders': { bgcolor: 'action.hover' },
           '& .MuiDataGrid-columnHeaderTitle': { fontWeight: 700 },
           '& .MuiDataGrid-cell': { display: 'flex', alignItems: 'center' },
           '& .MuiDataGrid-cell:focus, & .MuiDataGrid-columnHeader:focus': { outline: 'none' },
+          '& .MuiDataGrid-main, & .MuiDataGrid-virtualScroller': {
+            overflowX: 'hidden',
+          },
+          '& .MuiDataGrid-scrollbar--horizontal': {
+            display: 'none',
+          },
         }}
       />
     </Box>
@@ -196,4 +202,6 @@ const VlsMactMasterClassTable = ({
 };
 
 export default VlsMactMasterClassTable;
+
+
 
