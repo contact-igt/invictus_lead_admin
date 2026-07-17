@@ -13,9 +13,18 @@ interface BackendErrorPayload {
 export const RIO_COLOR = '#1F6B40';
 
 export const RIO_SERVICES = [
-  'High-Risk Pregnancy Care', 'Fetal Medicine', 'NICU', 'PICU',
-  'Paediatric Emergency Care', 'General Paediatrics', 'Vaccination Services',
-  'Human Milk Bank', 'Maternity Care', 'Fertility & IVF',
+  "High-Risk Pregnancy Care",
+  "Fetal Medicine",
+  "NICU",
+  "PICU",
+  "Paediatric Emergency Care",
+  "General Paediatrics",
+  "Paediatric Super Specialities",
+  "Vaccination Services",
+  "Human Milk Bank",
+  "Maternity Care",
+  "Fertility & IVF",
+  "General Enquiry",
 ] as const;
 
 export const RIO_BRANCHES = [
@@ -56,11 +65,11 @@ export const cleanRioPayload = (values: {
 export const hasRioFilters = (params: RioListParams): boolean =>
   Boolean(
     params.search ||
-      params.service ||
-      params.branch ||
-      params.utm_source ||
-      params.start_date ||
-      params.end_date,
+    params.service ||
+    params.branch ||
+    params.utm_source ||
+    params.start_date ||
+    params.end_date,
   );
 
 export const getRioErrorStatus = (error: unknown): number | undefined => {
