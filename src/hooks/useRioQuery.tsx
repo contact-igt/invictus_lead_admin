@@ -1,4 +1,4 @@
-﻿import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { useSnackbar } from 'notistack';
 import { useAuth } from 'redux/selectors/auth/authSelector';
 import {
@@ -33,7 +33,8 @@ export const rioKeys = {
     [...rioKeys.lists(), clientKey] as const,
   list: (clientKey: string | undefined, params: RioListParams) =>
     [...rioKeys.clientLists(clientKey), params] as const,
-  summary: (clientKey: string | undefined) => [...rioKeys.all, 'summary', clientKey] as const,
+  summary: (clientKey: string | undefined, params?: RioExportParams) =>
+    [...rioKeys.all, 'summary', clientKey, params] as const,
   details: () => [...rioKeys.all, 'detail'] as const,
   detail: (clientKey: string | undefined, id: number) =>
     [...rioKeys.details(), clientKey, id] as const,
@@ -71,13 +72,14 @@ export const useRioLeads = (
 
 export const useRioSummary = (
   clientKey: string | undefined,
+  params: RioExportParams = {},
   enabled = true,
 ) => {
   const superAdminClientKey = useSuperAdminClientKey(clientKey);
 
   return useQuery<RioSummaryResponse, unknown>(
-    rioKeys.summary(clientKey),
-    () => getRioSummary(superAdminClientKey),
+    rioKeys.summary(clientKey, params),
+    () => getRioSummary(params, superAdminClientKey),
     {
       enabled,
       refetchOnWindowFocus: false,

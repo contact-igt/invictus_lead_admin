@@ -13,7 +13,6 @@ import {
 } from '@mui/material';
 import { DataGrid, GridColDef, GridRowSelectionModel } from '@mui/x-data-grid';
 import { Trash2 } from 'lucide-react';
-import dayjs from 'dayjs';
 import useColorMode from 'hooks/useColorMode';
 import { useAuth } from 'redux/selectors/auth/authSelector';
 import {
@@ -26,6 +25,7 @@ import DataGridFooter from 'components/common/DataGridFooter';
 import { PixelEyeCard, getPixelEyeButtonSx, PIXELEYE_COLORS } from './pixelEyeUi';
 import PixelEyeField from './PixelEyeField';
 import PixelEyeDatePicker from './PixelEyeDatePicker';
+import { formatAppDateTime, normalizeAppDate } from 'utils/dateTime';
 
 interface NotificationTrackerProps {
   clientKey?: string;
@@ -48,16 +48,7 @@ const SCHEDULE_TYPE_LABELS: Record<string, string> = {
   MANUAL: 'Manual Follow-up',
 };
 
-const normalizeDateForCompare = (value?: string | null): string => {
-  const text = String(value || '').trim();
-  if (!text) return '';
-
-  const directDate = text.match(/^\d{4}-\d{2}-\d{2}/);
-  if (directDate) return directDate[0];
-
-  const parsed = dayjs(text);
-  return parsed.isValid() ? parsed.format('YYYY-MM-DD') : '';
-};
+const normalizeDateForCompare = (value?: string | null): string => normalizeAppDate(value);
 
 const getNotificationFilterDate = (notification: any): string =>
   normalizeDateForCompare(notification.scheduled_at) ||
@@ -298,7 +289,7 @@ const NotificationTracker = ({ clientKey, searchText }: NotificationTrackerProps
       renderCell: (p) =>
         p.value ? (
           <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>
-            {dayjs(p.value).format('DD MMM, HH:mm')}
+            {formatAppDateTime(p.value, { year: undefined, hour12: false })}
           </Typography>
         ) : (
           <Typography variant="body2" color="text.disabled">
@@ -316,7 +307,7 @@ const NotificationTracker = ({ clientKey, searchText }: NotificationTrackerProps
       renderCell: (p) =>
         p.value ? (
           <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>
-            {dayjs(p.value).format('DD MMM, HH:mm')}
+            {formatAppDateTime(p.value, { year: undefined, hour12: false })}
           </Typography>
         ) : (
           <Typography variant="body2" color="text.disabled">

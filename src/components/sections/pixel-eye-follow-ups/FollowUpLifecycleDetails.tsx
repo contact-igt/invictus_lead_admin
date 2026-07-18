@@ -1,6 +1,6 @@
 import { Box, Typography } from '@mui/material';
-import dayjs from 'dayjs';
 import { normalizePixelEyeStatus } from '../pixel-eye/pixelEyeStatuses';
+import { formatAppDate, formatAppDateTime } from 'utils/dateTime';
 
 export interface FollowUpHistoryRow {
     old_follow_up_date?: string | null;
@@ -18,16 +18,6 @@ type ResolvedDateValue = {
     value: string | null;
     isDateOnly: boolean;
 };
-
-const IST_DATE_TIME_FORMATTER = new Intl.DateTimeFormat('en-GB', {
-    timeZone: 'Asia/Kolkata',
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true,
-});
 
 const isDateOnlyValue = (value: unknown): boolean =>
     typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value.trim());
@@ -54,34 +44,12 @@ const formatStatusValue = (value: unknown, empty = 'empty'): string => {
 };
 
 export const formatISTDateTime = (value?: string | null): string => {
-    if (!value) return '---';
-
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return String(value);
-
-    const parts = IST_DATE_TIME_FORMATTER.formatToParts(date);
-    const getPart = (type: Intl.DateTimeFormatPartTypes) =>
-        parts.find((part) => part.type === type)?.value || '';
-
-    const day = getPart('day');
-    const month = getPart('month');
-    const year = getPart('year');
-    const hour = getPart('hour');
-    const minute = getPart('minute');
-    const dayPeriod = getPart('dayPeriod').toUpperCase();
-
-    if (!day || !month || !year || !hour || !minute) {
-        return String(value);
-    }
-
-    return `${day} ${month} ${year}, ${hour}:${minute} ${dayPeriod} IST`;
+    const formatted = formatAppDateTime(value);
+    return formatted ? `${formatted} IST` : value ? String(value) : '---';
 };
 
-export const formatISTDate = (value?: string | null): string => {
-    if (!value) return '---';
-    const parsed = dayjs(value);
-    return parsed.isValid() ? parsed.format('DD MMM YYYY') : String(value);
-};
+export const formatISTDate = (value?: string | null): string =>
+    formatAppDate(value) || (value ? String(value) : '---');
 
 export const normalizeHistoryMetadata = (metadata: unknown) => {
     if (metadata === null || metadata === undefined) return null;

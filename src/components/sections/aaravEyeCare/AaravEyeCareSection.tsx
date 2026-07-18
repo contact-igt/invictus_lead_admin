@@ -179,7 +179,7 @@ const AaravEyeCareSection = () => {
   };
 
   const leadsQuery = useAaravEyeCareLeads(clientKey, params, isAaravModule);
-  const summaryQuery = useAaravEyeCareSummary(clientKey, isAaravModule);
+  const summaryQuery = useAaravEyeCareSummary(clientKey, params, isAaravModule);
   const detailQuery = useAaravEyeCareLead(
     clientKey,
     selectedLead?.id ?? null,
@@ -568,6 +568,7 @@ const AaravEyeCareSection = () => {
             value={endDate ? dayjs(endDate) : null}
             onChange={updateDate(setEndDate)}
             minDate={startDate ? dayjs(startDate) : undefined}
+            disabled={!startDate}
             slotProps={{ textField: { size: 'small', fullWidth: true, sx: { minWidth: 0 } } }}
           />
           <Button

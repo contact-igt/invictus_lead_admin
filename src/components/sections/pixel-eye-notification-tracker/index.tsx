@@ -557,6 +557,7 @@ const NotificationTracker: React.FC<NotificationTrackerProps> = ({
                     label="To"
                     value={dateTo}
                     minDate={dateFrom || undefined}
+                    disabled={!dateFrom}
                     fullWidth
                     onChange={(val) => setDateTo(val)}
                   />

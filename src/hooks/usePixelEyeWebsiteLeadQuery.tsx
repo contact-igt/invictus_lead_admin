@@ -1,4 +1,4 @@
-﻿import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { useSnackbar } from 'notistack';
 import { useAuth } from 'redux/selectors/auth/authSelector';
 import {
@@ -32,7 +32,8 @@ export const pixelEyeWebsiteLeadKeys = {
   clientLists: (clientKey: string | undefined) => [...pixelEyeWebsiteLeadKeys.lists(), clientKey] as const,
   list: (clientKey: string | undefined, params: PixelEyeWebsiteLeadListParams) =>
     [...pixelEyeWebsiteLeadKeys.clientLists(clientKey), params] as const,
-  summary: (clientKey: string | undefined) => [...pixelEyeWebsiteLeadKeys.all, 'summary', clientKey] as const,
+  summary: (clientKey: string | undefined, params?: PixelEyeWebsiteLeadExportParams) =>
+    [...pixelEyeWebsiteLeadKeys.all, 'summary', clientKey, params] as const,
   details: () => [...pixelEyeWebsiteLeadKeys.all, 'detail'] as const,
   detail: (clientKey: string | undefined, id: number) =>
     [...pixelEyeWebsiteLeadKeys.details(), clientKey, id] as const,
@@ -70,13 +71,14 @@ export const usePixelEyeWebsiteLeads = (
 
 export const usePixelEyeWebsiteLeadSummary = (
   clientKey: string | undefined,
+  params: PixelEyeWebsiteLeadExportParams = {},
   enabled = true,
 ) => {
   const superAdminClientKey = useSuperAdminClientKey(clientKey);
 
   return useQuery<PixelEyeWebsiteLeadSummaryResponse, unknown>(
-    pixelEyeWebsiteLeadKeys.summary(clientKey),
-    () => getPixelEyeWebsiteLeadSummary(superAdminClientKey),
+    pixelEyeWebsiteLeadKeys.summary(clientKey, params),
+    () => getPixelEyeWebsiteLeadSummary(params, superAdminClientKey),
     {
       enabled,
       refetchOnWindowFocus: false,

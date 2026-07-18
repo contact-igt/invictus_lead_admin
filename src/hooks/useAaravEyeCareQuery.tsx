@@ -17,6 +17,7 @@ import type {
   AaravEyeCareDeleteResponse,
   AaravEyeCareLeadResponse,
   AaravEyeCareListParams,
+  AaravEyeCareExportParams,
   AaravEyeCareListResponse,
   AaravEyeCareSummaryResponse,
   CreateAaravEyeCareLeadPayload,
@@ -30,7 +31,8 @@ export const aaravEyeCareKeys = {
     [...aaravEyeCareKeys.lists(), clientKey] as const,
   list: (clientKey: string | undefined, params: AaravEyeCareListParams) =>
     [...aaravEyeCareKeys.clientLists(clientKey), params] as const,
-  summary: (clientKey: string | undefined) => [...aaravEyeCareKeys.all, 'summary', clientKey] as const,
+  summary: (clientKey: string | undefined, params?: AaravEyeCareExportParams) =>
+    [...aaravEyeCareKeys.all, 'summary', clientKey, params] as const,
   details: () => [...aaravEyeCareKeys.all, 'detail'] as const,
   detail: (clientKey: string | undefined, id: number) =>
     [...aaravEyeCareKeys.details(), clientKey, id] as const,
@@ -68,13 +70,14 @@ export const useAaravEyeCareLeads = (
 
 export const useAaravEyeCareSummary = (
   clientKey: string | undefined,
+  params: AaravEyeCareExportParams = {},
   enabled = true,
 ) => {
   const superAdminClientKey = useSuperAdminClientKey(clientKey);
 
   return useQuery<AaravEyeCareSummaryResponse, unknown>(
-    aaravEyeCareKeys.summary(clientKey),
-    () => getAaravEyeCareSummary(superAdminClientKey),
+    aaravEyeCareKeys.summary(clientKey, params),
+    () => getAaravEyeCareSummary(params, superAdminClientKey),
     {
       enabled,
       refetchOnWindowFocus: false,

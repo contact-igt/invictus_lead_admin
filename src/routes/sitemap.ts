@@ -62,7 +62,7 @@ const generateDynamicClientMenus = (): MenuItem[] => {
       path: `/pages/d/${clientKey}/${table.id}`,
     }));
 
-    const isDedicatedLeadModule = ['aarav_eye_care', 'antardrashti_netralaya', 'rio'].includes(clientKey);
+    const isDedicatedLeadModule = ['aarav_eye_care', 'antardrashti_netralaya', 'rio', 'shanti_eye_tech', 'phoenix_fitness'].includes(clientKey);
     const items: SubMenuItem[] = isDedicatedLeadModule ? tableItems : [overviewItem];
     if (!isDedicatedLeadModule) {
       items.push(...tableItems);

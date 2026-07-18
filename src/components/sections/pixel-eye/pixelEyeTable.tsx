@@ -23,6 +23,7 @@ import IconifyIcon from 'components/base/IconifyIcon';
 import useColorMode from 'hooks/useColorMode';
 import PixelEyeField from './PixelEyeField';
 import DataGridFooter from 'components/common/DataGridFooter';
+import { normalizeAppDate } from 'utils/dateTime';
 
 const DAY_FIELDS = ['day_1', 'day_2', 'day_3', 'day_4', 'day_5'] as const;
 
@@ -361,25 +362,11 @@ const DayCell = ({
 };
 
 const normalizeDateValue = (value?: string) => {
-  if (!value) return '';
-  const text = String(value).trim();
-
-  const lowered = text.toLowerCase();
-  if (['---', '-', 'na', 'n/a', 'null', 'undefined'].includes(lowered)) {
+  const text = String(value || '').trim();
+  if (!text || ['---', '-', 'na', 'n/a', 'null', 'undefined'].includes(text.toLowerCase())) {
     return '';
   }
-
-  const short = text.length >= 10 ? text.slice(0, 10) : text;
-  if (/^\d{4}-\d{2}-\d{2}$/.test(short)) {
-    return short;
-  }
-
-  const parsed = new Date(text);
-  if (!Number.isNaN(parsed.getTime())) {
-    return parsed.toISOString().slice(0, 10);
-  }
-
-  return '';
+  return normalizeAppDate(text);
 };
 
 const FollowUpDateCell = ({

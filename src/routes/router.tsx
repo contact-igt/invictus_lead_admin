@@ -27,6 +27,8 @@ const SettingsPage = lazy(() => import('pages/settings'));
 const AaravEyeCarePage = lazy(() => import('pages/aaravEyeCare'));
 const AntardrashtiNetralayaPage = lazy(() => import('pages/antardrashtiNetralaya'));
 const RioPage = lazy(() => import('pages/rio'));
+const ShantiEyeTechPage = lazy(() => import('pages/shantiEyeTech'));
+const PhoenixFitnessPage = lazy(() => import('pages/phoenixFitness'));
 const VlsMactMasterClassPage = lazy(() => import('pages/vls/mact-master-class'));
 
 const router = createBrowserRouter(
@@ -106,6 +108,14 @@ const router = createBrowserRouter(
             {
               path: paths.rio(':clientKey'),
               element: <RioPage />,
+            },
+            {
+              path: paths.shantiEyeTech(':clientKey'),
+              element: <ShantiEyeTechPage />,
+            },
+            {
+              path: paths.phoenixFitness(':clientKey'),
+              element: <PhoenixFitnessPage />,
             },
             {
               path: paths.vlsMactMasterClass,

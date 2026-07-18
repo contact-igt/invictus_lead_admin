@@ -5,6 +5,7 @@ import useColorMode from 'hooks/useColorMode';
 import { DashboardFilters } from '../types';
 import PixelEyeDatePicker from 'components/sections/pixel-eye/PixelEyeDatePicker';
 import PixelEyeField from 'components/sections/pixel-eye/PixelEyeField';
+import { APP_TIME_ZONE, addCalendarDays, getAppDateKey, parseAppDateTime } from 'utils/dateTime';
 
 interface FilterBarProps {
   agents: string[];
@@ -21,17 +22,11 @@ type QuickSelectOption =
   | 'thisWeek'
   | 'thisMonth'
   | 'allTime';
-const toLocalDateString = (date: Date): string => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-};
-
 const formatFilterDate = (value: string, options: Intl.DateTimeFormatOptions): string => {
-  const [year, month, day] = value.split('-').map(Number);
-  const localDate = new Date(year, (month || 1) - 1, day || 1);
-  return localDate.toLocaleDateString('en-IN', options);
+  const date = parseAppDateTime(value);
+  return date
+    ? new Intl.DateTimeFormat('en-IN', { timeZone: APP_TIME_ZONE, ...options }).format(date)
+    : value;
 };
 
 const FilterBar: React.FC<FilterBarProps> = ({ agents, filters, onApplyFilters, onReset }) => {
@@ -48,44 +43,32 @@ const FilterBar: React.FC<FilterBarProps> = ({ agents, filters, onApplyFilters, 
   }, [isOpen, filters]);
 
   const getDateRange = (option: QuickSelectOption): { dateFrom: string; dateTo: string } => {
-    const today = new Date();
-    const todayStr = toLocalDateString(today);
+    const todayStr = getAppDateKey();
 
     switch (option) {
       case 'today':
         return { dateFrom: todayStr, dateTo: todayStr };
       case 'yesterday': {
-        const yesterday = new Date(today);
-        yesterday.setDate(yesterday.getDate() - 1);
-        const yesterdayStr = toLocalDateString(yesterday);
-        return { dateFrom: yesterdayStr, dateTo: yesterdayStr };
+        const yesterday = addCalendarDays(todayStr, -1);
+        return { dateFrom: yesterday, dateTo: yesterday };
       }
-      case 'last7': {
-        const last7 = new Date(today);
-        last7.setDate(last7.getDate() - 6);
-        return { dateFrom: toLocalDateString(last7), dateTo: todayStr };
-      }
-      case 'last30': {
-        const last30 = new Date(today);
-        last30.setDate(last30.getDate() - 29);
-        return { dateFrom: toLocalDateString(last30), dateTo: todayStr };
-      }
+      case 'last7':
+        return { dateFrom: addCalendarDays(todayStr, -6), dateTo: todayStr };
+      case 'last30':
+        return { dateFrom: addCalendarDays(todayStr, -29), dateTo: todayStr };
       case 'thisWeek': {
-        const thisWeekStart = new Date(today);
-        thisWeekStart.setDate(thisWeekStart.getDate() - thisWeekStart.getDay());
-        const thisWeekEnd = new Date(thisWeekStart);
-        thisWeekEnd.setDate(thisWeekEnd.getDate() + 6);
-        return {
-          dateFrom: toLocalDateString(thisWeekStart),
-          dateTo: toLocalDateString(thisWeekEnd),
-        };
+        const [year, month, day] = todayStr.split('-').map(Number);
+        const dayOfWeek = new Date(Date.UTC(year, month - 1, day)).getUTCDay();
+        const weekStart = addCalendarDays(todayStr, -dayOfWeek);
+        return { dateFrom: weekStart, dateTo: addCalendarDays(weekStart, 6) };
       }
       case 'thisMonth': {
-        const thisMonthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-        const thisMonthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        const [year, month] = todayStr.split('-').map(Number);
+        const monthStart = `${year}-${String(month).padStart(2, '0')}-01`;
+        const monthEndDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
         return {
-          dateFrom: toLocalDateString(thisMonthStart),
-          dateTo: toLocalDateString(thisMonthEnd),
+          dateFrom: monthStart,
+          dateTo: `${year}-${String(month).padStart(2, '0')}-${String(monthEndDay).padStart(2, '0')}`,
         };
       }
       case 'allTime':

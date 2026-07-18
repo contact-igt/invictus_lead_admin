@@ -1,4 +1,4 @@
-﻿export type FieldType = 'text' | 'email' | 'phone' | 'date' | 'time' | 'select' | 'status_chip' | 'textarea';
+export type FieldType = 'text' | 'email' | 'phone' | 'date' | 'time' | 'select' | 'status_chip' | 'textarea';
 
 export interface ColumnConfig {
   field: string;
@@ -105,6 +105,43 @@ export const ClientRegistry: Record<string, ClientConfig> = {
       { field: "branch", header: "Branch", type: "select" },
       { field: "message", header: "Message", type: "textarea" },
     ] }],
+  },
+  shanti_eye_tech: {
+    appName: 'Shanti Eye Tech',
+    theme: { primaryColor: '#1F6B40' },
+    tables: [
+      {
+        id: 'shanti-eye-tech',
+        title: 'Shanti Eye Tech Leads',
+        endpoint: '/shanti-eye-tech',
+        columns: [
+          { field: 'name', header: 'Name', type: 'text', required: true, minWidth: 180, flex: 1.3 },
+          { field: 'mobile_number', header: 'Mobile Number', type: 'phone', required: true, minWidth: 150, flex: 1 },
+          { field: 'service', header: 'Service', type: 'text', minWidth: 160, flex: 1 },
+          { field: 'message', header: 'Message', type: 'textarea', minWidth: 220, flex: 1.4 },
+          { field: 'ip_address', header: 'IP Address', type: 'text', minWidth: 145, flex: 1 },
+          { field: 'utm_source', header: 'UTM Source', type: 'text', minWidth: 130, flex: 0.9 },
+        ],
+      },
+    ],
+  },
+  phoenix_fitness: {
+    appName: 'Phoenix Fitness',
+    theme: { primaryColor: '#1F6B40' },
+    tables: [
+      {
+        id: 'phoenix-fitness',
+        title: 'Phoenix Fitness Leads',
+        endpoint: '/phoenix-fitness',
+        columns: [
+          { field: 'name', header: 'Name', type: 'text', required: true, minWidth: 180, flex: 1.3 },
+          { field: 'mobile_number', header: 'Mobile Number', type: 'phone', required: true, minWidth: 150, flex: 1 },
+          { field: 'branch', header: 'Branch', type: 'select', minWidth: 160, flex: 1 },
+          { field: 'ip_address', header: 'IP Address', type: 'text', minWidth: 145, flex: 1 },
+          { field: 'utm_source', header: 'UTM Source', type: 'text', minWidth: 130, flex: 0.9 },
+        ],
+      },
+    ],
   },
   antardrashti_netralaya: {
     appName: "Antardrashti Netralaya",

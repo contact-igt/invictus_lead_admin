@@ -48,6 +48,7 @@ export const getVlsMactMasterClassRegistrations = async (
   )) as VlsMactMasterClassListResponse;
 
 export const getVlsMactMasterClassSummary = async (
+  params: VlsMactMasterClassExportParams = {},
   superAdminClientKey?: string,
 ): Promise<VlsMactMasterClassSummaryResponse> =>
   (await _axios(
@@ -55,7 +56,7 @@ export const getVlsMactMasterClassSummary = async (
     '/vls-mact-master-class/summary',
     undefined,
     'application/json',
-    withClientContext({}, superAdminClientKey),
+    withClientContext(cleanListParams(params), superAdminClientKey),
   )) as VlsMactMasterClassSummaryResponse;
 
 export const exportVlsMactMasterClassRegistrations = async (

@@ -310,6 +310,7 @@ const DynamicSection = ({ config, clientKey }: DynamicSectionProps) => {
               label="To Date"
               type="date"
               value={exportToDate}
+              disabled={!exportFromDate}
               onChange={(event) => setExportToDate(event.target.value)}
               size="small"
               InputLabelProps={{ shrink: true }}
