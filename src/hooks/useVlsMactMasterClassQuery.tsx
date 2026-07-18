@@ -17,6 +17,7 @@ import type {
   CreateVlsMactMasterClassPayload,
   UpdateVlsMactMasterClassPayload,
   VlsMactMasterClassDeleteResponse,
+  VlsMactMasterClassExportParams,
   VlsMactMasterClassListParams,
   VlsMactMasterClassListResponse,
   VlsMactMasterClassResponse,
@@ -29,7 +30,8 @@ export const vlsMactMasterClassKeys = {
   clientLists: (clientKey: string | undefined) => [...vlsMactMasterClassKeys.lists(), clientKey] as const,
   list: (clientKey: string | undefined, params: VlsMactMasterClassListParams) =>
     [...vlsMactMasterClassKeys.clientLists(clientKey), params] as const,
-  summary: (clientKey: string | undefined) => [...vlsMactMasterClassKeys.all, 'summary', clientKey] as const,
+  summary: (clientKey: string | undefined, params?: VlsMactMasterClassExportParams) =>
+    [...vlsMactMasterClassKeys.all, 'summary', clientKey, params] as const,
   details: () => [...vlsMactMasterClassKeys.all, 'detail'] as const,
   detail: (clientKey: string | undefined, id: number) => [...vlsMactMasterClassKeys.details(), clientKey, id] as const,
 };
@@ -58,11 +60,15 @@ export const useVlsMactMasterClassRegistrations = (
   );
 };
 
-export const useVlsMactMasterClassSummary = (clientKey: string | undefined, enabled = true) => {
+export const useVlsMactMasterClassSummary = (
+  clientKey: string | undefined,
+  params: VlsMactMasterClassExportParams = {},
+  enabled = true,
+) => {
   const superAdminClientKey = useSuperAdminClientKey(clientKey);
   return useQuery<VlsMactMasterClassSummaryResponse, unknown>(
-    vlsMactMasterClassKeys.summary(clientKey),
-    () => getVlsMactMasterClassSummary(superAdminClientKey),
+    vlsMactMasterClassKeys.summary(clientKey, params),
+    () => getVlsMactMasterClassSummary(params, superAdminClientKey),
     { enabled, refetchOnWindowFocus: false, retry: shouldRetryRequest },
   );
 };

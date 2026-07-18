@@ -1,4 +1,4 @@
-﻿import {
+import {
   DashboardFilters,
   FollowUpComplianceSummary,
   DashboardMetrics,
@@ -20,6 +20,7 @@ import {
   TWENTY_FOUR_HR_STATUSES,
   normalizePixelEyeStatus,
 } from '../pixel-eye/pixelEyeStatuses';
+import { addCalendarDays, calendarDaysBetween, getAppDateKey, normalizeAppDate } from 'utils/dateTime';
 
 // Status groups are mutually exclusive and mirror backend reminder behavior.
 const CONTACT_EXCLUDED = new Set(
@@ -66,27 +67,8 @@ const INTERESTED_SET = new Set([
 
 const HIGH_PRIORITY_SET = new Set(['Hot Followup'.toLowerCase()]);
 const DAY_FIELDS: Array<keyof LeadRecord> = ['day_1', 'day_2', 'day_3', 'day_4', 'day_5'];
-const IST_TIME_ZONE = 'Asia/Kolkata';
 
-const normalizeDate = (value?: string | null): string => {
-  if (!value) return '';
-
-  const trimmed = value.trim();
-  const directIsoDate = trimmed.match(/^\d{4}-\d{2}-\d{2}/);
-  if (directIsoDate) {
-    return directIsoDate[0];
-  }
-
-  const date = new Date(trimmed);
-  if (!Number.isNaN(date.getTime())) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  }
-
-  return trimmed.slice(0, 10);
-};
+const normalizeDate = (value?: string | null): string => normalizeAppDate(value);
 
 const normalizeText = (value?: string | null): string => (value || '').trim();
 const normalizeStatus = (value?: string | null): string =>
@@ -160,35 +142,12 @@ export const isClosedOrCancelledFollowUpLead = (lead?: LeadRecord | null): boole
   return Boolean(latestOutcome) && CLOSED_OR_CANCELLED_SET.has(latestOutcome);
 };
 
-export const getTodayIsoInIst = (): string => {
-  const parts = new Intl.DateTimeFormat('en-CA', {
-    timeZone: IST_TIME_ZONE,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).formatToParts(new Date());
-
-  const year = parts.find((part) => part.type === 'year')?.value ?? '0000';
-  const month = parts.find((part) => part.type === 'month')?.value ?? '01';
-  const day = parts.find((part) => part.type === 'day')?.value ?? '01';
-  return `${year}-${month}-${day}`;
-};
-
-const startOfLocalDay = (isoDate: string): Date => {
-  const date = new Date(isoDate);
-  date.setHours(0, 0, 0, 0);
-  return date;
-};
+export const getTodayIsoInIst = (): string => getAppDateKey();
 
 const endOfWeekIso = (isoDate: string): string => {
-  const date = startOfLocalDay(isoDate);
-  const day = date.getDay();
-  const deltaToSunday = 7 - day;
-  date.setDate(date.getDate() + deltaToSunday);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const dayOfMonth = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${dayOfMonth}`;
+  const [year, month, day] = isoDate.split('-').map(Number);
+  const dayOfWeek = new Date(Date.UTC(year, month - 1, day)).getUTCDay();
+  return addCalendarDays(isoDate, 7 - dayOfWeek);
 };
 
 const parseDateTime = (value?: string | null): number => {
@@ -407,17 +366,9 @@ const buildHighPriorityLeads = (
   };
 };
 
-const addDays = (isoDate: string, days: number): string => {
-  const d = new Date(isoDate);
-  d.setDate(d.getDate() + days);
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-};
+const addDays = addCalendarDays;
 
-const daysBetween = (fromIso: string, toIso: string): number =>
-  Math.round((new Date(toIso).getTime() - new Date(fromIso).getTime()) / 86400000);
+const daysBetween = calendarDaysBetween;
 
 const buildFollowUpReminder = (lead: LeadRecord, today: string): FollowUpReminder => {
   const followUpDate = normalizeDate(lead.follow_up_date) || '';

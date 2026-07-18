@@ -1,4 +1,4 @@
-﻿import { ClientRegistry } from 'config/clients';
+import { ClientRegistry } from 'config/clients';
 import { normalizeClientKey, SUPPORTED_CLIENT_MODULES } from './clientKey';
 
 const MODULE_ALIASES: Record<string, string> = {
@@ -10,6 +10,10 @@ const MODULE_ALIASES: Record<string, string> = {
     aaraveyecare: 'aarav_eye_care',
     antardrashtinetralaya: 'antardrashti_netralaya',
     riohospital: 'rio',
+    shantieyetech: 'shanti_eye_tech',
+    shanti_eye: 'shanti_eye_tech',
+    phoenixfitness: 'phoenix_fitness',
+    phoenix_fitness_gym: 'phoenix_fitness',
 };
 
 const registryKeys = SUPPORTED_CLIENT_MODULES.filter((key) => Boolean(ClientRegistry[key]));
@@ -43,6 +47,8 @@ export const resolveClientModuleKey = (tenantClientKey?: string | null): string 
     if (normalized.includes('aarav') && normalized.includes('eye')) return 'aarav_eye_care';
     if (normalized.includes('antardrashti') && normalized.includes('netralaya')) return 'antardrashti_netralaya';
     if (normalized.includes('rio')) return 'rio';
+    if (normalized.includes('shanti') && normalized.includes('eye')) return 'shanti_eye_tech';
+    if (normalized.includes('phoenix') && normalized.includes('fitness')) return 'phoenix_fitness';
 
     return '';
 };

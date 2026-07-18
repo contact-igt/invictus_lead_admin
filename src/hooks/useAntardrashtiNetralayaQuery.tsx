@@ -1,4 +1,4 @@
-﻿import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { useSnackbar } from 'notistack';
 import { useAuth } from 'redux/selectors/auth/authSelector';
 import {
@@ -33,7 +33,8 @@ export const antardrashtiNetralayaKeys = {
     [...antardrashtiNetralayaKeys.lists(), clientKey] as const,
   list: (clientKey: string | undefined, params: AntardrashtiNetralayaListParams) =>
     [...antardrashtiNetralayaKeys.clientLists(clientKey), params] as const,
-  summary: (clientKey: string | undefined) => [...antardrashtiNetralayaKeys.all, 'summary', clientKey] as const,
+  summary: (clientKey: string | undefined, params?: AntardrashtiNetralayaExportParams) =>
+    [...antardrashtiNetralayaKeys.all, 'summary', clientKey, params] as const,
   details: () => [...antardrashtiNetralayaKeys.all, 'detail'] as const,
   detail: (clientKey: string | undefined, id: number) =>
     [...antardrashtiNetralayaKeys.details(), clientKey, id] as const,
@@ -71,13 +72,14 @@ export const useAntardrashtiNetralayaLeads = (
 
 export const useAntardrashtiNetralayaSummary = (
   clientKey: string | undefined,
+  params: AntardrashtiNetralayaExportParams = {},
   enabled = true,
 ) => {
   const superAdminClientKey = useSuperAdminClientKey(clientKey);
 
   return useQuery<AntardrashtiNetralayaSummaryResponse, unknown>(
-    antardrashtiNetralayaKeys.summary(clientKey),
-    () => getAntardrashtiNetralayaSummary(superAdminClientKey),
+    antardrashtiNetralayaKeys.summary(clientKey, params),
+    () => getAntardrashtiNetralayaSummary(params, superAdminClientKey),
     {
       enabled,
       refetchOnWindowFocus: false,

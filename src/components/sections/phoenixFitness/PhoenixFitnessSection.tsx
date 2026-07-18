@@ -23,39 +23,38 @@ import {
 import { alpha } from '@mui/material/styles';
 import IconifyIcon from 'components/base/IconifyIcon';
 import {
-  useAntardrashtiNetralayaLead,
-  useAntardrashtiNetralayaLeads,
-  useAntardrashtiNetralayaSummary,
-  useCreateAntardrashtiNetralayaLead,
-  useDeleteAntardrashtiNetralayaLead,
-  useExportAntardrashtiNetralayaLeads,
-  useUpdateAntardrashtiNetralayaLead,
-} from 'hooks/useAntardrashtiNetralayaQuery';
-import type { AntardrashtiNetralayaFormValues } from 'schemas/antardrashtiNetralayaSchema';
+  usePhoenixFitnessLead,
+  usePhoenixFitnessLeads,
+  usePhoenixFitnessSummary,
+  useCreatePhoenixFitnessLead,
+  useDeletePhoenixFitnessLead,
+  useExportPhoenixFitnessLeads,
+  useUpdatePhoenixFitnessLead,
+} from 'hooks/usePhoenixFitnessQuery';
+import type { PhoenixFitnessFormValues } from 'schemas/phoenixFitnessSchema';
 import type {
-  AntardrashtiNetralayaExportFormat,
-  AntardrashtiNetralayaLead,
-  AntardrashtiNetralayaListParams,
-  AntardrashtiNetralayaSummary,
-  AntardrashtiNetralayaService,
-} from 'types/antardrashtiNetralaya';
+  PhoenixFitnessExportFormat,
+  PhoenixFitnessLead,
+  PhoenixFitnessListParams,
+  PhoenixFitnessSummary,
+} from 'types/phoenixFitness';
 import { resolveClientModuleKey } from 'utils/clientModuleResolver';
-import AntardrashtiNetralayaDeleteDialog from './AntardrashtiNetralayaDeleteDialog';
-import AntardrashtiNetralayaFormDrawer, {
-  AntardrashtiNetralayaDrawerMode,
-} from './AntardrashtiNetralayaFormDrawer';
-import AntardrashtiNetralayaTable from './AntardrashtiNetralayaTable';
-import AntardrashtiNetralayaViewDrawer from './AntardrashtiNetralayaViewDrawer';
+import PhoenixFitnessDeleteDialog from './PhoenixFitnessDeleteDialog';
+import PhoenixFitnessFormDrawer, {
+  PhoenixFitnessDrawerMode,
+} from './PhoenixFitnessFormDrawer';
+import PhoenixFitnessTable from './PhoenixFitnessTable';
 import {
-  ANTARDRASHTI_NETRALAYA_COLOR,
-  ANTARDRASHTI_NETRALAYA_SERVICES,
-  cleanAntardrashtiPayload,
+  PHOENIX_FITNESS_BRANCHES,
+  PHOENIX_FITNESS_COLOR,
+  type PhoenixFitnessBranch,
+  cleanPhoenixFitnessPayload,
   extractDownloadFilename,
-  getAntardrashtiErrorMessage,
-  getAntardrashtiExportErrorMessage,
-  getAntardrashtiExportFallbackName,
-  hasAntardrashtiFilters,
-} from './antardrashtiNetralayaUtils';
+  getPhoenixFitnessErrorMessage,
+  getPhoenixFitnessExportErrorMessage,
+  getPhoenixFitnessExportFallbackName,
+  hasPhoenixFitnessFilters,
+} from './phoenixFitnessUtils';
 
 interface SummaryCardProps {
   label: string;
@@ -103,8 +102,8 @@ const SummaryCard = ({ label, value, icon, helperText, loading = false }: Summar
             borderRadius: 2,
             display: 'grid',
             placeItems: 'center',
-            bgcolor: alpha(ANTARDRASHTI_NETRALAYA_COLOR, 0.1),
-            color: ANTARDRASHTI_NETRALAYA_COLOR,
+            bgcolor: alpha(PHOENIX_FITNESS_COLOR, 0.1),
+            color: PHOENIX_FITNESS_COLOR,
             flexShrink: 0,
           }}
         >
@@ -115,32 +114,32 @@ const SummaryCard = ({ label, value, icon, helperText, loading = false }: Summar
   </Card>
 );
 
-const EMPTY_SUMMARY: AntardrashtiNetralayaSummary = {
+const EMPTY_SUMMARY: PhoenixFitnessSummary = {
   total_leads: 0,
   today_leads: 0,
   this_month_leads: 0,
-  top_service: null,
-  top_service_count: 0,
+  top_branch: null,
+  top_branch_count: 0,
 };
 
-const AntardrashtiNetralayaSection = () => {
+const PhoenixFitnessSection = () => {
   const { clientKey } = useParams<{ clientKey: string }>();
   const { enqueueSnackbar } = useSnackbar();
-  const isAntardrashtiModule = resolveClientModuleKey(clientKey) === 'antardrashti_netralaya';
+  const isPhoenixFitnessModule = resolveClientModuleKey(clientKey) === 'phoenix_fitness';
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
   const [searchInput, setSearchInput] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [service, setService] = useState<AntardrashtiNetralayaService | ''>('');
+  const [branch, setBranch] = useState<PhoenixFitnessBranch | ''>('');
   const [utmSource, setUtmSource] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [drawerMode, setDrawerMode] = useState<AntardrashtiNetralayaDrawerMode>('create');
-  const [selectedLead, setSelectedLead] = useState<AntardrashtiNetralayaLead | null>(null);
-  const [deleteLead, setDeleteLead] = useState<AntardrashtiNetralayaLead | null>(null);
+  const [drawerMode, setDrawerMode] = useState<PhoenixFitnessDrawerMode>('create');
+  const [selectedLead, setSelectedLead] = useState<PhoenixFitnessLead | null>(null);
+  const [deleteLead, setDeleteLead] = useState<PhoenixFitnessLead | null>(null);
   const [exportMenuAnchor, setExportMenuAnchor] = useState<null | HTMLElement>(null);
   const [isExporting, setIsExporting] = useState(false);
 
@@ -149,27 +148,27 @@ const AntardrashtiNetralayaSection = () => {
     return () => window.clearTimeout(timer);
   }, [searchInput]);
 
-  const params: AntardrashtiNetralayaListParams = {
+  const params: PhoenixFitnessListParams = {
     page,
     limit,
     search: debouncedSearch || undefined,
-    service: service || undefined,
+    branch: branch || undefined,
     utm_source: utmSource.trim() || undefined,
     start_date: startDate || undefined,
     end_date: endDate || undefined,
   };
 
-  const leadsQuery = useAntardrashtiNetralayaLeads(clientKey, params, isAntardrashtiModule);
-  const summaryQuery = useAntardrashtiNetralayaSummary(clientKey, params, isAntardrashtiModule);
-  const detailQuery = useAntardrashtiNetralayaLead(
+  const leadsQuery = usePhoenixFitnessLeads(clientKey, params, isPhoenixFitnessModule);
+  const summaryQuery = usePhoenixFitnessSummary(clientKey, params, isPhoenixFitnessModule);
+  const detailQuery = usePhoenixFitnessLead(
     clientKey,
     selectedLead?.id ?? null,
-    isAntardrashtiModule && drawerOpen && drawerMode === 'view',
+    isPhoenixFitnessModule && drawerOpen && drawerMode === 'view',
   );
-  const createMutation = useCreateAntardrashtiNetralayaLead(clientKey);
-  const updateMutation = useUpdateAntardrashtiNetralayaLead(clientKey);
-  const deleteMutation = useDeleteAntardrashtiNetralayaLead(clientKey);
-  const exportMutation = useExportAntardrashtiNetralayaLeads(clientKey);
+  const createMutation = useCreatePhoenixFitnessLead(clientKey);
+  const updateMutation = useUpdatePhoenixFitnessLead(clientKey);
+  const deleteMutation = useDeletePhoenixFitnessLead(clientKey);
+  const exportMutation = useExportPhoenixFitnessLeads(clientKey);
 
   const response = leadsQuery.data;
   const rows = response?.data ?? [];
@@ -195,14 +194,14 @@ const AntardrashtiNetralayaSection = () => {
     setDrawerMode('create');
   };
 
-  const openDrawer = (mode: AntardrashtiNetralayaDrawerMode, lead: AntardrashtiNetralayaLead | null = null) => {
+  const openDrawer = (mode: PhoenixFitnessDrawerMode, lead: PhoenixFitnessLead | null = null) => {
     setSelectedLead(lead);
     setDrawerMode(mode);
     setDrawerOpen(true);
   };
 
-  const handleSubmit = (values: AntardrashtiNetralayaFormValues) => {
-    const payload = cleanAntardrashtiPayload(values);
+  const handleSubmit = (values: PhoenixFitnessFormValues) => {
+    const payload = cleanPhoenixFitnessPayload(values);
 
     if (drawerMode === 'edit' && selectedLead) {
       updateMutation.mutate(
@@ -225,7 +224,7 @@ const AntardrashtiNetralayaSection = () => {
   const clearFilters = () => {
     setSearchInput('');
     setDebouncedSearch('');
-    setService('');
+    setBranch('');
     setUtmSource('');
     setStartDate('');
     setEndDate('');
@@ -255,14 +254,14 @@ const AntardrashtiNetralayaSection = () => {
     setExportMenuAnchor(null);
   };
 
-  const handleExport = async (format: AntardrashtiNetralayaExportFormat) => {
+  const handleExport = async (format: PhoenixFitnessExportFormat) => {
     handleCloseExportMenu();
     setIsExporting(true);
 
     try {
       const exportParams = {
         search: debouncedSearch || undefined,
-        service: service || undefined,
+        branch: branch || undefined,
         utm_source: utmSource.trim() || undefined,
         start_date: startDate || undefined,
         end_date: endDate || undefined,
@@ -271,31 +270,31 @@ const AntardrashtiNetralayaSection = () => {
       const contentType = response.headers['content-type'] || (format === 'pdf' ? 'application/pdf' : 'text/csv;charset=utf-8');
       const fileName = extractDownloadFilename(
         response.headers['content-disposition'],
-        getAntardrashtiExportFallbackName(format),
+        getPhoenixFitnessExportFallbackName(format),
       );
       const blob = new Blob([response.data], { type: contentType });
 
       saveAs(blob, fileName);
       enqueueSnackbar(
-        `Antardrashti Netralaya leads exported as ${format.toUpperCase()} successfully.`,
+        `Phoenix Fitness leads exported as ${format.toUpperCase()} successfully.`,
         { variant: 'success' },
       );
     } catch (error) {
-      enqueueSnackbar(getAntardrashtiExportErrorMessage(error), { variant: 'error' });
+      enqueueSnackbar(getPhoenixFitnessExportErrorMessage(error), { variant: 'error' });
     } finally {
       setIsExporting(false);
     }
   };
 
-  if (!isAntardrashtiModule) {
+  if (!isPhoenixFitnessModule) {
     return (
       <Alert severity="error">
-        This page is available only for the Antardrashti Netralaya client module.
+        This page is available only for the Phoenix Fitness client module.
       </Alert>
     );
   }
 
-  const activeFilters = hasAntardrashtiFilters(params);
+  const activeFilters = hasPhoenixFitnessFilters(params);
   const drawerLead = detailQuery.data?.data ?? selectedLead;
   const mutationLoading = createMutation.isLoading || updateMutation.isLoading;
 
@@ -320,8 +319,8 @@ const AntardrashtiNetralayaSection = () => {
           minWidth: 0,
           p: { xs: 2.25, md: 3 },
           borderRadius: 3,
-          bgcolor: alpha(ANTARDRASHTI_NETRALAYA_COLOR, 0.035),
-          borderColor: alpha(ANTARDRASHTI_NETRALAYA_COLOR, 0.18),
+          bgcolor: alpha(PHOENIX_FITNESS_COLOR, 0.035),
+          borderColor: alpha(PHOENIX_FITNESS_COLOR, 0.18),
         }}
       >
         <Stack
@@ -340,10 +339,10 @@ const AntardrashtiNetralayaSection = () => {
                 display: 'grid',
                 placeItems: 'center',
                 color: 'common.white',
-                bgcolor: ANTARDRASHTI_NETRALAYA_COLOR,
+                bgcolor: PHOENIX_FITNESS_COLOR,
               }}
             >
-              <IconifyIcon icon="hugeicons:view" width={24} />
+              <IconifyIcon icon="hugeicons:database" width={24} />
             </Box>
             <Box sx={{ minWidth: 0 }}>
               <Typography
@@ -356,10 +355,10 @@ const AntardrashtiNetralayaSection = () => {
                   overflowWrap: 'break-word',
                 }}
               >
-                Antardrashti Netralaya
+                Phoenix Fitness
               </Typography>
               <Typography variant="body2" color="text.secondary" mt={0.35}>
-                Manage website enquiries and service leads
+                Manage website enquiries and branch leads
               </Typography>
             </Box>
           </Stack>
@@ -373,12 +372,12 @@ const AntardrashtiNetralayaSection = () => {
               }
               endIcon={!isExporting ? <IconifyIcon icon="mdi:chevron-down" /> : undefined}
               sx={{
-                borderColor: alpha(ANTARDRASHTI_NETRALAYA_COLOR, 0.28),
-                color: ANTARDRASHTI_NETRALAYA_COLOR,
+                borderColor: alpha(PHOENIX_FITNESS_COLOR, 0.28),
+                color: PHOENIX_FITNESS_COLOR,
                 flexShrink: 0,
                 '&:hover': {
-                  borderColor: ANTARDRASHTI_NETRALAYA_COLOR,
-                  bgcolor: alpha(ANTARDRASHTI_NETRALAYA_COLOR, 0.04),
+                  borderColor: PHOENIX_FITNESS_COLOR,
+                  bgcolor: alpha(PHOENIX_FITNESS_COLOR, 0.04),
                 },
               }}
             >
@@ -389,9 +388,9 @@ const AntardrashtiNetralayaSection = () => {
               startIcon={<IconifyIcon icon="mdi:plus" />}
               onClick={() => openDrawer('create')}
               sx={{
-                bgcolor: ANTARDRASHTI_NETRALAYA_COLOR,
+                bgcolor: PHOENIX_FITNESS_COLOR,
                 flexShrink: 0,
-                '&:hover': { bgcolor: alpha(ANTARDRASHTI_NETRALAYA_COLOR, 0.88) },
+                '&:hover': { bgcolor: alpha(PHOENIX_FITNESS_COLOR, 0.88) },
               }}
             >
               Add Lead
@@ -454,13 +453,13 @@ const AntardrashtiNetralayaSection = () => {
           loading={summaryLoading}
         />
         <SummaryCard
-          label="Top Service"
-          value={summaryUnavailable ? '-' : summary.top_service || 'No data'}
+          label="Top Branch"
+          value={summaryUnavailable ? '-' : summary.top_branch || 'No data'}
           helperText={
             summaryUnavailable
               ? undefined
-              : summary.top_service
-                ? `${summary.top_service_count} leads`
+              : summary.top_branch
+                ? `${summary.top_branch_count} leads`
                 : undefined
           }
           icon="hugeicons:medical-mask"
@@ -494,7 +493,7 @@ const AntardrashtiNetralayaSection = () => {
               setSearchInput(event.target.value);
               setPage(1);
             }}
-            placeholder="Search name, mobile number, service or UTM source"
+            placeholder="Search name, mobile number, branch or UTM source"
             sx={{
               minWidth: 0,
               gridColumn: { xs: '1 / -1', lg: 'span 2' },
@@ -511,18 +510,18 @@ const AntardrashtiNetralayaSection = () => {
             select
             fullWidth
             size="small"
-            label="Service"
-            value={service}
+            label="Branch"
+            value={branch}
             sx={{ minWidth: 0 }}
             onChange={(event) => {
-              setService(event.target.value as AntardrashtiNetralayaService | '');
+              setBranch(event.target.value as PhoenixFitnessBranch | '');
               setPage(1);
             }}
           >
-            <MenuItem value="">All Services</MenuItem>
-            {ANTARDRASHTI_NETRALAYA_SERVICES.map((serviceOption) => (
-              <MenuItem key={serviceOption} value={serviceOption}>
-                {serviceOption}
+            <MenuItem value="">All Branches</MenuItem>
+            {PHOENIX_FITNESS_BRANCHES.map((branchOption) => (
+              <MenuItem key={branchOption} value={branchOption}>
+                {branchOption}
               </MenuItem>
             ))}
           </TextField>
@@ -575,7 +574,7 @@ const AntardrashtiNetralayaSection = () => {
               </Button>
             }
           >
-            {getAntardrashtiErrorMessage(leadsQuery.error, 'Unable to load Antardrashti Netralaya leads.')}
+            {getPhoenixFitnessErrorMessage(leadsQuery.error, 'Unable to load Phoenix Fitness leads.')}
           </Alert>
         </Box>
       ) : (
@@ -583,7 +582,7 @@ const AntardrashtiNetralayaSection = () => {
           variant="outlined"
           sx={{ width: '100%', maxWidth: '100%', minWidth: 0, borderRadius: 3, overflow: 'hidden' }}
         >
-          <AntardrashtiNetralayaTable
+          <PhoenixFitnessTable
             rows={rows}
             page={page}
             limit={limit}
@@ -598,7 +597,7 @@ const AntardrashtiNetralayaSection = () => {
         </Paper>
       )}
 
-      <AntardrashtiNetralayaFormDrawer
+      <PhoenixFitnessFormDrawer
         open={drawerOpen}
         mode={drawerMode}
         lead={drawerLead}
@@ -608,12 +607,8 @@ const AntardrashtiNetralayaSection = () => {
       />
 
 
-      <AntardrashtiNetralayaViewDrawer
-        open={drawerOpen && drawerMode === 'view'}
-        lead={drawerLead}
-        isLoading={detailQuery.isLoading}
-        onClose={closeDrawer}
-      />      <AntardrashtiNetralayaDeleteDialog
+
+      <PhoenixFitnessDeleteDialog
         open={Boolean(deleteLead)}
         lead={deleteLead}
         isLoading={deleteMutation.isLoading}
@@ -624,7 +619,7 @@ const AntardrashtiNetralayaSection = () => {
   );
 };
 
-export default AntardrashtiNetralayaSection;
+export default PhoenixFitnessSection;
 
 
 

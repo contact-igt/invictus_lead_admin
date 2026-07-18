@@ -1,21 +1,21 @@
 import type { AxiosResponse } from 'axios';
 import { _axios } from 'helper/axios';
 import type {
-  PixelEyeWebsiteLeadDeleteResponse,
-  PixelEyeWebsiteLeadExportFormat,
-  PixelEyeWebsiteLeadExportParams,
-  PixelEyeWebsiteLeadListParams,
-  PixelEyeWebsiteLeadListResponse,
-  PixelEyeWebsiteLeadResponse,
-  PixelEyeWebsiteLeadSummaryResponse,
-  CreatePixelEyeWebsiteLeadPayload,
-  UpdatePixelEyeWebsiteLeadPayload,
-} from 'types/pixelEyeWebsiteLead';
+  ShantiEyeTechDeleteResponse,
+  ShantiEyeTechExportFormat,
+  ShantiEyeTechExportParams,
+  ShantiEyeTechLeadResponse,
+  ShantiEyeTechListParams,
+  ShantiEyeTechListResponse,
+  ShantiEyeTechSummaryResponse,
+  CreateShantiEyeTechLeadPayload,
+  UpdateShantiEyeTechLeadPayload,
+} from 'types/shantiEyeTech';
 
-type PixelEyeWebsiteLeadQueryParams = Record<string, string | number>;
+type ShantiEyeTechQueryParams = Record<string, string | number>;
 
-const cleanListParams = (params: PixelEyeWebsiteLeadListParams): PixelEyeWebsiteLeadQueryParams => {
-  const cleaned: PixelEyeWebsiteLeadQueryParams = {};
+const cleanListParams = (params: ShantiEyeTechListParams): ShantiEyeTechQueryParams => {
+  const cleaned: ShantiEyeTechQueryParams = {};
 
   if (params.page !== undefined) cleaned.page = params.page;
   if (params.limit !== undefined) cleaned.limit = params.limit;
@@ -28,8 +28,8 @@ const cleanListParams = (params: PixelEyeWebsiteLeadListParams): PixelEyeWebsite
   return cleaned;
 };
 
-const cleanExportParams = (params: PixelEyeWebsiteLeadExportParams): PixelEyeWebsiteLeadQueryParams => {
-  const cleaned: PixelEyeWebsiteLeadQueryParams = {};
+const cleanExportParams = (params: ShantiEyeTechExportParams): ShantiEyeTechQueryParams => {
+  const cleaned: ShantiEyeTechQueryParams = {};
 
   if (params.search?.trim()) cleaned.search = params.search.trim();
   if (params.service?.trim()) cleaned.service = params.service.trim();
@@ -41,33 +41,33 @@ const cleanExportParams = (params: PixelEyeWebsiteLeadExportParams): PixelEyeWeb
 };
 
 const withClientContext = (
-  params: PixelEyeWebsiteLeadQueryParams,
+  params: ShantiEyeTechQueryParams,
   superAdminClientKey?: string,
-): PixelEyeWebsiteLeadQueryParams => {
+): ShantiEyeTechQueryParams => {
   if (!superAdminClientKey?.trim()) return params;
   return { ...params, _client_key: superAdminClientKey.trim() };
 };
 
-export const getPixelEyeWebsiteLeads = async (
-  params: PixelEyeWebsiteLeadListParams,
+export const getShantiEyeTechLeads = async (
+  params: ShantiEyeTechListParams,
   superAdminClientKey?: string,
-): Promise<PixelEyeWebsiteLeadListResponse> =>
+): Promise<ShantiEyeTechListResponse> =>
   (await _axios(
     'get',
-    '/pixeleye/website-leads',
+    '/shanti-eye-tech',
     undefined,
     'application/json',
     withClientContext(cleanListParams(params), superAdminClientKey),
-  )) as PixelEyeWebsiteLeadListResponse;
+  )) as ShantiEyeTechListResponse;
 
-export const exportPixelEyeWebsiteLeads = async (
-  format: PixelEyeWebsiteLeadExportFormat,
-  params: PixelEyeWebsiteLeadExportParams,
+export const exportShantiEyeTechLeads = async (
+  format: ShantiEyeTechExportFormat,
+  params: ShantiEyeTechExportParams,
   superAdminClientKey?: string,
 ): Promise<AxiosResponse<Blob>> =>
   (await _axios(
     'get',
-    '/pixeleye/website-leads/export',
+    '/shanti-eye-tech/export',
     undefined,
     'application/json',
     withClientContext(
@@ -80,63 +80,64 @@ export const exportPixelEyeWebsiteLeads = async (
     { responseType: 'blob', returnRawResponse: true },
   )) as AxiosResponse<Blob>;
 
-export const getPixelEyeWebsiteLeadSummary = async (
-  params: PixelEyeWebsiteLeadExportParams = {},
+export const getShantiEyeTechSummary = async (
+  params: ShantiEyeTechExportParams = {},
   superAdminClientKey?: string,
-): Promise<PixelEyeWebsiteLeadSummaryResponse> =>
+): Promise<ShantiEyeTechSummaryResponse> =>
   (await _axios(
     'get',
-    '/pixeleye/website-leads/summary',
+    '/shanti-eye-tech/summary',
     undefined,
     'application/json',
     withClientContext(cleanExportParams(params), superAdminClientKey),
-  )) as PixelEyeWebsiteLeadSummaryResponse;
+  )) as ShantiEyeTechSummaryResponse;
 
-export const getPixelEyeWebsiteLeadById = async (
+export const getShantiEyeTechLeadById = async (
   id: number,
   superAdminClientKey?: string,
-): Promise<PixelEyeWebsiteLeadResponse> =>
+): Promise<ShantiEyeTechLeadResponse> =>
   (await _axios(
     'get',
-    `/pixeleye/website-leads/${id}`,
+    `/shanti-eye-tech/${id}`,
     undefined,
     'application/json',
     withClientContext({}, superAdminClientKey),
-  )) as PixelEyeWebsiteLeadResponse;
+  )) as ShantiEyeTechLeadResponse;
 
-export const createPixelEyeWebsiteLead = async (
-  payload: CreatePixelEyeWebsiteLeadPayload,
+export const createShantiEyeTechLead = async (
+  payload: CreateShantiEyeTechLeadPayload,
   superAdminClientKey?: string,
-): Promise<PixelEyeWebsiteLeadResponse> =>
+): Promise<ShantiEyeTechLeadResponse> =>
   (await _axios(
     'post',
-    '/pixeleye/website-leads',
+    '/shanti-eye-tech',
     payload,
     'application/json',
     withClientContext({}, superAdminClientKey),
-  )) as PixelEyeWebsiteLeadResponse;
+  )) as ShantiEyeTechLeadResponse;
 
-export const updatePixelEyeWebsiteLead = async (
+export const updateShantiEyeTechLead = async (
   id: number,
-  payload: UpdatePixelEyeWebsiteLeadPayload,
+  payload: UpdateShantiEyeTechLeadPayload,
   superAdminClientKey?: string,
-): Promise<PixelEyeWebsiteLeadResponse> =>
+): Promise<ShantiEyeTechLeadResponse> =>
   (await _axios(
     'patch',
-    `/pixeleye/website-leads/${id}`,
+    `/shanti-eye-tech/${id}`,
     payload,
     'application/json',
     withClientContext({}, superAdminClientKey),
-  )) as PixelEyeWebsiteLeadResponse;
+  )) as ShantiEyeTechLeadResponse;
 
-export const deletePixelEyeWebsiteLead = async (
+export const deleteShantiEyeTechLead = async (
   id: number,
   superAdminClientKey?: string,
-): Promise<PixelEyeWebsiteLeadDeleteResponse> =>
+): Promise<ShantiEyeTechDeleteResponse> =>
   (await _axios(
     'delete',
-    `/pixeleye/website-leads/${id}`,
+    `/shanti-eye-tech/${id}`,
     undefined,
     'application/json',
     withClientContext({}, superAdminClientKey),
-  )) as PixelEyeWebsiteLeadDeleteResponse;
+  )) as ShantiEyeTechDeleteResponse;
+

@@ -152,7 +152,7 @@ const VlsMactMasterClassSection = () => {
   };
 
   const registrationsQuery = useVlsMactMasterClassRegistrations(clientKey, params, isVlsModule);
-  const summaryQuery = useVlsMactMasterClassSummary(clientKey, isVlsModule);
+  const summaryQuery = useVlsMactMasterClassSummary(clientKey, params, isVlsModule);
   const detailQuery = useVlsMactMasterClassRegistration(
     clientKey,
     selectedRegistration?.id ?? null,
@@ -502,6 +502,7 @@ const VlsMactMasterClassSection = () => {
             value={registeredEndDate ? dayjs(registeredEndDate) : null}
             onChange={updateDate(setRegisteredEndDate)}
             minDate={registeredStartDate ? dayjs(registeredStartDate) : undefined}
+            disabled={!registeredStartDate}
             slotProps={{
               textField: { size: 'small', fullWidth: true, sx: { minWidth: 0 } },
               actionBar: { actions: ['clear'] },

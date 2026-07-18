@@ -19,6 +19,7 @@ import { ALL_STATUSES } from './pixelEyeStatuses';
 import { useAuth } from 'redux/selectors/auth/authSelector';
 import { useNavigate, useParams } from 'react-router-dom';
 import { normalizeClientKey } from 'utils/clientKey';
+import { normalizeAppDate } from 'utils/dateTime';
 import { saveAs } from 'file-saver';
 import { useSnackbar } from 'notistack';
 import useColorMode from 'hooks/useColorMode';
@@ -41,21 +42,7 @@ import {
 
 const ENABLE_PIXEL_EYE_LEAD_DETAIL_NAVIGATION = true;
 
-const normalizeDateForCompare = (value?: string | null): string => {
-  const text = String(value || '').trim();
-  if (!text) return '';
-
-  const directDate = text.match(/^\d{4}-\d{2}-\d{2}/);
-  if (directDate) return directDate[0];
-
-  const parsed = new Date(text);
-  if (Number.isNaN(parsed.getTime())) return '';
-
-  const year = parsed.getFullYear();
-  const month = String(parsed.getMonth() + 1).padStart(2, '0');
-  const day = String(parsed.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-};
+const normalizeDateForCompare = (value?: string | null): string => normalizeAppDate(value);
 
 const getLeadBusinessDate = (lead: PixelEyeRow): string =>
   normalizeDateForCompare(lead.date) ||

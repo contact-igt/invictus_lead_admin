@@ -81,6 +81,7 @@ export const exportAaravEyeCareLeads = async (
   )) as AxiosResponse<Blob>;
 
 export const getAaravEyeCareSummary = async (
+  params: AaravEyeCareExportParams = {},
   superAdminClientKey?: string,
 ): Promise<AaravEyeCareSummaryResponse> =>
   (await _axios(
@@ -88,7 +89,7 @@ export const getAaravEyeCareSummary = async (
     '/aarav-eye-care/summary',
     undefined,
     'application/json',
-    withClientContext({}, superAdminClientKey),
+    withClientContext(cleanExportParams(params), superAdminClientKey),
   )) as AaravEyeCareSummaryResponse;
 
 export const getAaravEyeCareLeadById = async (

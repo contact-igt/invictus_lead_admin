@@ -23,6 +23,9 @@ export default {
   antardrashtiNetralaya: (clientKey: string) =>
     `/${rootPaths.pageRoot}/d/${clientKey}/antardrashti-netralaya`,
   rio: (clientKey: string) => `/${rootPaths.pageRoot}/d/${clientKey}/rio`,
+  shantiEyeTech: (clientKey: string) =>
+    `/${rootPaths.pageRoot}/d/${clientKey}/shanti-eye-tech`,
+  phoenixFitness: (clientKey: string) => `/${rootPaths.pageRoot}/d/${clientKey}/phoenix-fitness`,
   vlsMactMasterClass: `/${rootPaths.pageRoot}/d/:clientKey/vls/mact-master-class`,
 
   // Dynamic client module route

@@ -163,7 +163,7 @@ const PixelEyeWebsiteLeadsSection = () => {
   );
 
   const leadsQuery = usePixelEyeWebsiteLeads(clientKey, params, isPixelEyeModule);
-  const summaryQuery = usePixelEyeWebsiteLeadSummary(clientKey, isPixelEyeModule);
+  const summaryQuery = usePixelEyeWebsiteLeadSummary(clientKey, params, isPixelEyeModule);
   const detailQuery = usePixelEyeWebsiteLead(
     clientKey,
     selectedLead?.id ?? null,
@@ -360,7 +360,7 @@ const PixelEyeWebsiteLeadsSection = () => {
         <SummaryCard label="This Month" value={summary.this_month_leads.toLocaleString()} icon="mdi:calendar-month-outline" loading={summaryLoading} />
         <SummaryCard
           label="Top Requested Service"
-          value={summary.top_service || '—'}
+          value={summary.top_service || '-'}
           icon="mdi:star-outline"
           helperText={summary.top_service ? `${summary.top_service_count} leads` : 'No service selected yet'}
           loading={summaryLoading}

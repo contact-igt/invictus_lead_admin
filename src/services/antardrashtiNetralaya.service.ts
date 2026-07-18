@@ -1,4 +1,4 @@
-﻿import type { AxiosResponse } from 'axios';
+import type { AxiosResponse } from 'axios';
 import { _axios } from 'helper/axios';
 import type {
   AntardrashtiNetralayaDeleteResponse,
@@ -81,6 +81,7 @@ export const exportAntardrashtiNetralayaLeads = async (
   )) as AxiosResponse<Blob>;
 
 export const getAntardrashtiNetralayaSummary = async (
+  params: AntardrashtiNetralayaExportParams = {},
   superAdminClientKey?: string,
 ): Promise<AntardrashtiNetralayaSummaryResponse> =>
   (await _axios(
@@ -88,7 +89,7 @@ export const getAntardrashtiNetralayaSummary = async (
     '/antardrashti-netralaya/summary',
     undefined,
     'application/json',
-    withClientContext({}, superAdminClientKey),
+    withClientContext(cleanExportParams(params), superAdminClientKey),
   )) as AntardrashtiNetralayaSummaryResponse;
 
 export const getAntardrashtiNetralayaLeadById = async (

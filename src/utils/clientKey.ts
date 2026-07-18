@@ -1,12 +1,14 @@
-﻿const CLIENT_KEY_ALIASES: Record<string, string> = {
+const CLIENT_KEY_ALIASES: Record<string, string> = {
     pixel_eye: 'pixeleye',
     vlslaw: 'vls_law',
     aaraveyecare: 'aarav_eye_care',
     antardrashtinetralaya: 'antardrashti_netralaya',
     riohospital: 'rio',
+    shantieyetech: 'shanti_eye_tech',
+    shanti_eye: 'shanti_eye_tech',
 };
 
-export const SUPPORTED_CLIENT_MODULES = ['pixeleye', 'vls_law', 'aarav_eye_care', 'antardrashti_netralaya', 'rio'] as const;
+export const SUPPORTED_CLIENT_MODULES = ['pixeleye', 'vls_law', 'aarav_eye_care', 'antardrashti_netralaya', 'rio', 'shanti_eye_tech', 'phoenix_fitness'] as const;
 export type SupportedClientModule = typeof SUPPORTED_CLIENT_MODULES[number];
 
 export const CLIENT_MODULE_OPTIONS: Array<{ label: string; value: SupportedClientModule }> = [
@@ -15,6 +17,8 @@ export const CLIENT_MODULE_OPTIONS: Array<{ label: string; value: SupportedClien
     { label: 'Aarav Eye Care', value: 'aarav_eye_care' },
     { label: 'Antardrashti Netralaya', value: 'antardrashti_netralaya' },
     { label: 'Rio', value: 'rio' },
+    { label: 'Shanti Eye Tech', value: 'shanti_eye_tech' },
+  { label: 'Phoenix Fitness', value: 'phoenix_fitness' },
 ];
 
 export const normalizeClientKey = (key?: string | null): string => {

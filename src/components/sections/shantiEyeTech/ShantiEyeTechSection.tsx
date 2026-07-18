@@ -23,39 +23,39 @@ import {
 import { alpha } from '@mui/material/styles';
 import IconifyIcon from 'components/base/IconifyIcon';
 import {
-  useAntardrashtiNetralayaLead,
-  useAntardrashtiNetralayaLeads,
-  useAntardrashtiNetralayaSummary,
-  useCreateAntardrashtiNetralayaLead,
-  useDeleteAntardrashtiNetralayaLead,
-  useExportAntardrashtiNetralayaLeads,
-  useUpdateAntardrashtiNetralayaLead,
-} from 'hooks/useAntardrashtiNetralayaQuery';
-import type { AntardrashtiNetralayaFormValues } from 'schemas/antardrashtiNetralayaSchema';
+  useShantiEyeTechLead,
+  useShantiEyeTechLeads,
+  useShantiEyeTechSummary,
+  useCreateShantiEyeTechLead,
+  useDeleteShantiEyeTechLead,
+  useExportShantiEyeTechLeads,
+  useUpdateShantiEyeTechLead,
+} from 'hooks/useShantiEyeTechQuery';
+import type { ShantiEyeTechFormValues } from 'schemas/shantiEyeTechSchema';
 import type {
-  AntardrashtiNetralayaExportFormat,
-  AntardrashtiNetralayaLead,
-  AntardrashtiNetralayaListParams,
-  AntardrashtiNetralayaSummary,
-  AntardrashtiNetralayaService,
-} from 'types/antardrashtiNetralaya';
+  ShantiEyeTechExportFormat,
+  ShantiEyeTechLead,
+  ShantiEyeTechListParams,
+  ShantiEyeTechSummary,
+} from 'types/shantiEyeTech';
 import { resolveClientModuleKey } from 'utils/clientModuleResolver';
-import AntardrashtiNetralayaDeleteDialog from './AntardrashtiNetralayaDeleteDialog';
-import AntardrashtiNetralayaFormDrawer, {
-  AntardrashtiNetralayaDrawerMode,
-} from './AntardrashtiNetralayaFormDrawer';
-import AntardrashtiNetralayaTable from './AntardrashtiNetralayaTable';
-import AntardrashtiNetralayaViewDrawer from './AntardrashtiNetralayaViewDrawer';
+import ShantiEyeTechDeleteDialog from './ShantiEyeTechDeleteDialog';
+import ShantiEyeTechFormDrawer, {
+  ShantiEyeTechDrawerMode,
+} from './ShantiEyeTechFormDrawer';
+import ShantiEyeTechTable from './ShantiEyeTechTable';
+import ShantiEyeTechViewDrawer from './ShantiEyeTechViewDrawer';
 import {
-  ANTARDRASHTI_NETRALAYA_COLOR,
-  ANTARDRASHTI_NETRALAYA_SERVICES,
-  cleanAntardrashtiPayload,
+  SHANTI_EYE_TECH_COLOR,
+  SHANTI_EYE_TECH_SERVICES,
+  ShantiEyeTechService,
+  cleanShantiEyeTechPayload,
   extractDownloadFilename,
-  getAntardrashtiErrorMessage,
-  getAntardrashtiExportErrorMessage,
-  getAntardrashtiExportFallbackName,
-  hasAntardrashtiFilters,
-} from './antardrashtiNetralayaUtils';
+  getShantiEyeTechErrorMessage,
+  getShantiEyeTechExportErrorMessage,
+  getShantiEyeTechExportFallbackName,
+  hasShantiEyeTechFilters,
+} from './shantiEyeTechUtils';
 
 interface SummaryCardProps {
   label: string;
@@ -103,8 +103,8 @@ const SummaryCard = ({ label, value, icon, helperText, loading = false }: Summar
             borderRadius: 2,
             display: 'grid',
             placeItems: 'center',
-            bgcolor: alpha(ANTARDRASHTI_NETRALAYA_COLOR, 0.1),
-            color: ANTARDRASHTI_NETRALAYA_COLOR,
+            bgcolor: alpha(SHANTI_EYE_TECH_COLOR, 0.1),
+            color: SHANTI_EYE_TECH_COLOR,
             flexShrink: 0,
           }}
         >
@@ -115,7 +115,7 @@ const SummaryCard = ({ label, value, icon, helperText, loading = false }: Summar
   </Card>
 );
 
-const EMPTY_SUMMARY: AntardrashtiNetralayaSummary = {
+const EMPTY_SUMMARY: ShantiEyeTechSummary = {
   total_leads: 0,
   today_leads: 0,
   this_month_leads: 0,
@@ -123,24 +123,24 @@ const EMPTY_SUMMARY: AntardrashtiNetralayaSummary = {
   top_service_count: 0,
 };
 
-const AntardrashtiNetralayaSection = () => {
+const ShantiEyeTechSection = () => {
   const { clientKey } = useParams<{ clientKey: string }>();
   const { enqueueSnackbar } = useSnackbar();
-  const isAntardrashtiModule = resolveClientModuleKey(clientKey) === 'antardrashti_netralaya';
+  const isShantiEyeTechModule = resolveClientModuleKey(clientKey) === 'shanti_eye_tech';
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
   const [searchInput, setSearchInput] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [service, setService] = useState<AntardrashtiNetralayaService | ''>('');
+  const [service, setService] = useState<ShantiEyeTechService | ''>('');
   const [utmSource, setUtmSource] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [drawerMode, setDrawerMode] = useState<AntardrashtiNetralayaDrawerMode>('create');
-  const [selectedLead, setSelectedLead] = useState<AntardrashtiNetralayaLead | null>(null);
-  const [deleteLead, setDeleteLead] = useState<AntardrashtiNetralayaLead | null>(null);
+  const [drawerMode, setDrawerMode] = useState<ShantiEyeTechDrawerMode>('create');
+  const [selectedLead, setSelectedLead] = useState<ShantiEyeTechLead | null>(null);
+  const [deleteLead, setDeleteLead] = useState<ShantiEyeTechLead | null>(null);
   const [exportMenuAnchor, setExportMenuAnchor] = useState<null | HTMLElement>(null);
   const [isExporting, setIsExporting] = useState(false);
 
@@ -149,7 +149,7 @@ const AntardrashtiNetralayaSection = () => {
     return () => window.clearTimeout(timer);
   }, [searchInput]);
 
-  const params: AntardrashtiNetralayaListParams = {
+  const params: ShantiEyeTechListParams = {
     page,
     limit,
     search: debouncedSearch || undefined,
@@ -159,17 +159,17 @@ const AntardrashtiNetralayaSection = () => {
     end_date: endDate || undefined,
   };
 
-  const leadsQuery = useAntardrashtiNetralayaLeads(clientKey, params, isAntardrashtiModule);
-  const summaryQuery = useAntardrashtiNetralayaSummary(clientKey, params, isAntardrashtiModule);
-  const detailQuery = useAntardrashtiNetralayaLead(
+  const leadsQuery = useShantiEyeTechLeads(clientKey, params, isShantiEyeTechModule);
+  const summaryQuery = useShantiEyeTechSummary(clientKey, params, isShantiEyeTechModule);
+  const detailQuery = useShantiEyeTechLead(
     clientKey,
     selectedLead?.id ?? null,
-    isAntardrashtiModule && drawerOpen && drawerMode === 'view',
+    isShantiEyeTechModule && drawerOpen && drawerMode === 'view',
   );
-  const createMutation = useCreateAntardrashtiNetralayaLead(clientKey);
-  const updateMutation = useUpdateAntardrashtiNetralayaLead(clientKey);
-  const deleteMutation = useDeleteAntardrashtiNetralayaLead(clientKey);
-  const exportMutation = useExportAntardrashtiNetralayaLeads(clientKey);
+  const createMutation = useCreateShantiEyeTechLead(clientKey);
+  const updateMutation = useUpdateShantiEyeTechLead(clientKey);
+  const deleteMutation = useDeleteShantiEyeTechLead(clientKey);
+  const exportMutation = useExportShantiEyeTechLeads(clientKey);
 
   const response = leadsQuery.data;
   const rows = response?.data ?? [];
@@ -195,14 +195,14 @@ const AntardrashtiNetralayaSection = () => {
     setDrawerMode('create');
   };
 
-  const openDrawer = (mode: AntardrashtiNetralayaDrawerMode, lead: AntardrashtiNetralayaLead | null = null) => {
+  const openDrawer = (mode: ShantiEyeTechDrawerMode, lead: ShantiEyeTechLead | null = null) => {
     setSelectedLead(lead);
     setDrawerMode(mode);
     setDrawerOpen(true);
   };
 
-  const handleSubmit = (values: AntardrashtiNetralayaFormValues) => {
-    const payload = cleanAntardrashtiPayload(values);
+  const handleSubmit = (values: ShantiEyeTechFormValues) => {
+    const payload = cleanShantiEyeTechPayload(values);
 
     if (drawerMode === 'edit' && selectedLead) {
       updateMutation.mutate(
@@ -255,7 +255,7 @@ const AntardrashtiNetralayaSection = () => {
     setExportMenuAnchor(null);
   };
 
-  const handleExport = async (format: AntardrashtiNetralayaExportFormat) => {
+  const handleExport = async (format: ShantiEyeTechExportFormat) => {
     handleCloseExportMenu();
     setIsExporting(true);
 
@@ -271,31 +271,31 @@ const AntardrashtiNetralayaSection = () => {
       const contentType = response.headers['content-type'] || (format === 'pdf' ? 'application/pdf' : 'text/csv;charset=utf-8');
       const fileName = extractDownloadFilename(
         response.headers['content-disposition'],
-        getAntardrashtiExportFallbackName(format),
+        getShantiEyeTechExportFallbackName(format),
       );
       const blob = new Blob([response.data], { type: contentType });
 
       saveAs(blob, fileName);
       enqueueSnackbar(
-        `Antardrashti Netralaya leads exported as ${format.toUpperCase()} successfully.`,
+        `Shanti Eye Tech leads exported as ${format.toUpperCase()} successfully.`,
         { variant: 'success' },
       );
     } catch (error) {
-      enqueueSnackbar(getAntardrashtiExportErrorMessage(error), { variant: 'error' });
+      enqueueSnackbar(getShantiEyeTechExportErrorMessage(error), { variant: 'error' });
     } finally {
       setIsExporting(false);
     }
   };
 
-  if (!isAntardrashtiModule) {
+  if (!isShantiEyeTechModule) {
     return (
       <Alert severity="error">
-        This page is available only for the Antardrashti Netralaya client module.
+        This page is available only for the Shanti Eye Tech client module.
       </Alert>
     );
   }
 
-  const activeFilters = hasAntardrashtiFilters(params);
+  const activeFilters = hasShantiEyeTechFilters(params);
   const drawerLead = detailQuery.data?.data ?? selectedLead;
   const mutationLoading = createMutation.isLoading || updateMutation.isLoading;
 
@@ -320,8 +320,8 @@ const AntardrashtiNetralayaSection = () => {
           minWidth: 0,
           p: { xs: 2.25, md: 3 },
           borderRadius: 3,
-          bgcolor: alpha(ANTARDRASHTI_NETRALAYA_COLOR, 0.035),
-          borderColor: alpha(ANTARDRASHTI_NETRALAYA_COLOR, 0.18),
+          bgcolor: alpha(SHANTI_EYE_TECH_COLOR, 0.035),
+          borderColor: alpha(SHANTI_EYE_TECH_COLOR, 0.18),
         }}
       >
         <Stack
@@ -340,10 +340,10 @@ const AntardrashtiNetralayaSection = () => {
                 display: 'grid',
                 placeItems: 'center',
                 color: 'common.white',
-                bgcolor: ANTARDRASHTI_NETRALAYA_COLOR,
+                bgcolor: SHANTI_EYE_TECH_COLOR,
               }}
             >
-              <IconifyIcon icon="hugeicons:view" width={24} />
+              <IconifyIcon icon="hugeicons:database" width={24} />
             </Box>
             <Box sx={{ minWidth: 0 }}>
               <Typography
@@ -356,7 +356,7 @@ const AntardrashtiNetralayaSection = () => {
                   overflowWrap: 'break-word',
                 }}
               >
-                Antardrashti Netralaya
+                Shanti Eye Tech
               </Typography>
               <Typography variant="body2" color="text.secondary" mt={0.35}>
                 Manage website enquiries and service leads
@@ -373,12 +373,12 @@ const AntardrashtiNetralayaSection = () => {
               }
               endIcon={!isExporting ? <IconifyIcon icon="mdi:chevron-down" /> : undefined}
               sx={{
-                borderColor: alpha(ANTARDRASHTI_NETRALAYA_COLOR, 0.28),
-                color: ANTARDRASHTI_NETRALAYA_COLOR,
+                borderColor: alpha(SHANTI_EYE_TECH_COLOR, 0.28),
+                color: SHANTI_EYE_TECH_COLOR,
                 flexShrink: 0,
                 '&:hover': {
-                  borderColor: ANTARDRASHTI_NETRALAYA_COLOR,
-                  bgcolor: alpha(ANTARDRASHTI_NETRALAYA_COLOR, 0.04),
+                  borderColor: SHANTI_EYE_TECH_COLOR,
+                  bgcolor: alpha(SHANTI_EYE_TECH_COLOR, 0.04),
                 },
               }}
             >
@@ -389,9 +389,9 @@ const AntardrashtiNetralayaSection = () => {
               startIcon={<IconifyIcon icon="mdi:plus" />}
               onClick={() => openDrawer('create')}
               sx={{
-                bgcolor: ANTARDRASHTI_NETRALAYA_COLOR,
+                bgcolor: SHANTI_EYE_TECH_COLOR,
                 flexShrink: 0,
-                '&:hover': { bgcolor: alpha(ANTARDRASHTI_NETRALAYA_COLOR, 0.88) },
+                '&:hover': { bgcolor: alpha(SHANTI_EYE_TECH_COLOR, 0.88) },
               }}
             >
               Add Lead
@@ -515,12 +515,12 @@ const AntardrashtiNetralayaSection = () => {
             value={service}
             sx={{ minWidth: 0 }}
             onChange={(event) => {
-              setService(event.target.value as AntardrashtiNetralayaService | '');
+              setService(event.target.value as ShantiEyeTechService | '');
               setPage(1);
             }}
           >
             <MenuItem value="">All Services</MenuItem>
-            {ANTARDRASHTI_NETRALAYA_SERVICES.map((serviceOption) => (
+            {SHANTI_EYE_TECH_SERVICES.map((serviceOption) => (
               <MenuItem key={serviceOption} value={serviceOption}>
                 {serviceOption}
               </MenuItem>
@@ -575,7 +575,7 @@ const AntardrashtiNetralayaSection = () => {
               </Button>
             }
           >
-            {getAntardrashtiErrorMessage(leadsQuery.error, 'Unable to load Antardrashti Netralaya leads.')}
+            {getShantiEyeTechErrorMessage(leadsQuery.error, 'Unable to load Shanti Eye Tech leads.')}
           </Alert>
         </Box>
       ) : (
@@ -583,7 +583,7 @@ const AntardrashtiNetralayaSection = () => {
           variant="outlined"
           sx={{ width: '100%', maxWidth: '100%', minWidth: 0, borderRadius: 3, overflow: 'hidden' }}
         >
-          <AntardrashtiNetralayaTable
+          <ShantiEyeTechTable
             rows={rows}
             page={page}
             limit={limit}
@@ -598,7 +598,7 @@ const AntardrashtiNetralayaSection = () => {
         </Paper>
       )}
 
-      <AntardrashtiNetralayaFormDrawer
+      <ShantiEyeTechFormDrawer
         open={drawerOpen}
         mode={drawerMode}
         lead={drawerLead}
@@ -608,12 +608,12 @@ const AntardrashtiNetralayaSection = () => {
       />
 
 
-      <AntardrashtiNetralayaViewDrawer
+      <ShantiEyeTechViewDrawer
         open={drawerOpen && drawerMode === 'view'}
         lead={drawerLead}
         isLoading={detailQuery.isLoading}
         onClose={closeDrawer}
-      />      <AntardrashtiNetralayaDeleteDialog
+      />      <ShantiEyeTechDeleteDialog
         open={Boolean(deleteLead)}
         lead={deleteLead}
         isLoading={deleteMutation.isLoading}
@@ -624,7 +624,7 @@ const AntardrashtiNetralayaSection = () => {
   );
 };
 
-export default AntardrashtiNetralayaSection;
+export default ShantiEyeTechSection;
 
 
 

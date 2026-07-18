@@ -4,8 +4,8 @@ import { useAuth } from 'redux/selectors/auth/authSelector';
 import { useQuery } from 'react-query';
 import { useSnackbar } from 'notistack';
 import { normalizeClientKey } from 'utils/clientKey';
+import { formatAppDate, formatAppDateTime, normalizeAppDate } from 'utils/dateTime';
 import { _axios } from 'helper/axios';
-import dayjs from 'dayjs';
 import {
   Alert,
   Button,
@@ -220,18 +220,7 @@ const relativeLabel = (days: number): string => {
   return `In ${days} day${days === 1 ? '' : 's'}`;
 };
 
-const normalizeDateForCompare = (value?: string | null): string => {
-  const text = String(value || '').trim();
-  if (!text) return '';
-
-  const directDate = text.match(/^\d{4}-\d{2}-\d{2}/);
-  if (directDate) return directDate[0];
-
-  const date = new Date(text);
-  if (Number.isNaN(date.getTime())) return '';
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
-};
+const normalizeDateForCompare = (value?: string | null): string => normalizeAppDate(value);
 
 const getFollowUpFilterDate = (lead: LeadRecord): string => {
   // Follow-Up page MUST show only manual follow_up_date leads.
@@ -240,16 +229,7 @@ const getFollowUpFilterDate = (lead: LeadRecord): string => {
 };
 
 // Extract YYYY-MM-DD from any date-like string for the date-only picker
-const toDateValue = (value?: string | null): string => {
-  const text = String(value || '').trim();
-  if (!text) return '';
-  // Already a plain date
-  if (/^\d{4}-\d{2}-\d{2}$/.test(text)) return text;
-  const date = new Date(text);
-  if (Number.isNaN(date.getTime())) return '';
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
-};
+const toDateValue = (value?: string | null): string => normalizeAppDate(value);
 
 // Build an ISO string for 9:00 AM local time on the given YYYY-MM-DD date
 const buildNineAmISO = (dateStr: string): string => {
@@ -1059,21 +1039,15 @@ const PixelEyeFollowUpsPage: React.FC = () => {
     }
   };
 
-  const formatDateTime = (value?: string | null): string => {
-    if (!value) return 'N/A';
-    const d = dayjs(value);
-    if (!d.isValid()) return 'N/A';
-    return d.format('DD MMM YYYY, hh:mm A');
-  };
+  const formatDateTime = (value?: string | null): string =>
+    formatAppDateTime(value) || 'N/A';
 
   const formatDisplayDateTime = (value?: string | null): string => {
     const text = String(value || '').trim();
     if (!text) return 'N/A';
-    if (/^\d{4}-\d{2}-\d{2}$/.test(text)) {
-      const d = dayjs(text);
-      return d.isValid() ? d.format('DD MMM YYYY') : text;
-    }
-    return formatDateTime(text);
+    return /^\d{4}-\d{2}-\d{2}$/.test(text)
+      ? formatAppDate(text) || text
+      : formatDateTime(text);
   };
 
   const historyEntryLabel = `${historyList.length} ${historyList.length === 1 ? 'Entry' : 'Entries'}`;
@@ -1143,7 +1117,7 @@ const PixelEyeFollowUpsPage: React.FC = () => {
     if (selectedLeadWithDetails.reminder_notification_sent) {
       reminderParts.push(
         selectedLeadWithDetails.reminder_notification_sent_at
-          ? `Sent ${formatDateTime(selectedLeadWithDetails.reminder_notification_sent_at)}`
+          ? ` - ${formatDateTime(selectedLeadWithDetails.reminder_notification_sent_at)}`
           : 'Notification sent',
       );
     } else {
@@ -1190,7 +1164,7 @@ const PixelEyeFollowUpsPage: React.FC = () => {
       },
       {
         label: 'Reminder Progress',
-        value: reminderParts.join(' · '),
+        value: reminderParts.join(' - '),
         tone: selectedLeadWithDetails.reminder_notification_sent
           ? 'success'
           : selectedLeadWithDetails.reminder_scheduled_at
@@ -1201,7 +1175,7 @@ const PixelEyeFollowUpsPage: React.FC = () => {
         label: 'Call Compliance',
         value:
           String(callStatus).toUpperCase() === 'CALLED'
-            ? `Call Done${complianceList[0]?.matched_call_started_at ? ` · ${formatDateTime(complianceList[0].matched_call_started_at)}` : ''}`
+            ? `Call Done${complianceList[0]?.matched_call_started_at ? ` - ${formatDateTime(complianceList[0].matched_call_started_at)}` : ''}`
             : String(callStatus).toUpperCase() === 'MISSED'
               ? 'Missed compliance window'
               : 'Call Pending',
@@ -1223,7 +1197,7 @@ const PixelEyeFollowUpsPage: React.FC = () => {
         : []),
       {
         label: 'Last Saved Result',
-        value: lastSavedResultParts.length > 0 ? lastSavedResultParts.join(' · ') : 'No completed follow-up history yet',
+        value: lastSavedResultParts.length > 0 ? lastSavedResultParts.join(' - ') : 'No completed follow-up history yet',
         tone: lastSavedResultParts.length > 0 ? 'success' : 'neutral',
       },
       {
@@ -1238,7 +1212,7 @@ const PixelEyeFollowUpsPage: React.FC = () => {
       {
         label: 'Last Change',
         value: latestHistoryItem
-          ? `${latestHistoryItem.change_type || 'UPDATED'} · ${formatDateTime(latestHistoryItem.created_at || latestHistoryItem.createdAt)}`
+          ? ` - ${formatDateTime(latestHistoryItem.created_at || latestHistoryItem.createdAt)}`
           : 'No follow-up history yet',
         tone: latestHistoryItem ? 'info' : 'neutral',
       },
@@ -1410,7 +1384,7 @@ const PixelEyeFollowUpsPage: React.FC = () => {
         description: reminderSent
           ? 'Reminder sent.'
           : selectedLeadWithDetails.reminder_scheduled_at
-            ? `Reminder at ${formatDateTime(selectedLeadWithDetails.reminder_scheduled_at)}.`
+            ? ` - ${formatDateTime(selectedLeadWithDetails.reminder_scheduled_at)}.`
             : 'No reminder set.',
         state: reminderSent ? 'done' : selectedLeadWithDetails.reminder_scheduled_at ? 'current' : 'pending',
       },
@@ -1419,7 +1393,7 @@ const PixelEyeFollowUpsPage: React.FC = () => {
         label: '3. Call',
         description:
           complianceStatus === 'CALLED'
-            ? `Call done${complianceList[0]?.matched_call_started_at ? ` · ${formatDateTime(complianceList[0].matched_call_started_at)}` : ''}`
+            ? `Call done${complianceList[0]?.matched_call_started_at ? ` - ${formatDateTime(complianceList[0].matched_call_started_at)}` : ''}`
             : complianceStatus === 'MISSED'
               ? 'Missed call window.'
               : hasPendingSignal
@@ -2100,7 +2074,7 @@ const PixelEyeFollowUpsPage: React.FC = () => {
                                 .split(' ')
                                 .map((part) => part[0])
                                 .slice(0, 2)
-                                .join('')
+                                .join(' - ')
                                 .toUpperCase()}
                             </div>
 
@@ -2228,7 +2202,7 @@ const PixelEyeFollowUpsPage: React.FC = () => {
                               .split(' ')
                               .map((part) => part[0])
                               .slice(0, 2)
-                              .join('')
+                              .join(' - ')
                               .toUpperCase()}
                           </div>
                           <div>
@@ -2714,7 +2688,7 @@ const PixelEyeFollowUpsPage: React.FC = () => {
                                       complianceList[0].scheduled_follow_up_at ||
                                       complianceList[0].follow_up_date,
                                     )}
-                                    <span className="mx-2 opacity-40">→</span>
+                                    <span className="mx-2 opacity-40">-&gt;</span>
                                     {formatDisplayDateTime(complianceList[0].allowed_until)}
                                   </div>
                                 </div>

@@ -1,26 +1,25 @@
 import type { AxiosResponse } from 'axios';
 import { _axios } from 'helper/axios';
 import type {
-  RioDeleteResponse,
-  RioExportFormat,
-  RioExportParams,
-  RioLeadResponse,
-  RioListParams,
-  RioListResponse,
-  RioSummaryResponse,
-  CreateRioLeadPayload,
-  UpdateRioLeadPayload,
-} from 'types/rio';
+  PhoenixFitnessDeleteResponse,
+  PhoenixFitnessExportFormat,
+  PhoenixFitnessExportParams,
+  PhoenixFitnessLeadResponse,
+  PhoenixFitnessListParams,
+  PhoenixFitnessListResponse,
+  PhoenixFitnessSummaryResponse,
+  CreatePhoenixFitnessLeadPayload,
+  UpdatePhoenixFitnessLeadPayload,
+} from 'types/phoenixFitness';
 
-type RioQueryParams = Record<string, string | number>;
+type PhoenixFitnessQueryParams = Record<string, string | number>;
 
-const cleanListParams = (params: RioListParams): RioQueryParams => {
-  const cleaned: RioQueryParams = {};
+const cleanListParams = (params: PhoenixFitnessListParams): PhoenixFitnessQueryParams => {
+  const cleaned: PhoenixFitnessQueryParams = {};
 
   if (params.page !== undefined) cleaned.page = params.page;
   if (params.limit !== undefined) cleaned.limit = params.limit;
   if (params.search?.trim()) cleaned.search = params.search.trim();
-  if (params.service?.trim()) cleaned.service = params.service.trim();
   if (params.branch?.trim()) cleaned.branch = params.branch.trim();
   if (params.utm_source?.trim()) cleaned.utm_source = params.utm_source.trim();
   if (params.start_date) cleaned.start_date = params.start_date;
@@ -29,11 +28,10 @@ const cleanListParams = (params: RioListParams): RioQueryParams => {
   return cleaned;
 };
 
-const cleanExportParams = (params: RioExportParams): RioQueryParams => {
-  const cleaned: RioQueryParams = {};
+const cleanExportParams = (params: PhoenixFitnessExportParams): PhoenixFitnessQueryParams => {
+  const cleaned: PhoenixFitnessQueryParams = {};
 
   if (params.search?.trim()) cleaned.search = params.search.trim();
-  if (params.service?.trim()) cleaned.service = params.service.trim();
   if (params.branch?.trim()) cleaned.branch = params.branch.trim();
   if (params.utm_source?.trim()) cleaned.utm_source = params.utm_source.trim();
   if (params.start_date) cleaned.start_date = params.start_date;
@@ -43,33 +41,33 @@ const cleanExportParams = (params: RioExportParams): RioQueryParams => {
 };
 
 const withClientContext = (
-  params: RioQueryParams,
+  params: PhoenixFitnessQueryParams,
   superAdminClientKey?: string,
-): RioQueryParams => {
+): PhoenixFitnessQueryParams => {
   if (!superAdminClientKey?.trim()) return params;
   return { ...params, _client_key: superAdminClientKey.trim() };
 };
 
-export const getRioLeads = async (
-  params: RioListParams,
+export const getPhoenixFitnessLeads = async (
+  params: PhoenixFitnessListParams,
   superAdminClientKey?: string,
-): Promise<RioListResponse> =>
+): Promise<PhoenixFitnessListResponse> =>
   (await _axios(
     'get',
-    '/rio',
+    '/phoenix-fitness',
     undefined,
     'application/json',
     withClientContext(cleanListParams(params), superAdminClientKey),
-  )) as RioListResponse;
+  )) as PhoenixFitnessListResponse;
 
-export const exportRioLeads = async (
-  format: RioExportFormat,
-  params: RioExportParams,
+export const exportPhoenixFitnessLeads = async (
+  format: PhoenixFitnessExportFormat,
+  params: PhoenixFitnessExportParams,
   superAdminClientKey?: string,
 ): Promise<AxiosResponse<Blob>> =>
   (await _axios(
     'get',
-    '/rio/export',
+    '/phoenix-fitness/export',
     undefined,
     'application/json',
     withClientContext(
@@ -82,64 +80,64 @@ export const exportRioLeads = async (
     { responseType: 'blob', returnRawResponse: true },
   )) as AxiosResponse<Blob>;
 
-export const getRioSummary = async (
-  params: RioExportParams = {},
+export const getPhoenixFitnessSummary = async (
+  params: PhoenixFitnessExportParams = {},
   superAdminClientKey?: string,
-): Promise<RioSummaryResponse> =>
+): Promise<PhoenixFitnessSummaryResponse> =>
   (await _axios(
     'get',
-    '/rio/summary',
+    '/phoenix-fitness/summary',
     undefined,
     'application/json',
     withClientContext(cleanExportParams(params), superAdminClientKey),
-  )) as RioSummaryResponse;
+  )) as PhoenixFitnessSummaryResponse;
 
-export const getRioLeadById = async (
+export const getPhoenixFitnessLeadById = async (
   id: number,
   superAdminClientKey?: string,
-): Promise<RioLeadResponse> =>
+): Promise<PhoenixFitnessLeadResponse> =>
   (await _axios(
     'get',
-    `/rio/${id}`,
+    `/phoenix-fitness/${id}`,
     undefined,
     'application/json',
     withClientContext({}, superAdminClientKey),
-  )) as RioLeadResponse;
+  )) as PhoenixFitnessLeadResponse;
 
-export const createRioLead = async (
-  payload: CreateRioLeadPayload,
+export const createPhoenixFitnessLead = async (
+  payload: CreatePhoenixFitnessLeadPayload,
   superAdminClientKey?: string,
-): Promise<RioLeadResponse> =>
+): Promise<PhoenixFitnessLeadResponse> =>
   (await _axios(
     'post',
-    '/rio',
+    '/phoenix-fitness',
     payload,
     'application/json',
     withClientContext({}, superAdminClientKey),
-  )) as RioLeadResponse;
+  )) as PhoenixFitnessLeadResponse;
 
-export const updateRioLead = async (
+export const updatePhoenixFitnessLead = async (
   id: number,
-  payload: UpdateRioLeadPayload,
+  payload: UpdatePhoenixFitnessLeadPayload,
   superAdminClientKey?: string,
-): Promise<RioLeadResponse> =>
+): Promise<PhoenixFitnessLeadResponse> =>
   (await _axios(
     'patch',
-    `/rio/${id}`,
+    `/phoenix-fitness/${id}`,
     payload,
     'application/json',
     withClientContext({}, superAdminClientKey),
-  )) as RioLeadResponse;
+  )) as PhoenixFitnessLeadResponse;
 
-export const deleteRioLead = async (
+export const deletePhoenixFitnessLead = async (
   id: number,
   superAdminClientKey?: string,
-): Promise<RioDeleteResponse> =>
+): Promise<PhoenixFitnessDeleteResponse> =>
   (await _axios(
     'delete',
-    `/rio/${id}`,
+    `/phoenix-fitness/${id}`,
     undefined,
     'application/json',
     withClientContext({}, superAdminClientKey),
-  )) as RioDeleteResponse;
+  )) as PhoenixFitnessDeleteResponse;
 

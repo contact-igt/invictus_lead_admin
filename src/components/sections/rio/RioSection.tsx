@@ -1,4 +1,4 @@
-﻿import { MouseEvent, useEffect, useState } from 'react';
+import { MouseEvent, useEffect, useState } from 'react';
 import { saveAs } from 'file-saver';
 import { useSnackbar } from 'notistack';
 import { useParams } from 'react-router-dom';
@@ -160,7 +160,7 @@ const RioSection = () => {
   };
 
   const leadsQuery = useRioLeads(clientKey, params, isRioModule);
-  const summaryQuery = useRioSummary(clientKey, isRioModule);
+  const summaryQuery = useRioSummary(clientKey, params, isRioModule);
   const detailQuery = useRioLead(
     clientKey,
     selectedLead?.id ?? null,
@@ -437,25 +437,25 @@ const RioSection = () => {
       >
         <SummaryCard
           label="Total Leads"
-          value={summaryUnavailable ? '—' : summary.total_leads}
+          value={summaryUnavailable ? '-' : summary.total_leads}
           icon="hugeicons:user-multiple"
           loading={summaryLoading}
         />
         <SummaryCard
-          label="Today’s Leads"
-          value={summaryUnavailable ? '—' : summary.today_leads}
+          label="Today's Leads"
+          value={summaryUnavailable ? '-' : summary.today_leads}
           icon="hugeicons:calendar-03"
           loading={summaryLoading}
         />
         <SummaryCard
           label="This Month"
-          value={summaryUnavailable ? '—' : summary.this_month_leads}
+          value={summaryUnavailable ? '-' : summary.this_month_leads}
           icon="hugeicons:calendar-04"
           loading={summaryLoading}
         />
         <SummaryCard
           label="Top Service"
-          value={summaryUnavailable ? '—' : summary.top_service || 'No data'}
+          value={summaryUnavailable ? '-' : summary.top_service || 'No data'}
           helperText={
             summaryUnavailable
               ? undefined
@@ -549,6 +549,7 @@ const RioSection = () => {
             value={endDate ? dayjs(endDate) : null}
             onChange={updateDate(setEndDate)}
             minDate={startDate ? dayjs(startDate) : undefined}
+            disabled={!startDate}
             slotProps={{ textField: { size: 'small', fullWidth: true, sx: { minWidth: 0 } } }}
           />
           <Button
