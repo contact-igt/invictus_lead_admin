@@ -16,6 +16,7 @@ const Dashboard = lazy(() => import('pages/dashboard'));
 const Signin = lazy(() => import('pages/authentication/Signin'));
 const UserManagement = lazy(() => import('pages/management'));
 const ClientManagement = lazy(() => import('pages/client'));
+const ApiLogsPage = lazy(() => import('pages/api-logs'));
 const DynamicPage = lazy(() => import('pages/dynamic'));
 const PixelEyePage = lazy(() => import('pages/pixel-eye'));
 const PixelEyeLeadDetailPage = lazy(() => import('pages/pixel-eye/lead-detail'));
@@ -132,6 +133,10 @@ const router = createBrowserRouter(
             {
               path: paths.clients,
               element: <ClientManagement />,
+            },
+            {
+              path: paths.apiLogs,
+              element: <ApiLogsPage />,
             },
             {
               path: paths.settings,

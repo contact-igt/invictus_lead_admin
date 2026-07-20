@@ -48,6 +48,14 @@ const clientManagementSitemap: MenuItem = {
   active: true,
 };
 
+const apiLogsSitemap: MenuItem = {
+  id: 'api-logs',
+  path: paths.apiLogs,
+  subheader: 'API Logs',
+  icon: 'hugeicons:activity-04',
+  active: true,
+};
+
 const generateDynamicClientMenus = (): MenuItem[] => {
   return Object.entries(ClientRegistry).map(([clientKey, config]: [string, ClientConfig]) => {
     const overviewItem: SubMenuItem = {
@@ -109,6 +117,7 @@ const sitemap: MenuItem[] = [
   ...baseSitemap,
   ...generateDynamicClientMenus(),
   clientManagementSitemap,
+  apiLogsSitemap,
   managementSitemap,
 ];
 
