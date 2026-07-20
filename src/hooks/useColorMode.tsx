@@ -107,7 +107,9 @@ export const ColorModeProvider = ({ children }: { children: React.ReactNode }) =
     try {
       localStorage.setItem('app-color-mode', mode);
       window.dispatchEvent(new CustomEvent(THEME_CHANGE_EVENT, { detail: mode }));
-    } catch {}
+    } catch {
+      // Storage can be unavailable in restricted browser contexts.
+    }
   }, [mode]);
 
   // Listen for external theme change events and update provider state

@@ -1,11 +1,6 @@
-const CLIENT_KEY_ALIASES: Record<string, string> = {
+export const CLIENT_KEY_ALIASES: Readonly<Record<string, string>> = {
     pixel_eye: 'pixeleye',
     vlslaw: 'vls_law',
-    aaraveyecare: 'aarav_eye_care',
-    antardrashtinetralaya: 'antardrashti_netralaya',
-    riohospital: 'rio',
-    shantieyetech: 'shanti_eye_tech',
-    shanti_eye: 'shanti_eye_tech',
 };
 
 export const SUPPORTED_CLIENT_MODULES = ['pixeleye', 'vls_law', 'aarav_eye_care', 'antardrashti_netralaya', 'rio', 'shanti_eye_tech', 'phoenix_fitness'] as const;
@@ -30,6 +25,23 @@ export const normalizeClientKey = (key?: string | null): string => {
     return CLIENT_KEY_ALIASES[normalized] || normalized;
 };
 
+export const extractClientModuleKey = (
+    key?: string | null,
+): SupportedClientModule | '' => {
+    const normalized = normalizeClientKey(key);
+    if (!normalized) return '';
+
+    return (
+        SUPPORTED_CLIENT_MODULES.find(
+            (moduleKey) =>
+                normalized === moduleKey || normalized.startsWith(`${moduleKey}_`),
+        ) || ''
+    );
+};
+
+export const isSupportedClientKey = (key?: string | null): boolean =>
+    Boolean(extractClientModuleKey(key));
+
 export const normalizeClientSegment = (segment?: string | null): string => {
     if (!segment) return '';
 
@@ -48,9 +60,7 @@ export const splitClientKeyForForm = (key?: string | null): { moduleKey: Support
         return { moduleKey: '', tenantKey: '' };
     }
 
-    const moduleKey = SUPPORTED_CLIENT_MODULES.find(
-        (candidate) => normalized === candidate || normalized.startsWith(`${candidate}_`),
-    ) || '';
+    const moduleKey = extractClientModuleKey(normalized);
 
     if (!moduleKey) {
         return { moduleKey: '', tenantKey: normalized };

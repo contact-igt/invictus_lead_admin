@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 import { Stack, Box } from "@mui/material";
 import IconifyIcon from "components/base/IconifyIcon";
 import { ReactNode } from "react";

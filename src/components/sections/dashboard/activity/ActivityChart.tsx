@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { SxProps, useTheme } from '@mui/material';
 import * as echarts from 'echarts/core';
 import ReactEchart from 'components/base/ReactEchart';
@@ -27,7 +27,7 @@ interface ActivityChartProps {
 
 const ActivityChart = ({ data, ...rest }: ActivityChartProps) => {
   const theme = useTheme();
-  let isTopOffset: boolean;
+  const isTopOffset = useRef(false);
 
   const option = useMemo(
     () => ({
@@ -69,17 +69,17 @@ const ActivityChart = ({ data, ...rest }: ActivityChartProps) => {
           const bottomOffset = y + 20;
 
           if (topOffset > 0) {
-            isTopOffset = true;
+            isTopOffset.current = true;
             return [x - size.contentSize[0] / 2, topOffset];
           } else {
-            isTopOffset = false;
+            isTopOffset.current = false;
             return [x - size.contentSize[0] / 2, bottomOffset];
           }
         },
         formatter: (params: { data: number }[] | { data: number }) => {
           if (Array.isArray(params)) {
             const dataValue = Math.round(params[0].data);
-            const arrowPosition = isTopOffset ? 'bottom:-14px;' : 'top:-14px;';
+            const arrowPosition = isTopOffset.current ? 'bottom:-14px;' : 'top:-14px;';
             return `<div style="position:relative; border-radius:10px;">
               <p style="font-size:${theme.typography.body2.fontSize}; font-weight:500">${dataValue} Task</p>
               <span style="position:absolute; ${arrowPosition} left:50%; transform:translate(-50%) rotate(45deg); width:12px; height:12px; background:${theme.palette.primary.dark}; border-top:none; border-left:none; border-right:none; border-bottom:none; z-index:-10000;"></span>

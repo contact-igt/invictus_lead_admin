@@ -44,7 +44,6 @@ import ShantiEyeTechFormDrawer, {
   ShantiEyeTechDrawerMode,
 } from './ShantiEyeTechFormDrawer';
 import ShantiEyeTechTable from './ShantiEyeTechTable';
-import ShantiEyeTechViewDrawer from './ShantiEyeTechViewDrawer';
 import {
   SHANTI_EYE_TECH_COLOR,
   SHANTI_EYE_TECH_SERVICES,
@@ -606,14 +605,7 @@ const ShantiEyeTechSection = () => {
         onClose={closeDrawer}
         onSubmit={handleSubmit}
       />
-
-
-      <ShantiEyeTechViewDrawer
-        open={drawerOpen && drawerMode === 'view'}
-        lead={drawerLead}
-        isLoading={detailQuery.isLoading}
-        onClose={closeDrawer}
-      />      <ShantiEyeTechDeleteDialog
+      <ShantiEyeTechDeleteDialog
         open={Boolean(deleteLead)}
         lead={deleteLead}
         isLoading={deleteMutation.isLoading}

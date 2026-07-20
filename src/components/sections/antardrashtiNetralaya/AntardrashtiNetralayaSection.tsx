@@ -45,7 +45,6 @@ import AntardrashtiNetralayaFormDrawer, {
   AntardrashtiNetralayaDrawerMode,
 } from './AntardrashtiNetralayaFormDrawer';
 import AntardrashtiNetralayaTable from './AntardrashtiNetralayaTable';
-import AntardrashtiNetralayaViewDrawer from './AntardrashtiNetralayaViewDrawer';
 import {
   ANTARDRASHTI_NETRALAYA_COLOR,
   ANTARDRASHTI_NETRALAYA_SERVICES,
@@ -606,14 +605,7 @@ const AntardrashtiNetralayaSection = () => {
         onClose={closeDrawer}
         onSubmit={handleSubmit}
       />
-
-
-      <AntardrashtiNetralayaViewDrawer
-        open={drawerOpen && drawerMode === 'view'}
-        lead={drawerLead}
-        isLoading={detailQuery.isLoading}
-        onClose={closeDrawer}
-      />      <AntardrashtiNetralayaDeleteDialog
+      <AntardrashtiNetralayaDeleteDialog
         open={Boolean(deleteLead)}
         lead={deleteLead}
         isLoading={deleteMutation.isLoading}

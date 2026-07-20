@@ -18,9 +18,18 @@ const MenuItem: Components<Omit<Theme, 'components'>>['MuiMenuItem'] = {
         color: 'inherit',
         WebkitTextFillColor: 'currentColor',
       },
-      '&:hover, &.Mui-focusVisible, &.Mui-selected, &.Mui-selected:hover, &.Mui-selected.Mui-focusVisible': {
-        backgroundColor: theme.palette.info.dark,
-        color: theme.palette.text.primary,
+      '&:hover, &.Mui-focusVisible': {
+        backgroundColor: theme.palette.primary.lighter,
+        color: theme.palette.primary.darker,
+      },
+      '&.Mui-selected, &.Mui-selected.Mui-focusVisible': {
+        backgroundColor: theme.palette.primary.lighter,
+        color: theme.palette.primary.darker,
+        fontWeight: 600,
+      },
+      '&.Mui-selected:hover': {
+        backgroundColor: theme.palette.primary.light,
+        color: theme.palette.primary.darker,
       },
       '&.Mui-disabled': {
         color: theme.palette.text.disabled,

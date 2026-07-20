@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect, useRef } from 'react';
+import React, { useCallback, useMemo, useState, useEffect, useRef } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useAuth } from 'redux/selectors/auth/authSelector';
 import { useQuery } from 'react-query';
@@ -476,7 +476,7 @@ const PixelEyeFollowUpsPage: React.FC = () => {
     const query = searchQuery.trim().toLowerCase();
 
     if (!query) {
-      return (_lead: Partial<FollowUpDisplayItem | LeadRecord>) => true;
+      return () => true;
     }
 
     return (lead: Partial<FollowUpDisplayItem | LeadRecord>) =>
@@ -825,10 +825,10 @@ const PixelEyeFollowUpsPage: React.FC = () => {
     day_5: fullLead?.day_5 ?? lead.day_5 ?? null,
   });
 
-  const hasLeadActionTarget = (lead: FollowUpDisplayItem): boolean => {
+  const hasLeadActionTarget = useCallback((lead: FollowUpDisplayItem): boolean => {
     if (activeBucket !== 'missed') return Number.isFinite(lead.id);
     return typeof lead.lead_id === 'number' && Number.isFinite(lead.lead_id);
-  };
+  }, [activeBucket]);
 
   const shouldHideActionPanel = (lead: FollowUpDisplayItem): boolean =>
     shouldHideFollowUpLead(lead);
@@ -1039,16 +1039,18 @@ const PixelEyeFollowUpsPage: React.FC = () => {
     }
   };
 
-  const formatDateTime = (value?: string | null): string =>
-    formatAppDateTime(value) || 'N/A';
+  const formatDateTime = useCallback(
+    (value?: string | null): string => formatAppDateTime(value) || 'N/A',
+    [],
+  );
 
-  const formatDisplayDateTime = (value?: string | null): string => {
+  const formatDisplayDateTime = useCallback((value?: string | null): string => {
     const text = String(value || '').trim();
     if (!text) return 'N/A';
     return /^\d{4}-\d{2}-\d{2}$/.test(text)
       ? formatAppDate(text) || text
       : formatDateTime(text);
-  };
+  }, [formatDateTime]);
 
   const historyEntryLabel = `${historyList.length} ${historyList.length === 1 ? 'Entry' : 'Entries'}`;
 
@@ -1219,6 +1221,8 @@ const PixelEyeFollowUpsPage: React.FC = () => {
     ];
   }, [
     complianceList,
+    formatDateTime,
+    formatDisplayDateTime,
     historyList,
     selectedLeadLatestOutcome,
     selectedLeadSummary.currentState,
@@ -1349,6 +1353,7 @@ const PixelEyeFollowUpsPage: React.FC = () => {
     };
   }, [
     activeBucket,
+    hasLeadActionTarget,
     isSelectedLeadOutcomeComplete,
     selectedLead,
     selectedLeadFollowUpLocked,
@@ -1417,6 +1422,8 @@ const PixelEyeFollowUpsPage: React.FC = () => {
     ];
   }, [
     complianceList,
+    formatDateTime,
+    formatDisplayDateTime,
     selectedLeadSummary.latestDayField,
     selectedLeadSummary.latestFollowUpDate,
     selectedLeadSummary.latestOutcomeStatus,

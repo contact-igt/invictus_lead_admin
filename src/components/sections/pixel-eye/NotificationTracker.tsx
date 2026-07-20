@@ -111,19 +111,6 @@ const NotificationTracker = ({ clientKey, searchText }: NotificationTrackerProps
     usePixelEyeNotificationsSummaryQuery(clientKey, { enabled: hasScopedClientContext });
   const deleteNotificationsMutation = useDeletePixelEyeNotificationsMutation();
 
-  if (!hasScopedClientContext) {
-    return (
-      <PixelEyeCard sx={{ p: 3 }}>
-        <Typography variant="h6" sx={{ fontWeight: 800 }}>
-          Please select a client
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-          Select a client from route context to load notification tracker data.
-        </Typography>
-      </PixelEyeCard>
-    );
-  }
-
   const filtered = useMemo(() => {
     return notifications.filter((n) => {
       if (stateFilter && n.state !== stateFilter) return false;
@@ -166,6 +153,19 @@ const NotificationTracker = ({ clientKey, searchText }: NotificationTrackerProps
       current.filter((id) => filtered.some((notification) => notification.id === id)),
     );
   }, [filtered]);
+
+  if (!hasScopedClientContext) {
+    return (
+      <PixelEyeCard sx={{ p: 3 }}>
+        <Typography variant="h6" sx={{ fontWeight: 800 }}>
+          Please select a client
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+          Select a client from route context to load notification tracker data.
+        </Typography>
+      </PixelEyeCard>
+    );
+  }
 
   const handleClearDateFilter = () => {
     setDateFrom('');

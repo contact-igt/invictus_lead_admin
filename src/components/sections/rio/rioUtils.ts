@@ -1,5 +1,5 @@
 import axios, { AxiosError } from 'axios';
-import dayjs from 'dayjs';
+import { formatAppDateTime, getAppDateKey } from 'utils/dateTime';
 import type {
   RioListParams,
   CreateRioLeadPayload,
@@ -34,9 +34,7 @@ export const RIO_BRANCHES = [
 export type RioService = (typeof RIO_SERVICES)[number];
 
 export const formatRioDateTime = (value?: string | null): string => {
-  if (!value) return '-';
-  const parsed = dayjs(value);
-  return parsed.isValid() ? parsed.format('DD MMM YYYY, hh:mm A') : '-';
+  return formatAppDateTime(value) || '-';
 };
 
 export const toOptionalText = (value: string): string | null => {
@@ -132,8 +130,7 @@ export const extractDownloadFilename = (
 };
 
 export const getRioExportFallbackName = (format: 'csv' | 'pdf'): string => {
-  const date = dayjs().format('YYYY-MM-DD');
-  return `rio-leads-${date}.${format}`;
+  return `rio-leads-${getAppDateKey()}.${format}`;
 };
 
 

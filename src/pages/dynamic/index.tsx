@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { Navigate, useParams } from 'react-router-dom';
 import { useAuth } from 'redux/selectors/auth/authSelector';
 import DynamicSection from 'components/sections/dynamic/DynamicSection';
 import DynamicDashboard from 'components/sections/dynamic/DynamicDashboard';
@@ -7,7 +7,15 @@ import NotificationTracker from 'components/sections/pixel-eye-notification-trac
 import { ClientRegistry } from 'config/clients';
 import { Box, Typography } from '@mui/material';
 import { normalizeClientKey } from 'utils/clientKey';
-import { resolveClientModuleKey } from 'utils/clientModuleResolver';
+import { getClientHomePath, resolveClientModuleKey } from 'utils/clientModuleResolver';
+
+const DEDICATED_CLIENT_MODULES = new Set([
+  'aarav_eye_care',
+  'antardrashti_netralaya',
+  'rio',
+  'shanti_eye_tech',
+  'phoenix_fitness',
+]);
 
 const DynamicPage = () => {
   const { user } = useAuth();
@@ -48,6 +56,10 @@ const DynamicPage = () => {
 
   // "overview" is a special tableId — render the client's metric dashboard
   if (tableId === 'overview') {
+    if (DEDICATED_CLIENT_MODULES.has(activeClientKey)) {
+      return <Navigate to={getClientHomePath(activeClientKey)} replace />;
+    }
+
     if (activeClientKey === 'pixeleye') {
       return <DashboardPage />;
     }

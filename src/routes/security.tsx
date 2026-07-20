@@ -2,23 +2,13 @@
 import { useAuth } from 'redux/selectors/auth/authSelector';
 import paths from './paths';
 import sitemap from './sitemap';
-import { normalizeClientKey } from 'utils/clientKey';
-import { resolveClientModuleKey } from 'utils/clientModuleResolver';
+import { getClientHomePath, resolveClientModuleKey } from 'utils/clientModuleResolver';
 
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   const location = useLocation();
   const { token, user } = useAuth();
   const userModuleKey = resolveClientModuleKey(user?.clientKey);
-  const clientHomePath =
-    userModuleKey === 'aarav_eye_care'
-      ? paths.aaravEyeCare(userModuleKey)
-      : userModuleKey === 'antardrashti_netralaya'
-        ? paths.antardrashtiNetralaya(userModuleKey)
-        : userModuleKey === 'rio'
-          ? paths.rio(userModuleKey)
-          : userModuleKey
-        ? `/pages/d/${userModuleKey}/overview`
-        : '/';
+  const clientHomePath = getClientHomePath(user?.clientKey);
 
   if (!token) {
     return <Navigate to={`${paths.signin}`} state={{ from: location }} replace />;
@@ -82,7 +72,7 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
       return <Navigate to="/" replace />;
     }
 
-    if (normalizeClientKey(requiredKey) !== normalizeClientKey(userModuleKey)) {
+    if (resolveClientModuleKey(requiredKey) !== userModuleKey) {
       return <Navigate to="/" replace />;
     }
 
@@ -111,7 +101,7 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
       return <Navigate to={clientHomePath} replace />;
     }
 
-    if (normalizeClientKey(requiredKey) !== normalizeClientKey(userModuleKey)) {
+    if (resolveClientModuleKey(requiredKey) !== userModuleKey) {
       if (location.pathname === clientHomePath) {
         return children;
       }

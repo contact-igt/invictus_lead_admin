@@ -599,6 +599,7 @@ const PixelEyeLeadDetailPage = () => {
       lead?.day_5,
       lead?.status,
       lead?.followup_state,
+      lead?.followup_completion_source,
       lead?.reminder_permanently_closed,
     ],
   );

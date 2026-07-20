@@ -230,25 +230,25 @@ export const usePixelEyeQuery = (clientKey?: string, options?: PixelEyeQueryOpti
     const params = clientKey ? { _client_key: clientKey } : undefined;
     const res = await _axios('get', '/pixeleye', undefined, 'application/json', params);
     if (import.meta.env.DEV) {
-      // eslint-disable-next-line no-console
+       
       console.debug('usePixelEyeQuery - raw response', res);
     }
     if (Array.isArray(res)) {
       if (import.meta.env.DEV) {
-        // eslint-disable-next-line no-console
+         
         console.debug('usePixelEyeQuery - returning array length', res.length);
       }
       return res as PixelEyeLead[];
     }
     if (Array.isArray(res?.data)) {
       if (import.meta.env.DEV) {
-        // eslint-disable-next-line no-console
+         
         console.debug('usePixelEyeQuery - returning res.data length', res.data.length);
       }
       return res.data as PixelEyeLead[];
     }
     if (import.meta.env.DEV) {
-      // eslint-disable-next-line no-console
+       
       console.debug('usePixelEyeQuery - returning fallback value', res ?? []);
     }
     return (res ?? []) as PixelEyeLead[];
@@ -463,12 +463,12 @@ export const useCreatePixelEyeMutation = () => {
   return useMutation(
     (payload: CreatePixelEyePayload) => {
       if (import.meta.env.DEV) {
-        // eslint-disable-next-line no-console
+         
         console.debug('useCreatePixelEyeMutation - request payload', payload);
       }
       return _axios('post', '/pixeleye', payload).then((res) => {
         if (import.meta.env.DEV) {
-          // eslint-disable-next-line no-console
+           
           console.debug('useCreatePixelEyeMutation - response', res);
         }
         return res;
@@ -477,20 +477,20 @@ export const useCreatePixelEyeMutation = () => {
     {
       onMutate: (vars) => {
         if (import.meta.env.DEV) {
-          // eslint-disable-next-line no-console
+           
           console.debug('useCreatePixelEyeMutation - onMutate', vars);
         }
       },
       onSuccess: (data) => {
         if (import.meta.env.DEV) {
-          // eslint-disable-next-line no-console
+           
           console.debug('useCreatePixelEyeMutation - onSuccess', data);
         }
         refreshPixelEyeCaches(queryClient);
       },
       onError: (err) => {
         if (import.meta.env.DEV) {
-          // eslint-disable-next-line no-console
+           
           console.debug('useCreatePixelEyeMutation - onError', err);
         }
       },
@@ -503,13 +503,13 @@ export const useUpdatePixelEyeMutation = () => {
   return useMutation(
     ({ id, clientKey, ...payload }: UpdatePixelEyePayload) => {
       if (import.meta.env.DEV) {
-        // eslint-disable-next-line no-console
+         
         console.debug('useUpdatePixelEyeMutation - request id,payload', id, payload);
       }
       const params = clientKey ? { _client_key: clientKey } : undefined;
       return _axios('patch', `/pixeleye/${id}`, payload, 'application/json', params).then((res) => {
         if (import.meta.env.DEV) {
-          // eslint-disable-next-line no-console
+           
           console.debug('useUpdatePixelEyeMutation - response', res);
         }
         return res;
@@ -518,20 +518,20 @@ export const useUpdatePixelEyeMutation = () => {
     {
       onMutate: (vars) => {
         if (import.meta.env.DEV) {
-          // eslint-disable-next-line no-console
+           
           console.debug('useUpdatePixelEyeMutation - onMutate', vars);
         }
       },
       onSuccess: (data) => {
         if (import.meta.env.DEV) {
-          // eslint-disable-next-line no-console
+           
           console.debug('useUpdatePixelEyeMutation - onSuccess', data);
         }
         refreshPixelEyeCaches(queryClient);
       },
       onError: (err) => {
         if (import.meta.env.DEV) {
-          // eslint-disable-next-line no-console
+           
           console.debug('useUpdatePixelEyeMutation - onError', err);
         }
       },
@@ -544,13 +544,13 @@ export const useDeletePixelEyeMutation = () => {
   return useMutation(
     ({ id, clientKey }: { id: number; clientKey?: string }) => {
       if (import.meta.env.DEV) {
-        // eslint-disable-next-line no-console
+         
         console.debug('useDeletePixelEyeMutation - request id', id);
       }
       const params = clientKey ? { _client_key: clientKey } : undefined;
       return _axios('delete', `/pixeleye/${id}`, undefined, 'application/json', params).then((res) => {
         if (import.meta.env.DEV) {
-          // eslint-disable-next-line no-console
+           
           console.debug('useDeletePixelEyeMutation - response', res);
         }
         return res;
@@ -559,20 +559,20 @@ export const useDeletePixelEyeMutation = () => {
     {
       onMutate: (vars) => {
         if (import.meta.env.DEV) {
-          // eslint-disable-next-line no-console
+           
           console.debug('useDeletePixelEyeMutation - onMutate', vars);
         }
       },
       onSuccess: (data) => {
         if (import.meta.env.DEV) {
-          // eslint-disable-next-line no-console
+           
           console.debug('useDeletePixelEyeMutation - onSuccess', data);
         }
         refreshPixelEyeCaches(queryClient);
       },
       onError: (err) => {
         if (import.meta.env.DEV) {
-          // eslint-disable-next-line no-console
+           
           console.debug('useDeletePixelEyeMutation - onError', err);
         }
       },
@@ -587,13 +587,13 @@ export const useReschedulePixelEyeFollowUpMutation = () => {
   return useMutation(
     ({ id, clientKey, ...payload }: ReschedulePixelEyeFollowUpPayload) => {
       if (import.meta.env.DEV) {
-        // eslint-disable-next-line no-console
+         
         console.debug('useReschedulePixelEyeFollowUpMutation - request', id, payload);
       }
       const params = clientKey ? { _client_key: clientKey } : undefined;
       return _axios('patch', `/pixeleye/${id}/follow-up/reschedule`, payload, 'application/json', params).then((res) => {
         if (import.meta.env.DEV) {
-          // eslint-disable-next-line no-console
+           
           console.debug('useReschedulePixelEyeFollowUpMutation - response', res);
         }
         return res;
@@ -602,7 +602,7 @@ export const useReschedulePixelEyeFollowUpMutation = () => {
     {
       onSuccess: (data) => {
         if (import.meta.env.DEV) {
-          // eslint-disable-next-line no-console
+           
           console.debug('useReschedulePixelEyeFollowUpMutation - onSuccess', data);
         }
         enqueueSnackbar('Follow-up rescheduled', { variant: 'success' });
@@ -610,7 +610,7 @@ export const useReschedulePixelEyeFollowUpMutation = () => {
       },
       onError: (err: any) => {
         if (import.meta.env.DEV) {
-          // eslint-disable-next-line no-console
+           
           console.debug('useReschedulePixelEyeFollowUpMutation - onError', err);
         }
         enqueueSnackbar(
@@ -669,13 +669,13 @@ export const useCancelPixelEyeFollowUpMutation = () => {
   return useMutation(
     ({ id, clientKey, ...payload }: CancelPixelEyeFollowUpPayload) => {
       if (import.meta.env.DEV) {
-        // eslint-disable-next-line no-console
+         
         console.debug('useCancelPixelEyeFollowUpMutation - request', id, payload);
       }
       const params = clientKey ? { _client_key: clientKey } : undefined;
       return _axios('patch', `/pixeleye/${id}/follow-up/cancel`, payload, 'application/json', params).then((res) => {
         if (import.meta.env.DEV) {
-          // eslint-disable-next-line no-console
+           
           console.debug('useCancelPixelEyeFollowUpMutation - response', res);
         }
         return res;
@@ -684,7 +684,7 @@ export const useCancelPixelEyeFollowUpMutation = () => {
     {
       onSuccess: (data) => {
         if (import.meta.env.DEV) {
-          // eslint-disable-next-line no-console
+           
           console.debug('useCancelPixelEyeFollowUpMutation - onSuccess', data);
         }
         enqueueSnackbar('Follow-up closed/cancelled', { variant: 'success' });
@@ -692,7 +692,7 @@ export const useCancelPixelEyeFollowUpMutation = () => {
       },
       onError: (err: any) => {
         if (import.meta.env.DEV) {
-          // eslint-disable-next-line no-console
+           
           console.debug('useCancelPixelEyeFollowUpMutation - onError', err);
         }
         enqueueSnackbar(

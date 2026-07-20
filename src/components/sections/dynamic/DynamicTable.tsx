@@ -216,7 +216,7 @@ const DynamicTable = ({
     if (apiRef.current?.setQuickFilterValues) {
       apiRef.current.setQuickFilterValues(searchText.split(/\b\W+\b/).filter(Boolean));
     }
-  }, [searchText]);
+  }, [apiRef, searchText]);
 
   const columns: GridColDef[] = useMemo(() => {
     const cols = config.columns.map((col: ColumnConfig) => {

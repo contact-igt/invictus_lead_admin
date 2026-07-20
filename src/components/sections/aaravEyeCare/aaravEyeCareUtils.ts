@@ -1,5 +1,5 @@
 import axios, { AxiosError } from 'axios';
-import dayjs from 'dayjs';
+import { formatAppDateTime, getAppDateKey } from 'utils/dateTime';
 import type {
   AaravEyeCareListParams,
   CreateAaravEyeCareLeadPayload,
@@ -28,9 +28,7 @@ export const AARAV_EYE_CARE_SERVICES = [
 export type AaravEyeCareService = (typeof AARAV_EYE_CARE_SERVICES)[number];
 
 export const formatAaravDateTime = (value?: string | null): string => {
-  if (!value) return '-';
-  const parsed = dayjs(value);
-  return parsed.isValid() ? parsed.format('DD MMM YYYY, hh:mm A') : '-';
+  return formatAppDateTime(value) || '-';
 };
 
 export const toOptionalText = (value: string): string | null => {
@@ -113,7 +111,6 @@ export const extractDownloadFilename = (
 };
 
 export const getAaravExportFallbackName = (format: 'csv' | 'pdf'): string => {
-  const date = dayjs().format('YYYY-MM-DD');
-  return `aarav-eye-care-leads-${date}.${format}`;
+  return `aarav-eye-care-leads-${getAppDateKey()}.${format}`;
 };
 

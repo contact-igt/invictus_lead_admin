@@ -14,14 +14,16 @@ const useResizeObserver = (ref: RefObject<HTMLElement>) => {
     };
 
     const observer = new ResizeObserver(handleResize);
-    if (ref.current) {
-      observer.observe(ref.current);
+    const observedElement = ref.current;
+    if (observedElement) {
+      observer.observe(observedElement);
     }
 
     return () => {
-      if (ref.current) {
-        observer.unobserve(ref.current);
+      if (observedElement) {
+        observer.unobserve(observedElement);
       }
+      observer.disconnect();
     };
   }, [ref]);
 

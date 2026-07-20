@@ -19,7 +19,7 @@ const VlsLawAcademyTable = ({ searchText, usersData, handleRemove, handleView }:
 
     useEffect(() => {
         apiRef.current.setQuickFilterValues(searchText.split(/\b\W+\b/).filter((w) => w));
-    }, [searchText]);
+    }, [apiRef, searchText]);
 
     const columns: GridColDef<Pet>[] = [
         {

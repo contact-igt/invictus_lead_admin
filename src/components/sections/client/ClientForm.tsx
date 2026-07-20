@@ -7,7 +7,6 @@ import {
   FormControl,
   FormHelperText,
   IconButton,
-  InputLabel,
   MenuItem,
   Select,
   Stack,
@@ -110,6 +109,7 @@ const ClientForm = ({
         </Typography>
         <TextField
           fullWidth
+          size="small"
           id={name}
           name={name}
           placeholder={placeholder}
@@ -119,6 +119,12 @@ const ClientForm = ({
           error={isError}
           helperText={isError ? formik.errors[name] : helperExtra}
           disabled={isReadOnly}
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              borderRadius: 2,
+              bgcolor: isReadOnly ? 'action.hover' : 'background.paper',
+            },
+          }}
         />
       </Box>
     );
@@ -129,13 +135,19 @@ const ClientForm = ({
       component="form"
       onSubmit={formik.handleSubmit}
       noValidate
-      sx={{ display: 'flex', flexDirection: 'column', height: '100%', bgcolor: 'background.paper' }}
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        minHeight: 0,
+        bgcolor: 'background.paper',
+      }}
     >
       {/* Header */}
       <Box
         sx={{
           px: { xs: 2, sm: 3 },
-          py: 2.5,
+          py: 2.25,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -154,7 +166,7 @@ const ClientForm = ({
                 : 'Register a new client in the system'}
           </Typography>
         </Box>
-        <IconButton onClick={onCancel} size="small">
+        <IconButton onClick={onCancel} size="small" aria-label="Close client drawer">
           <IconifyIcon icon="mdi:close" width={22} height={22} />
         </IconButton>
       </Box>
@@ -162,8 +174,16 @@ const ClientForm = ({
       <Divider />
 
       {/* Body */}
-      <Box sx={{ flexGrow: 1, overflowY: 'auto', px: { xs: 2, sm: 3 }, py: 3 }}>
-        <Stack direction="column" spacing={3} width={1} alignItems="stretch">
+      <Box
+        sx={{
+          flexGrow: 1,
+          minHeight: 0,
+          overflowY: 'auto',
+          px: { xs: 2, sm: 3 },
+          py: 3,
+        }}
+      >
+        <Stack direction="column" spacing={2.75} width={1} alignItems="stretch">
           {field('name', 'Client Name', 'e.g. Pixel Eye Hospital', true)}
 
           <Box sx={{ width: 1 }}>
@@ -173,17 +193,19 @@ const ClientForm = ({
                 *
               </Box>
             </Typography>
-            <FormControl fullWidth error={formik.touched.module_key && Boolean(formik.errors.module_key)}>
-              <InputLabel id="module-key-label">Select Module</InputLabel>
+            <FormControl fullWidth size="small" error={formik.touched.module_key && Boolean(formik.errors.module_key)}>
               <Select
-                labelId="module-key-label"
                 id="module_key"
                 name="module_key"
-                label="Select Module"
                 value={formik.values.module_key}
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
                 disabled={isReadOnly}
+                inputProps={{ 'aria-label': 'Module' }}
+                sx={{
+                  borderRadius: 2,
+                  bgcolor: isReadOnly ? 'action.hover' : 'background.paper',
+                }}
               >
                 {CLIENT_MODULE_OPTIONS.map((option) => (
                   <MenuItem key={option.value} value={option.value}>
@@ -199,21 +221,43 @@ const ClientForm = ({
             </FormControl>
           </Box>
 
-          {field(
-            'tenant_key',
-            'Client Code',
-            'e.g. hyderabad, batch01, unit_2',
-            false,
-            'Optional suffix appended after module key',
-          )}
-
-          <TextField
-            fullWidth
-            label="Generated Client Key"
-            value={generatedClientKey}
-            InputProps={{ readOnly: true }}
-            helperText="This key is saved in backend and used for auth + sidebar mapping"
-          />
+          <Box
+            sx={{
+              width: 1,
+              p: 1.75,
+              border: '1px solid',
+              borderColor: 'divider',
+              borderRadius: 2,
+              bgcolor: 'action.selected',
+            }}
+          >
+            <Typography variant="caption" fontWeight={700} color="text.secondary">
+              GENERATED CLIENT KEY
+            </Typography>
+            <Box
+              component="code"
+              sx={{
+                display: 'block',
+                mt: 0.75,
+                px: 1.25,
+                py: 1,
+                borderRadius: 1.5,
+                bgcolor: 'background.paper',
+                border: '1px solid',
+                borderColor: 'divider',
+                color: 'text.primary',
+                fontFamily: 'monospace',
+                fontSize: '0.9rem',
+                fontWeight: 700,
+                overflowX: 'auto',
+              }}
+            >
+              {generatedClientKey}
+            </Box>
+            <Typography variant="caption" color="text.secondary" display="block" mt={0.75}>
+              Automatically used for access and sidebar mapping.
+            </Typography>
+          </Box>
 
           {isReadOnly && initialValues && (
             <Box sx={{ width: 1 }}>
@@ -233,7 +277,14 @@ const ClientForm = ({
       <Divider />
 
       {/* Footer */}
-      <Box sx={{ px: { xs: 2, sm: 3 }, py: 2.5 }}>
+      <Box
+        sx={{
+          flexShrink: 0,
+          px: { xs: 2, sm: 3 },
+          py: 2.25,
+          bgcolor: 'background.paper',
+        }}
+      >
         <Stack direction={{ xs: 'column-reverse', sm: 'row' }} spacing={2} justifyContent="flex-end">
           <Button
             variant="outlined"
@@ -252,7 +303,13 @@ const ClientForm = ({
               startIcon={
                 isLoading ? <IconifyIcon icon="eos-icons:loading" /> : null
               }
-              sx={{ width: { xs: '100%', sm: 'auto' } }}
+              sx={{
+                width: { xs: '100%', sm: 'auto' },
+                '&.Mui-disabled': {
+                  bgcolor: 'action.disabledBackground',
+                  color: 'text.disabled',
+                },
+              }}
             >
               {isLoading ? 'Saving...' : isEdit ? 'Save Changes' : 'Add Client'}
             </Button>

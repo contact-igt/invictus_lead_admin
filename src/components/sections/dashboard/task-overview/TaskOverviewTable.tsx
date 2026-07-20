@@ -119,7 +119,7 @@ const TaskOverviewTable = ({ searchText }: TaskOverviewTableProps) => {
 
   useEffect(() => {
     apiRef.current.setQuickFilterValues(searchText.split(/\b\W+\b/).filter((word) => word !== ''));
-  }, [searchText]);
+  }, [apiRef, searchText]);
 
   return (
     <DataGrid

@@ -17,7 +17,7 @@ interface SalesOverviewProps {
 
 const SalesOverview = ({ statusBreakdown, loading = false }: SalesOverviewProps) => {
   const { mode } = useColorMode();
-  const chartData = statusBreakdown && statusBreakdown.length > 0 ? statusBreakdown : [];
+  const chartData = statusBreakdown;
   const total = chartData.reduce((s, c) => s + c.count, 0);
 
   const option = useMemo(
