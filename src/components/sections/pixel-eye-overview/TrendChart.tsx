@@ -144,7 +144,7 @@ const TrendChart = ({ points, loading = false, highlightSeries }: TrendChartProp
         },
       ],
     }),
-    [points, theme, highlightSeries, mode],
+    [contactedOpacity, convertedOpacity, points, theme, mode],
   );
 
   return (

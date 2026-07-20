@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import { store } from '../redux/store';

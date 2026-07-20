@@ -23,7 +23,7 @@ const ClientTable = ({ rows, searchText, isLoading, onEdit, onView, onDelete }: 
     if (apiRef.current?.setQuickFilterValues) {
       apiRef.current.setQuickFilterValues(searchText.trim().split(/\s+/).filter(Boolean));
     }
-  }, [searchText]);
+  }, [apiRef, searchText]);
 
   const columns: GridColDef[] = [
     {
@@ -116,13 +116,14 @@ const ClientTable = ({ rows, searchText, isLoading, onEdit, onView, onDelete }: 
       columns={columns}
       loading={isLoading}
       rowHeight={60}
+      autoHeight
       pageSizeOptions={[5, 10, 20]}
       initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
       disableColumnMenu
       disableRowSelectionOnClick
       slots={{ pagination: DataGridFooter }}
       sx={{
-        height: '100%',
+        height: 'auto',
         border: 0,
         '& .MuiDataGrid-columnHeaderTitle': {
           overflow: 'visible',

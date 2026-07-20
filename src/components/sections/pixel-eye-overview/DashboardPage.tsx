@@ -31,10 +31,6 @@ const DashboardPage: React.FC = () => {
     agent: '',
   });
 
-  if (isError) {
-    return <div style={{ padding: 16 }}>Unable to load dashboard data.</div>;
-  }
-
   const filteredLeads = useMemo(
     () => applyDashboardFilters(allLeads, filters),
     [allLeads, filters],
@@ -72,10 +68,6 @@ const DashboardPage: React.FC = () => {
     enabled: hasScopedClientContext,
   });
 
-  if (!hasScopedClientContext) {
-    return <div style={{ padding: 16 }}>Please select a client</div>;
-  }
-
   const availableAgents = useMemo(() => getAvailableAgents(allLeads), [allLeads]);
   const followUpSummary = useMemo(
     () => buildFollowUpSummaryMetrics(filteredLeads, complianceSummary),
@@ -89,12 +81,20 @@ const DashboardPage: React.FC = () => {
     (isLoading && allLeads.length === 0) ||
     (isComplianceSummaryLoading && allLeads.length === 0 && !complianceSummary);
 
+  if (isError) {
+    return <div style={{ padding: 16 }}>Unable to load dashboard data.</div>;
+  }
+
+  if (!hasScopedClientContext) {
+    return <div style={{ padding: 16 }}>Please select a client</div>;
+  }
+
   if (import.meta.env.DEV) {
-    // eslint-disable-next-line no-console
+     
     console.debug('PixelEye - Leads payload', allLeads);
-    // eslint-disable-next-line no-console
+     
     console.debug('PixelEye - Filtered leads', filteredLeads);
-    // eslint-disable-next-line no-console
+     
     console.debug('PixelEye - Computed metrics', metrics);
   }
 

@@ -67,7 +67,7 @@ const ClientSection = () => {
 
   return (
     <>
-      <Stack direction="column" spacing={2.5} width={1} sx={{ flex: 1, minHeight: 0 }}>
+      <Stack direction="column" spacing={2.5} width={1}>
         <PageTitle
           title="Client Management"
           searchText={searchText}
@@ -82,8 +82,6 @@ const ClientSection = () => {
           sx={{
             display: 'flex',
             flexDirection: 'column',
-            flex: 1,
-            minHeight: 0,
             p: 0,
             pb: 0.75,
             width: 1,
@@ -126,6 +124,8 @@ const ClientSection = () => {
             maxWidth: '100vw',
             borderLeft: 0,
             bgcolor: 'background.paper',
+            boxShadow: { xs: 'none', sm: '-8px 0 28px rgba(15, 23, 42, 0.12)' },
+            overflow: 'hidden',
           },
         }}
       >

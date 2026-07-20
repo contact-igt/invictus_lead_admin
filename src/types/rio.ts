@@ -1,4 +1,16 @@
-﻿export type RioService = 'High-Risk Pregnancy Care' | 'Fetal Medicine' | 'NICU' | 'PICU' | 'Paediatric Emergency Care' | 'General Paediatrics' | 'Vaccination Services' | 'Human Milk Bank' | 'Maternity Care' | 'Fertility & IVF';
+﻿export type RioService =
+  | 'High-Risk Pregnancy Care'
+  | 'Fetal Medicine'
+  | 'NICU'
+  | 'PICU'
+  | 'Paediatric Emergency Care'
+  | 'General Paediatrics'
+  | 'Paediatric Super Specialities'
+  | 'Vaccination Services'
+  | 'Human Milk Bank'
+  | 'Maternity Care'
+  | 'Fertility & IVF'
+  | 'General Enquiry';
 export type RioBranch = 'Madurai (Main)' | 'Southwing, Madurai' | 'Dindigul' | 'Thanjavur';
 export type RioExportFormat = 'csv' | 'pdf';
 

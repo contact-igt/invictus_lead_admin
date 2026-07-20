@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 import Typography from '@mui/material/Typography';
 import { Button, CardActions, InputAdornment, Stack, TextField } from '@mui/material';
 import IconifyIcon from 'components/base/IconifyIcon';

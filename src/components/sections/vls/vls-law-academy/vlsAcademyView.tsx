@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 import { useState } from 'react';
 import Stack from '@mui/material/Stack';
 import { Typography, Box, Button, Divider } from '@mui/material';

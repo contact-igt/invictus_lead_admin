@@ -45,7 +45,6 @@ import RioFormDrawer, {
   RioDrawerMode,
 } from './RioFormDrawer';
 import RioTable from './RioTable';
-import RioViewDrawer from './RioViewDrawer';
 import {
   RIO_COLOR,
   RIO_SERVICES,
@@ -606,14 +605,7 @@ const RioSection = () => {
         onClose={closeDrawer}
         onSubmit={handleSubmit}
       />
-
-
-      <RioViewDrawer
-        open={drawerOpen && drawerMode === 'view'}
-        lead={drawerLead}
-        isLoading={detailQuery.isLoading}
-        onClose={closeDrawer}
-      />      <RioDeleteDialog
+      <RioDeleteDialog
         open={Boolean(deleteLead)}
         lead={deleteLead}
         isLoading={deleteMutation.isLoading}

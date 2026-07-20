@@ -90,7 +90,7 @@ const RunningTaskChart = ({ data, ...rest }: RunningTaskChartProps) => {
         },
       ],
     }),
-    [theme],
+    [data, theme],
   );
 
   return <ReactEchart echarts={echarts} option={option} {...rest} />;

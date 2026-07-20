@@ -23,7 +23,7 @@ const ManagementTable = ({ searchText, usersData, handleRemove, handleEdit, hand
         if (apiRef.current?.setQuickFilterValues) {
             apiRef.current.setQuickFilterValues(searchText.trim().split(/\s+/).filter(Boolean));
         }
-    }, [searchText]);
+    }, [apiRef, searchText]);
 
     const columns: GridColDef[] = [
         {

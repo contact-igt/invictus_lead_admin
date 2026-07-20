@@ -1,55 +1,30 @@
 import { ClientRegistry } from 'config/clients';
-import { normalizeClientKey, SUPPORTED_CLIENT_MODULES } from './clientKey';
-
-const MODULE_ALIASES: Record<string, string> = {
-    pixel_eye: 'pixeleye',
-    pixel_eye_hospital: 'pixeleye',
-    pixel: 'pixeleye',
-    vlslaw: 'vls_law',
-    vls: 'vls_law',
-    aaraveyecare: 'aarav_eye_care',
-    antardrashtinetralaya: 'antardrashti_netralaya',
-    riohospital: 'rio',
-    shantieyetech: 'shanti_eye_tech',
-    shanti_eye: 'shanti_eye_tech',
-    phoenixfitness: 'phoenix_fitness',
-    phoenix_fitness_gym: 'phoenix_fitness',
-};
-
-const registryKeys = SUPPORTED_CLIENT_MODULES.filter((key) => Boolean(ClientRegistry[key]));
+import { extractClientModuleKey } from './clientKey';
 
 export const resolveClientModuleKey = (tenantClientKey?: string | null): string => {
-    const normalized = normalizeClientKey(tenantClientKey);
-    if (!normalized) return '';
+    const moduleKey = extractClientModuleKey(tenantClientKey);
+    return moduleKey && ClientRegistry[moduleKey] ? moduleKey : '';
+};
 
-    if (ClientRegistry[normalized]) {
-        return normalized;
+export const getClientHomePath = (tenantClientKey?: string | null): string => {
+    const moduleKey = resolveClientModuleKey(tenantClientKey);
+
+    switch (moduleKey) {
+        case 'aarav_eye_care':
+            return `/pages/d/${moduleKey}/aarav-eye-care`;
+        case 'antardrashti_netralaya':
+            return `/pages/d/${moduleKey}/antardrashti-netralaya`;
+        case 'rio':
+            return `/pages/d/${moduleKey}/rio`;
+        case 'shanti_eye_tech':
+            return `/pages/d/${moduleKey}/shanti-eye-tech`;
+        case 'phoenix_fitness':
+            return `/pages/d/${moduleKey}/phoenix-fitness`;
+        case 'pixeleye':
+        case 'vls_law':
+            return `/pages/d/${moduleKey}/overview`;
+        default:
+            return '/';
     }
-
-    const alias = MODULE_ALIASES[normalized];
-    if (alias && ClientRegistry[alias]) {
-        return alias;
-    }
-
-    const byBoundaryMatch = registryKeys.find(
-        (moduleKey) =>
-            normalized.startsWith(`${moduleKey}_`) ||
-            normalized.endsWith(`_${moduleKey}`) ||
-            normalized.includes(`_${moduleKey}_`),
-    );
-
-    if (byBoundaryMatch) {
-        return byBoundaryMatch;
-    }
-
-    if (normalized.includes('pixel')) return 'pixeleye';
-    if (normalized.includes('vls')) return 'vls_law';
-    if (normalized.includes('aarav') && normalized.includes('eye')) return 'aarav_eye_care';
-    if (normalized.includes('antardrashti') && normalized.includes('netralaya')) return 'antardrashti_netralaya';
-    if (normalized.includes('rio')) return 'rio';
-    if (normalized.includes('shanti') && normalized.includes('eye')) return 'shanti_eye_tech';
-    if (normalized.includes('phoenix') && normalized.includes('fitness')) return 'phoenix_fitness';
-
-    return '';
 };
 

@@ -216,23 +216,6 @@ const NotificationTracker: React.FC<NotificationTrackerProps> = ({
   const deleteNotificationsMutation = useDeletePixelEyeNotificationsMutation();
   const hasActiveFilters = Boolean(searchText || stateFilter || typeFilter || dateFrom || dateTo);
 
-  if (!hasScopedClientContext) {
-    return (
-      <PixelEyePageShell>
-        <Box sx={{ px: 3, mt: 2, width: '100%' }}>
-          <Card sx={{ p: 3, borderRadius: '20px' }}>
-            <Typography variant="h5" fontWeight={800}>
-              Please select a client
-            </Typography>
-            <Typography variant="body2" sx={{ mt: 1, color: 'text.secondary' }}>
-              Select a client from route context to load notification tracker data.
-            </Typography>
-          </Card>
-        </Box>
-      </PixelEyePageShell>
-    );
-  }
-
   const filtered = useMemo(() => {
     return notifications.filter((n) => {
       const normalizedState = String(n.state || '').trim().toLowerCase();
@@ -315,6 +298,23 @@ const NotificationTracker: React.FC<NotificationTrackerProps> = ({
   }, [filtered, page]);
 
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+
+  if (!hasScopedClientContext) {
+    return (
+      <PixelEyePageShell>
+        <Box sx={{ px: 3, mt: 2, width: '100%' }}>
+          <Card sx={{ p: 3, borderRadius: '20px' }}>
+            <Typography variant="h5" fontWeight={800}>
+              Please select a client
+            </Typography>
+            <Typography variant="body2" sx={{ mt: 1, color: 'text.secondary' }}>
+              Select a client from route context to load notification tracker data.
+            </Typography>
+          </Card>
+        </Box>
+      </PixelEyePageShell>
+    );
+  }
 
   const handleOpenDetails = (notification: any) => {
     setSelectedNotification(notification);

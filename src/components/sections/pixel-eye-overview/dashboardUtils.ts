@@ -134,7 +134,7 @@ export const isClosedOrCancelledFollowUpLead = (lead?: LeadRecord | null): boole
     return true;
   }
 
-  if (Boolean(lead.reminder_permanently_closed)) {
+  if (lead.reminder_permanently_closed) {
     return true;
   }
 

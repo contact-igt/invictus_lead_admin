@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 import { useState, ChangeEvent } from 'react';
 import Stack from '@mui/material/Stack';
 import Paper from '@mui/material/Paper';

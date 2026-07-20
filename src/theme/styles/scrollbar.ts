@@ -1,6 +1,9 @@
 import { Theme } from '@mui/material';
 
-const scrollbar = (_theme: Theme) => ({
+const scrollbar = (theme: Theme) => {
+  void theme;
+
+  return {
   '@supports (-moz-appearance:none)': {
     scrollbarColor: '#C3E6D3 transparent',
     scrollbarWidth: 'thin' as const,
@@ -23,6 +26,7 @@ const scrollbar = (_theme: Theme) => ({
   '*::-webkit-scrollbar-thumb:hover': {
     backgroundColor: '#7ECBA5',
   },
-});
+  };
+};
 
 export default scrollbar;

@@ -1,5 +1,5 @@
 import axios, { AxiosError } from 'axios';
-import dayjs from 'dayjs';
+import { formatAppDateTime, getAppDateKey } from 'utils/dateTime';
 import type {
   AntardrashtiNetralayaListParams,
   CreateAntardrashtiNetralayaLeadPayload,
@@ -20,9 +20,7 @@ export const ANTARDRASHTI_NETRALAYA_SERVICES = [
 export type AntardrashtiNetralayaService = (typeof ANTARDRASHTI_NETRALAYA_SERVICES)[number];
 
 export const formatAntardrashtiDateTime = (value?: string | null): string => {
-  if (!value) return '-';
-  const parsed = dayjs(value);
-  return parsed.isValid() ? parsed.format('DD MMM YYYY, hh:mm A') : '-';
+  return formatAppDateTime(value) || '-';
 };
 
 export const toOptionalText = (value: string): string | null => {
@@ -113,8 +111,7 @@ export const extractDownloadFilename = (
 };
 
 export const getAntardrashtiExportFallbackName = (format: 'csv' | 'pdf'): string => {
-  const date = dayjs().format('YYYY-MM-DD');
-  return `antardrashti-netralaya-leads-${date}.${format}`;
+  return `antardrashti-netralaya-leads-${getAppDateKey()}.${format}`;
 };
 
 

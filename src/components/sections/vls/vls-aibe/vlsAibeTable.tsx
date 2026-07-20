@@ -20,7 +20,7 @@ const VlsAibeTable = ({ searchText, usersData, handleRemove, handleView }: PetsT
 
     useEffect(() => {
         apiRef.current.setQuickFilterValues(searchText.split(/\b\W+\b/).filter((w) => w));
-    }, [searchText]);
+    }, [apiRef, searchText]);
 
     const columns: GridColDef<VlsAibe>[] = [
         {

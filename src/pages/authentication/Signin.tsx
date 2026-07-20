@@ -15,7 +15,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import IconifyIcon from 'components/base/IconifyIcon';
 import { useAuth } from 'redux/selectors/auth/authSelector';
 import { useLoginMutation } from './hooks/useLogin';
-import { resolveClientModuleKey } from 'utils/clientModuleResolver';
+import { getClientHomePath } from 'utils/clientModuleResolver';
 
 
 const loginSchema = Yup.object().shape({
@@ -29,14 +29,6 @@ const Signin = () => {
   const [showPassword, setShowPassword] = useState(false);
 
   // Already logged in — redirect to the correct home
-  if (token) {
-    if (user?.role === 'client') {
-      const moduleKey = resolveClientModuleKey(user.clientKey);
-      return <Navigate to={moduleKey ? `/pages/d/${moduleKey}/overview` : '/'} replace />;
-    }
-    return <Navigate to="/" replace />;
-  }
-
   const formik = useFormik({
     initialValues: {
       email: '',
@@ -44,9 +36,16 @@ const Signin = () => {
     },
     validationSchema: loginSchema,
     onSubmit: (values) => {
-      mutate({ email: values.email.trim(), password: values.password.trim() } as any);
+      mutate({ email: values.email.trim(), password: values.password.trim() });
     },
   });
+
+  if (token) {
+    if (user?.role === 'client') {
+      return <Navigate to={getClientHomePath(user.clientKey)} replace />;
+    }
+    return <Navigate to="/" replace />;
+  }
 
   const handleTrimmedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.target.value = e.target.value.trimStart();
