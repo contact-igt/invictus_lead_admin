@@ -8,6 +8,7 @@ export default {
   settings: `/${rootPaths.pageRoot}/settings`,
   management: `/${rootPaths.pageRoot}/management`,
   clients: `/${rootPaths.pageRoot}/clients`,
+  apiLogs: `/${rootPaths.pageRoot}/api-logs`,
   signin: `/${rootPaths.authRoot}/signin`,
   pixelEyeLeads: `/${rootPaths.pageRoot}/d/:clientKey/leads`,
   pixelEyeFollowUps: `pixel-eye/follow-ups`,
