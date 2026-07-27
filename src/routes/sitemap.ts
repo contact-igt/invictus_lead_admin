@@ -82,6 +82,11 @@ const generateDynamicClientMenus = (): MenuItem[] => {
         pathName: `/pages/d/${clientKey}/vls/mact-master-class`,
         path: `/pages/d/${clientKey}/vls/mact-master-class`,
       });
+      items.push({
+        name: 'Consumer Protection Law Masterclass',
+        pathName: `/pages/d/${clientKey}/vls/consumer-protection-law-master-class`,
+        path: `/pages/d/${clientKey}/vls/consumer-protection-law-master-class`,
+      });
     }
 
     if (clientKey === 'pixeleye') {
