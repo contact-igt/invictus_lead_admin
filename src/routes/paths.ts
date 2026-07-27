@@ -28,6 +28,7 @@ export default {
     `/${rootPaths.pageRoot}/d/${clientKey}/shanti-eye-tech`,
   phoenixFitness: (clientKey: string) => `/${rootPaths.pageRoot}/d/${clientKey}/phoenix-fitness`,
   vlsMactMasterClass: `/${rootPaths.pageRoot}/d/:clientKey/vls/mact-master-class`,
+  vlsConsumerProtectionLawMasterClass: `/${rootPaths.pageRoot}/d/:clientKey/vls/consumer-protection-law-master-class`,
 
   // Dynamic client module route
   dynamicTable: `/${rootPaths.pageRoot}/d/:clientKey?/:tableId`,
