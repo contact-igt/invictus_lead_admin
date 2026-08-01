@@ -5,7 +5,6 @@ import SalesOverview from './SalesOverview';
 import TotalProfitChart from './TotalProfitChart';
 import MiniStats from './MiniStats';
 import TrendChart from '../TrendChart';
-import PremiumPlanCard from './PremiumPlanCard';
 import DarkKPICards from './DarkKPICards';
 import FilterBar from './FilterBar';
 import type { KPIItem, FunnelStageItem, DashboardFilters } from '../types';
@@ -208,11 +207,10 @@ const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
           )}
         </Box>
 
-        {/* ══ STEP 2: SUPPORTING ANALYTICS (8+4 Grid, Visual Priority) ══ */}
+        {/* ══ STEP 2: SUPPORTING ANALYTICS (7+5 Grid) ══════════════════ */}
         <Box>
-          <SectionDivider label="Performance & Conversion Trends" />
           <Grid container spacing={3}>
-            <Grid item xs={12} lg={8}> {/* 8 Columns Spec */}
+            <Grid item xs={12} lg={7}> {/* 7 Columns Spec */}
               <TrendChart
                 points={trend}
                 loading={loading}
@@ -220,7 +218,7 @@ const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
                 highlightSeries={mapStageToSeries(activeFunnelStage)}
               />
             </Grid>
-            <Grid item xs={12} lg={4}> {/* 4 Columns Spec */}
+            <Grid item xs={12} lg={5}> {/* 5 Columns Spec */}
               <TotalProfitChart
                 points={trend}
                 funnel={metrics.funnel}
@@ -232,32 +230,26 @@ const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
           </Grid>
         </Box>
 
-        {/* ══ STEP 3: LIVE OPERATIONS & FOLLOW-UP PERFORMANCE ═════════ */}
+        {/* ══ STEP 3: LIVE OPERATIONS HUB & STATUS / SOURCE DISTRIBUTION (7+5 Grid) ═══ */}
         <Box>
-          <SectionDivider label="Live Operations & Follow-up Hub" live />
-          <MiniStats
-            metrics={metrics}
-            loading={loading}
-            onTodayFollowUpsClick={onTodayFollowUpsClick}
-            onNotAnsweringClick={onNotAnsweringClick}
-          />
-        </Box>
-
-        {followUpKpiItems && followUpKpiItems.length > 0 && (
-          <Box>
-            <DarkKPICards items={followUpKpiItems} loading={loading} />
-          </Box>
-        )}
-
-        {/* ══ STEP 4: STATUS BREAKDOWN & CHANNEL SOURCES (7+5 Grid) ═══ */}
-        <Box>
-          <SectionDivider label="Status Distribution & Acquisition Sources" />
           <Grid container spacing={3}>
-            <Grid item xs={12} lg={7}> {/* 7 Columns Spec */}
-              <SalesOverview statusBreakdown={statusBreakdown} loading={loading} />
+            <Grid item xs={12} lg={7}> {/* 7 Columns Spec: Live Operations Hub */}
+              <div className="flex flex-col gap-4">
+                <MiniStats
+                  metrics={metrics}
+                  loading={loading}
+                  onTodayFollowUpsClick={onTodayFollowUpsClick}
+                  onNotAnsweringClick={onNotAnsweringClick}
+                />
+                {followUpKpiItems && followUpKpiItems.length > 0 && (
+                  <DarkKPICards items={followUpKpiItems} loading={loading} />
+                )}
+              </div>
             </Grid>
-            <Grid item xs={12} lg={5}> {/* 5 Columns Spec */}
-              <PremiumPlanCard sources={sources} />
+            <Grid item xs={12} lg={5}> {/* 5 Columns Spec: Status & Source Distribution */}
+              <div className="flex flex-col gap-6 h-full">
+                <SalesOverview statusBreakdown={statusBreakdown} loading={loading} sources={sources} />
+              </div>
             </Grid>
           </Grid>
         </Box>

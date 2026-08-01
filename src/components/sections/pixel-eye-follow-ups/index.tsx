@@ -432,7 +432,6 @@ const PixelEyeFollowUpsPage: React.FC = () => {
   } = usePixelEyeQuery(scopedClientKey, { enabled: hasScopedClientContext });
   const {
     data: lifecycleSummary,
-    isLoading: isLifecycleSummaryLoading,
     isError: isLifecycleSummaryError,
   } = usePixelEyeFollowUpLifecycleSummaryQuery(scopedClientKey, missedFilters, {
     enabled: hasScopedClientContext,
@@ -1248,14 +1247,6 @@ const PixelEyeFollowUpsPage: React.FC = () => {
     };
   }, [lifecycleSummary]);
 
-  const lifecycleSummaryHelperText = !hasScopedClientContext
-    ? 'Select client'
-    : isLifecycleSummaryError
-      ? 'Summary unavailable'
-      : isLifecycleSummaryLoading
-        ? 'Loading summary...'
-        : null;
-
   const activeSection = sections.find((section) => section.key === activeBucket) || sections[0];
 
   const activeSectionCopy: Record<
@@ -1299,6 +1290,49 @@ const PixelEyeFollowUpsPage: React.FC = () => {
       helper: 'Missed call window.',
     },
   };
+
+  const lifecycleOverviewCards = [
+    {
+      key: 'reminders-sent',
+      label: 'Reminder Sent',
+      value: followUpsPageSummary.remindersSent,
+      helper: 'Reminder history total',
+      color: '#6366F1',
+      icon: 'mdi:bell-check-outline',
+    },
+    {
+      key: 'saved',
+      label: 'Outcomes Saved',
+      value: followUpsPageSummary.outcomesSaved,
+      helper: 'Follow-up results already captured',
+      color: '#10B981',
+      icon: 'mdi:content-save-check-outline',
+    },
+    {
+      key: 'rescheduled',
+      label: 'Rescheduled',
+      value: followUpsPageSummary.rescheduled,
+      helper: 'History total',
+      color: '#8B5CF6',
+      icon: 'mdi:calendar-sync-outline',
+    },
+    {
+      key: 'cancelled',
+      label: 'Cancelled',
+      value: followUpsPageSummary.cancelled,
+      helper: 'History total',
+      color: '#F97316',
+      icon: 'mdi:close-circle-outline',
+    },
+    {
+      key: 'needs-review',
+      label: 'Needs Review',
+      value: followUpsPageSummary.needsReview,
+      helper: 'Lifecycle review total',
+      color: '#A855F7',
+      icon: 'mdi:clipboard-alert-outline',
+    },
+  ] as const;
 
   const selectedLeadActionCallout = useMemo(() => {
     if (!selectedLead) return null;
@@ -1431,119 +1465,6 @@ const PixelEyeFollowUpsPage: React.FC = () => {
     selectedLeadWithDetails,
   ]);
 
-  const workflowOverviewCards = [
-    {
-      key: 'tomorrow',
-      label: 'Tomorrow',
-      value: visibleFollowUpBuckets.tomorrowCount,
-      helper: 'Due tomorrow',
-      color: '#3B82F6',
-      icon: 'mdi:calendar-clock',
-      onClick: () => activateBucket('tomorrow'),
-    },
-    {
-      key: 'week',
-      label: 'This Week',
-      value: visibleFollowUpBuckets.weekCount,
-      helper: 'Due later this week',
-      color: '#14B8A6',
-      icon: 'mdi:calendar-range',
-      onClick: () => activateBucket('week'),
-    },
-    {
-      key: 'all',
-      label: 'All',
-      value: visibleFollowUpBuckets.allCount,
-      helper: 'Total active queue',
-      color: '#06B6D4',
-      icon: 'mdi:calendar-multiple',
-      onClick: () => activateBucket('all'),
-    },
-    {
-      key: 'missed',
-      label: 'Missed Calls',
-      value: visibleMissedFollowUps.length,
-      helper: 'Compliance windows marked as missed',
-      color: '#EC4899',
-      icon: 'mdi:phone-missed-outline',
-      onClick: () => activateBucket('missed'),
-    },
-  ] as const;
-
-  const lifecycleOverviewCards = [
-    {
-      key: 'reminders-sent',
-      label: 'Reminder Sent',
-      value: followUpsPageSummary.remindersSent,
-      helper: 'Reminder history total',
-      color: '#6366F1',
-      icon: 'mdi:bell-check-outline',
-    },
-    {
-      key: 'saved',
-      label: 'Outcomes Saved',
-      value: followUpsPageSummary.outcomesSaved,
-      helper: 'Follow-up results already captured',
-      color: '#10B981',
-      icon: 'mdi:content-save-check-outline',
-    },
-    {
-      key: 'rescheduled',
-      label: 'Rescheduled',
-      value: followUpsPageSummary.rescheduled,
-      helper: 'History total',
-      color: '#8B5CF6',
-      icon: 'mdi:calendar-sync-outline',
-    },
-    {
-      key: 'cancelled',
-      label: 'Cancelled',
-      value: followUpsPageSummary.cancelled,
-      helper: 'History total',
-      color: '#F97316',
-      icon: 'mdi:close-circle-outline',
-    },
-    {
-      key: 'needs-review',
-      label: 'Needs Review',
-      value: followUpsPageSummary.needsReview,
-      helper: 'Lifecycle review total',
-      color: '#A855F7',
-      icon: 'mdi:clipboard-alert-outline',
-    },
-  ] as const;
-
-  const queueOverviewCards = [
-    {
-      key: 'outcome-pending',
-      label: 'Needs Outcome',
-      value: priorityLeads.length,
-      helper: 'Call received, no outcome',
-      color: '#F59E0B',
-      icon: 'mdi:phone-alert-outline',
-      onClick: focusPriorityPanel,
-    },
-    {
-      key: 'due-today',
-      label: 'Due Today',
-      value: visibleFollowUpBuckets.todayCount,
-      helper: 'Due today',
-      color: '#0EA5E9',
-      icon: 'mdi:calendar-today',
-      onClick: () => activateBucket('today'),
-    },
-    {
-      key: 'overdue',
-      label: 'Overdue',
-      value: visibleFollowUpBuckets.overdueCount,
-      helper: 'Past due',
-      color: '#EF4444',
-      icon: 'mdi:alert-circle-outline',
-      onClick: () => activateBucket('overdue'),
-    },
-    ...workflowOverviewCards,
-  ] as const;
-
   return (
     <PixelEyePageShell>
       {!hasScopedClientContext ? (
@@ -1554,233 +1475,195 @@ const PixelEyeFollowUpsPage: React.FC = () => {
           </div>
         </Box>
       ) : (
-        <Box className="flex flex-col gap-6 w-full">
-          <div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
+        <Box className="flex flex-col gap-4 w-full">
+          {/* ── Compact Sticky Header Row (Max 96px, Sticky Top: 0) ─── */}
+          <Box
+            sx={{
+              position: 'sticky',
+              top: 0,
+              zIndex: 10,
+              backgroundColor: mode === 'dark' ? '#08110D' : '#F8FAFC',
+              py: 1.5,
+              borderBottom: '1px solid',
+              borderColor: mode === 'dark' ? 'rgba(255,255,255,0.06)' : '#E5E7EB',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 2,
+              flexWrap: 'wrap',
+            }}
+          >
+            <Box>
+              <h1 className={`text-2xl md:text-3xl font-black tracking-tight ${mode === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                Follow-up Queue
+              </h1>
+              <p className={`mt-0.5 text-xs md:text-sm ${mode === 'dark' ? 'text-[#9AAFB5]' : 'text-slate-600'}`}>
+                Real-time call compliance & manual follow-up lifecycle queue
+              </p>
+            </Box>
+
+            <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+              <PixelEyeDatePicker
+                label="From Date"
+                value={dateFrom}
+                maxDate={dateTo || undefined}
+                sx={{ width: { xs: 140, sm: 150 } }}
+                onChange={(newFrom) => {
+                  setDateFrom(newFrom);
+                  if (dateTo && newFrom > dateTo) {
+                    setDateTo(newFrom);
+                  }
+                }}
+              />
+              <PixelEyeDatePicker
+                label="To Date"
+                value={dateTo}
+                minDate={dateFrom || undefined}
+                disabled={!dateFrom}
+                sx={{ width: { xs: 140, sm: 150 } }}
+                onChange={(newTo) => setDateTo(newTo)}
+              />
+              {(dateFrom || dateTo) && (
+                <Button
+                  variant="text"
+                  onClick={handleClearDateFilter}
+                  sx={{
+                    borderRadius: '12px',
+                    textTransform: 'none',
+                    fontWeight: 700,
+                    fontSize: '0.8125rem',
+                    color: mode === 'dark' ? '#94A3B8' : '#475569',
+                  }}
+                >
+                  Clear
+                </Button>
+              )}
+              <Button
+                variant="outlined"
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+                startIcon={<IconifyIcon icon="mdi:refresh" className={isRefreshing ? 'animate-spin' : ''} />}
+                sx={{
+                  borderRadius: '12px',
+                  textTransform: 'none',
+                  fontWeight: 700,
+                  fontSize: '0.8125rem',
+                  borderColor: mode === 'dark' ? '#1F3A2D' : '#E2E8F0',
+                }}
+              >
+                {isRefreshing ? 'Refreshing...' : 'Refresh'}
+              </Button>
+            </div>
+          </Box>
+
+          {/* ── 4 Full-Width Key Metric Cards Row (Full Width) ──────── */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div
-              className={`xl:col-span-8 rounded-[24px] border p-5 md:p-6 ${mode === 'dark'
-                ? 'border-[#1E2E25] bg-[linear-gradient(135deg,#0B1511_0%,#0E1814_45%,#08110D_100%)]'
-                : 'border-slate-200 bg-white'
-                }`}
+              onClick={focusPriorityPanel}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && focusPriorityPanel()}
+              className={`rounded-2xl border p-4 transition-all duration-200 cursor-pointer ${
+                mode === 'dark'
+                  ? 'border-amber-500/30 bg-[#0E1B15] hover:border-amber-500/50'
+                  : 'border-amber-200 bg-white hover:shadow-md'
+              }`}
             >
-              <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-                <div className="max-w-3xl">
-                  <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-[0.18em] bg-emerald-500/10 text-[#22C55E]">
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#22C55E]" />
-                    Follow-up
-                  </div>
-                  <h1 className={`mt-3 text-3xl font-black tracking-tight ${mode === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-                    Follow-up Queue
-                  </h1>
-                  <p className={`mt-2 text-sm leading-relaxed ${mode === 'dark' ? 'text-[#9AAFB5]' : 'text-slate-600'}`}>
-                    Pick a lead. Check the call. Save outcome or reschedule.
-                  </p>
-                  {/* <div className="mt-4 flex flex-wrap gap-2">
-                    {[
-                      'Start with Needs Outcome',
-                      'Check call history',
-                      'Save outcome first',
-                    ].map((item) => (
-                      <span
-                        key={item}
-                        className={`rounded-full px-3 py-1 text-xs font-semibold ${mode === 'dark' ? 'bg-white/5 text-slate-300' : 'bg-slate-100 text-slate-600'}`}
-                      >
-                        {item}
-                      </span>
-                    ))}
-                  </div> */}
-                </div>
-
-                <div className="flex flex-wrap items-center gap-3 shrink-0">
-                  <PixelEyeDatePicker
-                    label="From Date"
-                    value={dateFrom}
-                    maxDate={dateTo || undefined}
-                    sx={{ width: { xs: 150, sm: 160 } }}
-                    onChange={(newFrom) => {
-                      setDateFrom(newFrom);
-                      if (dateTo && newFrom > dateTo) {
-                        setDateTo(newFrom);
-                      }
-                    }}
-                  />
-                  <PixelEyeDatePicker
-                    label="To Date"
-                    value={dateTo}
-                    minDate={dateFrom || undefined}
-                    disabled={!dateFrom}
-                    sx={{ width: { xs: 150, sm: 160 } }}
-                    onChange={(newTo) => setDateTo(newTo)}
-                  />
-                  {(dateFrom || dateTo) && (
-                    <Button
-                      variant="text"
-                      onClick={handleClearDateFilter}
-                      sx={{
-                        borderRadius: '12px',
-                        textTransform: 'none',
-                        fontWeight: 700,
-                        color: mode === 'dark' ? '#94A3B8' : '#475569',
-                      }}
-                    >
-                      Clear
-                    </Button>
-                  )}
-                  <Button
-                    variant="outlined"
-                    onClick={handleRefresh}
-                    disabled={isRefreshing}
-                    startIcon={<IconifyIcon icon="mdi:refresh" className={isRefreshing ? 'animate-spin' : ''} />}
-                    sx={{
-                      borderRadius: '12px',
-                      textTransform: 'none',
-                      fontWeight: 700,
-                      borderColor: mode === 'dark' ? '#1F3A2D' : '#E2E8F0',
-                    }}
-                  >
-                    {isRefreshing ? 'Refreshing...' : 'Refresh'}
-                  </Button>
-                </div>
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                  Needs Outcome
+                </span>
+                <IconifyIcon icon="solar:phone-calling-linear" width={20} height={20} className="text-amber-500" />
               </div>
-
-              <div className="mt-5 space-y-4">
-                <div>
-                  <div className={`text-[11px] font-black uppercase tracking-[0.16em] ${mode === 'dark' ? 'text-[#4B6356]' : 'text-slate-400'}`}>
-                    Queue totals
-                  </div>
-                  <div className={`mt-1 text-xs ${mode === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
-                    Cards match the visible rows.
-                  </div>
-                  <div className="mt-3 grid grid-cols-2 gap-3 xl:grid-cols-4">
-                    {queueOverviewCards.map((card) => (
-                      <div
-                        key={card.key}
-                        onClick={card.onClick}
-                        onKeyDown={(event) => {
-                          if (event.key === 'Enter' || event.key === ' ') {
-                            event.preventDefault();
-                            card.onClick();
-                          }
-                        }}
-                        role="button"
-                        tabIndex={0}
-                        className={`rounded-2xl border p-4 transition-all duration-200 ${mode === 'dark' ? 'border-[#15271E] bg-[#07100C] hover:border-[#1F3E30]' : 'border-slate-100 bg-slate-50/70 hover:border-slate-200'}`}
-                        style={{ cursor: 'pointer' }}
-                      >
-                        <div className="flex items-center justify-between gap-2">
-                          <div
-                            className="flex h-9 w-9 items-center justify-center rounded-xl"
-                            style={{ backgroundColor: `${card.color}18`, color: card.color }}
-                          >
-                            <IconifyIcon icon={card.icon} sx={{ fontSize: 18 }} />
-                          </div>
-                          <span className={`text-[11px] font-black uppercase tracking-[0.16em] ${mode === 'dark' ? 'text-[#4B6356]' : 'text-slate-400'}`}>
-                            {card.label}
-                          </span>
-                        </div>
-                        <div className={`mt-4 text-3xl font-black ${mode === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-                          {card.value.toLocaleString()}
-                        </div>
-                        <div className={`mt-1 text-xs ${mode === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
-                          {card.helper}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <div className={`text-[11px] font-black uppercase tracking-[0.16em] ${mode === 'dark' ? 'text-[#4B6356]' : 'text-slate-400'}`}>
-                    Lifecycle totals
-                  </div>
-                  <div className={`mt-1 text-xs ${mode === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
-                    History totals do not map to the active list rows.
-                  </div>
-                  <div className="mt-3 grid grid-cols-2 gap-3 xl:grid-cols-3">
-                    {lifecycleOverviewCards.map((card) => (
-                      <div
-                        key={card.key}
-                        className={`rounded-2xl border p-4 ${mode === 'dark' ? 'border-[#15271E] bg-[#07100C]' : 'border-slate-100 bg-slate-50/70'}`}
-                      >
-                        <div className="flex items-center justify-between gap-2">
-                          <div
-                            className="flex h-9 w-9 items-center justify-center rounded-xl"
-                            style={{ backgroundColor: `${card.color}18`, color: card.color }}
-                          >
-                            <IconifyIcon icon={card.icon} sx={{ fontSize: 18 }} />
-                          </div>
-                          <span className={`text-[11px] font-black uppercase tracking-[0.16em] ${mode === 'dark' ? 'text-[#4B6356]' : 'text-slate-400'}`}>
-                            {card.label}
-                          </span>
-                        </div>
-                        <div className={`mt-4 text-3xl font-black ${mode === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-                          {card.value.toLocaleString()}
-                        </div>
-                        <div className={`mt-1 text-xs ${mode === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
-                          {card.helper}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+              <div className="mt-2 text-3xl font-black text-slate-900 dark:text-white font-mono">
+                {priorityLeads.length}
+              </div>
+              <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                Call received · Action needed
               </div>
             </div>
 
-            <div className={`xl:col-span-4 rounded-[24px] border p-5 ${mode === 'dark' ? 'border-[#15271E] bg-[#0B1410]' : 'border-slate-200 bg-white'}`}>
-              <div className={`text-[11px] font-black uppercase tracking-[0.18em] ${mode === 'dark' ? 'text-[#4B6356]' : 'text-slate-400'}`}>
-                Queue
+            <div
+              onClick={() => activateBucket('today')}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && activateBucket('today')}
+              className={`rounded-2xl border p-4 transition-all duration-200 cursor-pointer ${
+                mode === 'dark'
+                  ? 'border-[#15271E] bg-[#07100C] hover:border-[#1F3E30]'
+                  : 'border-slate-200 bg-white hover:shadow-md'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-black uppercase tracking-wider text-blue-600 dark:text-blue-400">
+                  Due Today
+                </span>
+                <IconifyIcon icon="solar:calendar-date-linear" width={20} height={20} className="text-blue-500" />
               </div>
-              <div className={`mt-2 text-xl font-black ${mode === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-                {activeSection.label}
+              <div className="mt-2 text-3xl font-black text-slate-900 dark:text-white font-mono">
+                {visibleFollowUpBuckets.todayCount}
               </div>
-              <div className={`mt-1 text-sm ${mode === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
-                {activeSectionCopy[activeBucket].helper}
+              <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                Scheduled for today
               </div>
+            </div>
 
-              <div className="mt-4 space-y-2">
-                {sections.map((section) => {
-                  const isActive = section.key === activeBucket;
-                  return (
-                    <button
-                      key={section.key}
-                      onClick={() => {
-                        setActiveBucket(section.key);
-                        setMobileView('list');
-                      }}
-                      className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left transition-all ${isActive
-                        ? mode === 'dark'
-                          ? 'border-[#22C55E] bg-[#10241A]'
-                          : 'border-[#156A45] bg-[#E8F5E9]/60'
-                        : mode === 'dark'
-                          ? 'border-[#15271E] bg-[#070D0A] hover:border-[#1F3E30]'
-                          : 'border-slate-100 bg-slate-50/40 hover:border-slate-200'
-                        }`}
-                    >
-                      <div className="min-w-0 pr-3">
-                        <div className={`text-[10px] font-black uppercase tracking-[0.16em] ${isActive ? (mode === 'dark' ? 'text-[#4ade80]' : 'text-[#156A45]') : (mode === 'dark' ? 'text-slate-400' : 'text-slate-500')}`}>
-                          {activeSectionCopy[section.key].eyebrow}
-                        </div>
-                        <div className={`mt-1 text-sm font-bold ${mode === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-                          {section.label}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3 shrink-0">
-                        <IconifyIcon icon={bucketIcons[section.key]} sx={{ fontSize: 18, color: section.accent }} />
-                        <span className={`text-xl font-black ${mode === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-                          {section.count.toLocaleString()}
-                        </span>
-                      </div>
-                    </button>
-                  );
-                })}
+            <div
+              onClick={() => activateBucket('overdue')}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && activateBucket('overdue')}
+              className={`rounded-2xl border p-4 transition-all duration-200 cursor-pointer ${
+                mode === 'dark'
+                  ? 'border-red-500/30 bg-[#160D0E] hover:border-red-500/50'
+                  : 'border-red-200 bg-white hover:shadow-md'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-black uppercase tracking-wider text-red-600 dark:text-red-400">
+                  Overdue
+                </span>
+                <IconifyIcon icon="solar:danger-circle-linear" width={20} height={20} className="text-red-500" />
               </div>
+              <div className="mt-2 text-3xl font-black text-slate-900 dark:text-white font-mono">
+                {visibleFollowUpBuckets.overdueCount}
+              </div>
+              <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                Past due · Urgent action
+              </div>
+            </div>
 
-              {lifecycleSummaryHelperText ? (
-                <div className={`mt-4 text-xs font-semibold ${mode === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
-                  {lifecycleSummaryHelperText}
-                </div>
-              ) : null}
+            <div
+              onClick={() => activateBucket('outcome-updated')}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && activateBucket('outcome-updated')}
+              className={`rounded-2xl border p-4 transition-all duration-200 cursor-pointer ${
+                mode === 'dark'
+                  ? 'border-emerald-500/30 bg-[#0D1A13] hover:border-emerald-500/50'
+                  : 'border-emerald-200 bg-white hover:shadow-md'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                  Outcomes Saved
+                </span>
+                <IconifyIcon icon="solar:verified-check-linear" width={20} height={20} className="text-emerald-500" />
+              </div>
+              <div className="mt-2 text-3xl font-black text-slate-900 dark:text-white font-mono">
+                {followUpsPageSummary.outcomesSaved}
+              </div>
+              <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                Follow-up results recorded
+              </div>
             </div>
           </div>
+
+          {/* ── 12-Column Grid (8 Columns Main Workspace + 4 Columns Queue & Audit Panel) ── */}
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 items-start">
+            {/* 8 Columns: Main Workspace */}
+            <div className="xl:col-span-8 flex flex-col gap-4">
+
 
           {isError && (
             <Alert severity="error" sx={{ mt: 3, borderRadius: '16px' }}>
@@ -2836,6 +2719,96 @@ const PixelEyeFollowUpsPage: React.FC = () => {
               </div>
             </div>
           )}
+        </div>
+
+        {/* 4 Columns: Queue Selection & Audit Telemetry Sidebar */}
+            <div className="xl:col-span-4 flex flex-col gap-4">
+              {/* Queue Categories Container */}
+              <div className={`rounded-2xl border p-5 ${mode === 'dark' ? 'border-[#15271E] bg-[#0B1410]' : 'border-slate-200 bg-white'}`}>
+                <div className="flex items-center justify-between mb-3">
+                  <span className={`text-[11px] font-black uppercase tracking-wider ${mode === 'dark' ? 'text-[#4B6356]' : 'text-slate-400'}`}>
+                    Queue Selectors
+                  </span>
+                  <span className="text-xs font-bold text-slate-500">
+                    {sections.length} Queues
+                  </span>
+                </div>
+
+                <div className="space-y-2">
+                  {sections.map((section) => {
+                    const isActive = section.key === activeBucket;
+                    return (
+                      <button
+                        key={section.key}
+                        onClick={() => {
+                          setActiveBucket(section.key);
+                          setMobileView('list');
+                        }}
+                        className={`flex w-full items-center justify-between rounded-xl border px-3.5 py-2.5 text-left transition-all ${
+                          isActive
+                            ? mode === 'dark'
+                              ? 'border-[#22C55E] bg-[#10241A] shadow-sm'
+                              : 'border-[#16A34A] bg-emerald-50/70 shadow-sm'
+                            : mode === 'dark'
+                              ? 'border-[#15271E] bg-[#070D0A] hover:border-[#1F3E30]'
+                              : 'border-slate-100 bg-slate-50/40 hover:border-slate-200'
+                        }`}
+                      >
+                        <div className="min-w-0 pr-2">
+                          <div className={`text-[10px] font-black uppercase tracking-wider ${
+                            isActive
+                              ? (mode === 'dark' ? 'text-[#4ade80]' : 'text-[#16A34A]')
+                              : (mode === 'dark' ? 'text-slate-400' : 'text-slate-500')
+                          }`}>
+                            {activeSectionCopy[section.key].eyebrow}
+                          </div>
+                          <div className={`text-xs font-bold truncate ${mode === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                            {section.label}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <IconifyIcon icon={bucketIcons[section.key]} sx={{ fontSize: 16, color: section.accent }} />
+                          <span className={`text-base font-black font-mono ${mode === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                            {section.count.toLocaleString()}
+                          </span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Lifecycle Audit Telemetry Container */}
+              <div className={`rounded-2xl border p-5 ${mode === 'dark' ? 'border-[#15271E] bg-[#0B1410]' : 'border-slate-200 bg-white'}`}>
+                <div className={`text-[11px] font-black uppercase tracking-wider mb-3 ${mode === 'dark' ? 'text-[#4B6356]' : 'text-slate-400'}`}>
+                  Lifecycle Audit Summary
+                </div>
+                <div className="grid grid-cols-2 gap-2.5">
+                  {lifecycleOverviewCards.map((card) => (
+                    <div
+                      key={card.key}
+                      className={`rounded-xl border p-3 ${mode === 'dark' ? 'border-[#15271E] bg-[#07100C]' : 'border-slate-100 bg-slate-50/70'}`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div
+                          className="flex h-7 w-7 items-center justify-center rounded-lg"
+                          style={{ backgroundColor: `${card.color}18`, color: card.color }}
+                        >
+                          <IconifyIcon icon={card.icon} sx={{ fontSize: 15 }} />
+                        </div>
+                        <span className={`text-[10px] font-bold uppercase ${mode === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
+                          {card.label}
+                        </span>
+                      </div>
+                      <div className={`mt-2 text-xl font-black font-mono ${mode === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                        {card.value.toLocaleString()}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         </Box>
       )}
 

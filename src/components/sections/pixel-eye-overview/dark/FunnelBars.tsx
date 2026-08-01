@@ -8,7 +8,19 @@ interface FunnelBarsProps {
   activeStage?: FunnelStageItem['stage'] | null;
 }
 
-const COLORS = ['#16A34A', '#22C55E', '#60A5FA', '#F59E0B', '#FB7185'];
+const STAGE_COLORS: Record<string, string> = {
+  Leads: '#10B981',
+  Contacted: '#10B981',
+  Interested: '#3B82F6',
+  Appointments: '#8B5CF6',
+  Converted: '#059669',
+  Lost: '#EF4444',
+};
+
+const getStageColor = (stage: string, index: number) => {
+  const match = Object.keys(STAGE_COLORS).find(k => stage.toLowerCase().includes(k.toLowerCase()));
+  return match ? STAGE_COLORS[match] : ['#10B981', '#3B82F6', '#8B5CF6', '#059669', '#EF4444'][index % 5];
+};
 
 const FunnelBars: React.FC<FunnelBarsProps> = ({
   funnel = [],
@@ -22,7 +34,7 @@ const FunnelBars: React.FC<FunnelBarsProps> = ({
     <div className="space-y-2">
       {funnel.map((f, i) => {
         const isActive = activeStage === f.stage;
-        const barColor = COLORS[i % COLORS.length];
+        const barColor = getStageColor(f.stage, i);
         return (
           <button
             key={f.stage}

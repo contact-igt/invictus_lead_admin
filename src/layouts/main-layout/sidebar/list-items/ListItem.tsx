@@ -6,10 +6,20 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import IconifyIcon from 'components/base/IconifyIcon';
 import { useLocation } from 'react-router-dom';
+import useColorMode from 'hooks/useColorMode';
 
 const ListItem = ({ subheader, icon, path }: MenuItem) => {
+  const { mode } = useColorMode();
   const location = useLocation();
   const isActive = location.pathname === (path || '');
+
+  const activeBg = mode === 'dark' ? '#10241A' : '#F1F5F9';
+  const hoverBg = isActive
+    ? (mode === 'dark' ? '#162E22' : '#E2E8F0')
+    : (mode === 'dark' ? '#0E1D15' : '#F8FAFC');
+  const activeColor = mode === 'dark' ? '#4ADE80' : '#0F172A';
+  const inactiveColor = mode === 'dark' ? '#CBD5E1' : '#334155';
+  const iconColor = isActive ? (mode === 'dark' ? '#4ADE80' : '#0F172A') : (mode === 'dark' ? '#94A3B8' : '#64748B');
 
   return (
     <ListItemButton
@@ -20,9 +30,10 @@ const ListItem = ({ subheader, icon, path }: MenuItem) => {
         borderRadius: '10px',
         px: 1.5,
         py: 0.875,
-        backgroundColor: isActive ? '#F1F5F9' : 'transparent',
+        backgroundColor: isActive ? activeBg : 'transparent',
+        border: isActive && mode === 'dark' ? '1px solid #15271E' : '1px solid transparent',
         '&:hover': {
-          backgroundColor: isActive ? '#E2E8F0' : '#F8FAFC',
+          backgroundColor: hoverBg,
         },
         transition: 'all 120ms ease',
       }}
@@ -33,7 +44,7 @@ const ListItem = ({ subheader, icon, path }: MenuItem) => {
             icon={icon}
             width={18}
             height={18}
-            sx={{ color: isActive ? '#0F172A !important' : '#64748B !important' }}
+            sx={{ color: `${iconColor} !important` }}
           />
         )}
       </ListItemIcon>
@@ -43,9 +54,9 @@ const ListItem = ({ subheader, icon, path }: MenuItem) => {
           <Box
             component="span"
             sx={{
-              fontSize: '0.875rem', // 14px Sidebar Spec
-              fontWeight: isActive ? 600 : 500, // 500 Spec
-              color: isActive ? '#0F172A !important' : '#334155 !important',
+              fontSize: '0.875rem',
+              fontWeight: isActive ? 600 : 500,
+              color: `${isActive ? activeColor : inactiveColor} !important`,
               letterSpacing: '0em',
               fontFamily: '"Geist", sans-serif',
             }}

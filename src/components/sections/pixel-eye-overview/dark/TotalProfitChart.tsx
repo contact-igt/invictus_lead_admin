@@ -32,7 +32,7 @@ const TotalProfitChart = ({
       : points.reduce((s: number, p) => s + (p.converted || 0), 0);
 
   return (
-    <PixelEyeCard sx={{ p: { xs: 3, md: 4 }, height: '100%', minHeight: 450, display: 'flex', flexDirection: 'column' }}>
+    <PixelEyeCard sx={{ p: { xs: 3, md: 4 }, height: '100%', minHeight: 320, display: 'flex', flexDirection: 'column' }}>
       <div
         className={`mb-6 flex min-w-0 items-end justify-between gap-4 border-b pb-4 ${
           mode === 'dark' ? 'border-[#1E2E25]/50' : 'border-gray-200'

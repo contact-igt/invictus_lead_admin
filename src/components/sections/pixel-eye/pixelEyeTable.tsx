@@ -177,41 +177,49 @@ const getStatusChipStyles = (status: string, mode: 'dark' | 'light') => {
   const normalized = String(status || '').trim().toLowerCase();
   if (!normalized) {
     return {
-      bgcolor: mode === 'dark' ? 'rgba(148, 163, 184, 0.08)' : 'rgba(100, 116, 139, 0.05)',
-      color: mode === 'dark' ? '#94A3B8' : '#64748B',
-      border: `1px solid ${mode === 'dark' ? 'rgba(148, 163, 184, 0.15)' : 'rgba(100, 116, 139, 0.12)'}`,
+      bgcolor: mode === 'dark' ? 'rgba(148, 163, 184, 0.08)' : '#F1F5F9',
+      color: mode === 'dark' ? '#94A3B8' : '#475569',
+      border: `1px solid ${mode === 'dark' ? 'rgba(148, 163, 184, 0.15)' : '#E2E8F0'}`,
+    };
+  }
+
+  if (normalized.includes('following') || normalized.includes('post') || normalized.includes('searching')) {
+    return {
+      bgcolor: mode === 'dark' ? 'rgba(249, 115, 22, 0.16)' : '#FFEDD5',
+      color: mode === 'dark' ? '#FFEDD5' : '#C2410C',
+      border: `1px solid ${mode === 'dark' ? 'rgba(249, 115, 22, 0.3)' : '#FDBA74'}`,
+    };
+  }
+
+  if (normalized.includes('not answering') || normalized.includes('dnp') || CONTACT_STATUS_SET.has(normalized)) {
+    return {
+      bgcolor: mode === 'dark' ? 'rgba(14, 165, 233, 0.16)' : '#E0F2FE',
+      color: mode === 'dark' ? '#BAE6FD' : '#0369A1',
+      border: `1px solid ${mode === 'dark' ? 'rgba(14, 165, 233, 0.3)' : '#7DD3FC'}`,
     };
   }
 
   if (SUCCESS_STATUS_SET.has(normalized)) {
     return {
-      bgcolor: mode === 'dark' ? 'rgba(34, 197, 94, 0.1)' : '#E8F5E9',
-      color: mode === 'dark' ? '#86EFAC' : '#1B5E20',
-      border: `1px solid ${mode === 'dark' ? 'rgba(34, 197, 94, 0.2)' : '#A5D6A7'}`,
+      bgcolor: mode === 'dark' ? 'rgba(34, 197, 94, 0.12)' : '#DCFCE7',
+      color: mode === 'dark' ? '#86EFAC' : '#15803D',
+      border: `1px solid ${mode === 'dark' ? 'rgba(34, 197, 94, 0.25)' : '#86EFAC'}`,
     };
   }
 
   if (TERMINAL_STATUS_SET.has(normalized)) {
     return {
-      bgcolor: mode === 'dark' ? 'rgba(239, 68, 68, 0.1)' : '#FFEBEE',
-      color: mode === 'dark' ? '#FCA5A5' : '#C62828',
-      border: `1px solid ${mode === 'dark' ? 'rgba(239, 68, 68, 0.2)' : '#EF9A9A'}`,
+      bgcolor: mode === 'dark' ? 'rgba(239, 68, 68, 0.12)' : '#FEE2E2',
+      color: mode === 'dark' ? '#FCA5A5' : '#B91C1C',
+      border: `1px solid ${mode === 'dark' ? 'rgba(239, 68, 68, 0.25)' : '#FCA5A5'}`,
     };
   }
 
   if (FOLLOW_UP_STATUS_SET.has(normalized)) {
     return {
-      bgcolor: mode === 'dark' ? 'rgba(245, 158, 11, 0.1)' : '#FFF3E0',
-      color: mode === 'dark' ? '#FDE047' : '#E65100',
-      border: `1px solid ${mode === 'dark' ? 'rgba(245, 158, 11, 0.2)' : '#FFB74D'}`,
-    };
-  }
-
-  if (CONTACT_STATUS_SET.has(normalized) || /^dnp [1-4]$/.test(normalized)) {
-    return {
-      bgcolor: mode === 'dark' ? 'rgba(56, 189, 248, 0.1)' : '#E0F7FA',
-      color: mode === 'dark' ? '#7DD3FC' : '#006064',
-      border: `1px solid ${mode === 'dark' ? 'rgba(56, 189, 248, 0.2)' : '#4DD0E1'}`,
+      bgcolor: mode === 'dark' ? 'rgba(245, 158, 11, 0.12)' : '#FEF3C7',
+      color: mode === 'dark' ? '#FCD34D' : '#B45309',
+      border: `1px solid ${mode === 'dark' ? 'rgba(245, 158, 11, 0.25)' : '#FDE68A'}`,
     };
   }
 
@@ -224,9 +232,9 @@ const getStatusChipStyles = (status: string, mode: 'dark' | 'light') => {
   }
 
   return {
-    bgcolor: mode === 'dark' ? 'rgba(168, 85, 247, 0.1)' : '#F3E5F5',
-    color: mode === 'dark' ? '#D8B4FE' : '#4A148C',
-    border: `1px solid ${mode === 'dark' ? 'rgba(168, 85, 247, 0.2)' : '#CE93D8'}`,
+    bgcolor: mode === 'dark' ? 'rgba(148, 163, 184, 0.1)' : '#F1F5F9',
+    color: mode === 'dark' ? '#CBD5E1' : '#475569',
+    border: `1px solid ${mode === 'dark' ? 'rgba(148, 163, 184, 0.2)' : '#CBD5E1'}`,
   };
 };
 const StatusCell = ({ value }: { value: string }) => {

@@ -10,6 +10,7 @@ import ListItem from './list-items/ListItem';
 import { useAuth } from 'redux/selectors/auth/authSelector';
 import { normalizeClientKey } from 'utils/clientKey';
 import { resolveClientModuleKey } from 'utils/clientModuleResolver';
+import useColorMode from 'hooks/useColorMode';
 
 // Invictus brand diamond logo (emerald dual-facet)
 const InvictusLogo = ({ size = 36 }: { size?: number }) => (
@@ -48,6 +49,7 @@ const getInitials = (name?: string) =>
     .slice(0, 2);
 
 const DrawerItems = () => {
+  const { mode } = useColorMode();
   const { user } = useAuth();
   const userModuleKey = resolveClientModuleKey(user?.clientKey);
 
@@ -75,8 +77,9 @@ const DrawerItems = () => {
         display: 'flex',
         flexDirection: 'column',
         height: '100vh',
-        backgroundColor: '#FFFFFF',
+        backgroundColor: mode === 'dark' ? '#0B1410' : '#FFFFFF',
         overflow: 'hidden',
+        transition: 'background-color 200ms ease',
       }}
     >
       {/* ── Logo / Brand Header ─────────────────────────────────────── */}
@@ -85,7 +88,7 @@ const DrawerItems = () => {
           px: 2.5,
           pt: 2.5,
           pb: 2,
-          borderBottom: '1px solid #F1F5F9',
+          borderBottom: mode === 'dark' ? '1px solid #15271E' : '1px solid #F1F5F9',
           flexShrink: 0,
         }}
       >
@@ -110,7 +113,7 @@ const DrawerItems = () => {
                 fontFamily: '"Geist", sans-serif',
                 fontSize: '1rem',
                 fontWeight: 800,
-                color: '#0F172A !important',
+                color: mode === 'dark' ? '#FFFFFF !important' : '#0F172A !important',
                 letterSpacing: '0.04em',
                 lineHeight: 1.1,
                 textTransform: 'uppercase',
@@ -123,7 +126,7 @@ const DrawerItems = () => {
                 fontFamily: '"Geist", sans-serif',
                 fontSize: '0.625rem',
                 fontWeight: 700,
-                color: '#0F172A !important',
+                color: mode === 'dark' ? '#4ADE80 !important' : '#0F172A !important',
                 letterSpacing: '0.18em',
                 textTransform: 'uppercase',
                 lineHeight: 1.2,
@@ -141,7 +144,7 @@ const DrawerItems = () => {
         sx={{
           px: 2.5,
           py: 2,
-          borderBottom: '1px solid #F1F5F9',
+          borderBottom: mode === 'dark' ? '1px solid #15271E' : '1px solid #F1F5F9',
           flexShrink: 0,
         }}
       >
@@ -177,7 +180,7 @@ const DrawerItems = () => {
                 sx={{
                   fontSize: '0.8125rem',
                   fontWeight: 700,
-                  color: '#0F172A !important',
+                  color: mode === 'dark' ? '#F8FAFC !important' : '#0F172A !important',
                   lineHeight: 1.3,
                 }}
               >
@@ -190,15 +193,15 @@ const DrawerItems = () => {
                   px: 1,
                   py: 0.2,
                   borderRadius: '12px',
-                  backgroundColor: '#D1FAE5',
-                  border: '1px solid #A7F3D0',
+                  backgroundColor: mode === 'dark' ? '#10241A' : '#D1FAE5',
+                  border: mode === 'dark' ? '1px solid #15271E' : '1px solid #A7F3D0',
                 }}
               >
                 <Typography
                   sx={{
                     fontSize: '0.625rem',
                     fontWeight: 700,
-                    color: '#047857',
+                    color: mode === 'dark' ? '#4ADE80' : '#047857',
                     letterSpacing: '0.04em',
                     textTransform: 'uppercase',
                     lineHeight: 1,
@@ -211,7 +214,7 @@ const DrawerItems = () => {
           </Stack>
           <Box
             sx={{
-              color: '#0F172A',
+              color: mode === 'dark' ? '#94A3B8' : '#0F172A',
               display: 'flex',
               alignItems: 'center',
               cursor: 'pointer',
@@ -234,8 +237,8 @@ const DrawerItems = () => {
           px: 2,
           '&::-webkit-scrollbar': { width: 4 },
           '&::-webkit-scrollbar-track': { background: 'transparent' },
-          '&::-webkit-scrollbar-thumb': { background: '#CBD5E1', borderRadius: 2 },
-          '&::-webkit-scrollbar-thumb:hover': { background: '#94A3B8' },
+          '&::-webkit-scrollbar-thumb': { background: mode === 'dark' ? '#1F3E30' : '#CBD5E1', borderRadius: 2 },
+          '&::-webkit-scrollbar-thumb:hover': { background: mode === 'dark' ? '#22C55E' : '#94A3B8' },
         }}
       >
         <Typography
@@ -244,7 +247,7 @@ const DrawerItems = () => {
             mb: 1,
             fontSize: '0.6875rem',
             fontWeight: 700,
-            color: '#64748B !important',
+            color: mode === 'dark' ? '#4B6356 !important' : '#64748B !important',
             letterSpacing: '0.08em',
             textTransform: 'uppercase',
           }}
@@ -270,14 +273,14 @@ const DrawerItems = () => {
               mx: 1,
               p: 1.5,
               borderRadius: 2,
-              backgroundColor: '#FEF2F2',
-              border: '1px solid #FCA5A5',
+              backgroundColor: mode === 'dark' ? '#2D1212' : '#FEF2F2',
+              border: mode === 'dark' ? '1px solid #7F1D1D' : '1px solid #FCA5A5',
             }}
           >
-            <Typography sx={{ fontSize: '0.6875rem', color: '#991B1B', fontWeight: 600, mb: 0.5 }}>
+            <Typography sx={{ fontSize: '0.6875rem', color: mode === 'dark' ? '#FCA5A5' : '#991B1B', fontWeight: 600, mb: 0.5 }}>
               No client linked
             </Typography>
-            <Typography sx={{ fontSize: '0.625rem', color: '#7F1D1D', lineHeight: 1.5 }}>
+            <Typography sx={{ fontSize: '0.625rem', color: mode === 'dark' ? '#FECACA' : '#7F1D1D', lineHeight: 1.5 }}>
               This user has no client_id set in the database. Assign a client to this user account.
             </Typography>
           </Box>
@@ -290,14 +293,14 @@ const DrawerItems = () => {
               mx: 1,
               p: 1.5,
               borderRadius: 2,
-              backgroundColor: '#FFFBEB',
-              border: '1px solid #FDE68A',
+              backgroundColor: mode === 'dark' ? '#271E0B' : '#FFFBEB',
+              border: mode === 'dark' ? '1px solid #78350F' : '1px solid #FDE68A',
             }}
           >
-            <Typography sx={{ fontSize: '0.6875rem', color: '#92400E', fontWeight: 600, mb: 0.5 }}>
+            <Typography sx={{ fontSize: '0.6875rem', color: mode === 'dark' ? '#FCD34D' : '#92400E', fontWeight: 600, mb: 0.5 }}>
               Key mismatch
             </Typography>
-            <Typography sx={{ fontSize: '0.625rem', color: '#78350F', lineHeight: 1.5 }}>
+            <Typography sx={{ fontSize: '0.625rem', color: mode === 'dark' ? '#FEF3C7' : '#78350F', lineHeight: 1.5 }}>
               clientKey "{user.clientKey}" not mapped to any module.
             </Typography>
           </Box>
@@ -309,14 +312,14 @@ const DrawerItems = () => {
         sx={{
           px: 2.5,
           py: 1.5,
-          borderTop: '1px solid #F1F5F9',
+          borderTop: mode === 'dark' ? '1px solid #15271E' : '1px solid #F1F5F9',
           flexShrink: 0,
         }}
       >
         <Typography
           sx={{
             fontSize: '0.625rem',
-            color: '#94A3B8',
+            color: mode === 'dark' ? '#4B6356' : '#94A3B8',
             letterSpacing: '0.04em',
             fontWeight: 500,
           }}
