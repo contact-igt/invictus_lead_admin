@@ -22,45 +22,49 @@ const CollapseListItem = ({ subheader, items, icon }: MenuItem) => {
       <ListItemButton
         onClick={() => setOpen(prev => !prev)}
         sx={{
-          mb: 0.25,
-          borderRadius: 2,
-          px: 1.25,
+          mb: 0.5,
+          borderRadius: '10px',
+          px: 1.5,
           py: 0.875,
-          backgroundColor: isAnyChildActive ? '#1F6B40' : 'transparent',
-          borderLeft: isAnyChildActive ? '3px solid #3DAA6B' : '3px solid transparent',
+          backgroundColor: isAnyChildActive ? '#F1F5F9' : 'transparent',
           '&:hover': {
-            backgroundColor: isAnyChildActive
-              ? '#1F6B40'
-              : 'rgba(255,255,255,0.06)',
+            backgroundColor: '#F8FAFC',
           },
+          transition: 'all 120ms ease',
         }}
       >
-        <ListItemIcon sx={{ minWidth: 32 }}>
+        <ListItemIcon sx={{ minWidth: 28 }}>
           {icon && (
             <IconifyIcon
               icon={icon}
               width={18}
               height={18}
-              sx={{ color: isAnyChildActive ? '#7ECBA5' : 'rgba(255,255,255,0.45)' }}
+              sx={{ color: isAnyChildActive ? '#0F172A !important' : '#64748B !important' }}
             />
           )}
         </ListItemIcon>
         <ListItemText
-          primary={subheader}
-          primaryTypographyProps={{
-            sx: {
-              fontSize: '0.8125rem',
-              fontWeight: isAnyChildActive ? 600 : 500,
-              color: isAnyChildActive ? '#FFFFFF' : 'rgba(255,255,255,0.65)',
-              letterSpacing: '0.01em',
-            },
-          }}
+          disableTypography
+          primary={
+            <Box
+              component="span"
+              sx={{
+                fontSize: '0.875rem', // 14px Sidebar Spec
+                fontWeight: isAnyChildActive ? 600 : 500, // 500 Spec
+                color: isAnyChildActive ? '#0F172A !important' : '#334155 !important',
+                fontFamily: '"Geist", sans-serif',
+              }}
+            >
+              {subheader}
+            </Box>
+          }
         />
         <IconifyIcon
-          icon="iconamoon:arrow-down-2-duotone"
-          width={14}
+          icon="solar:alt-arrow-down-linear"
+          width={16}
+          height={16}
           sx={{
-            color: isAnyChildActive ? '#7ECBA5' : 'rgba(255,255,255,0.3)',
+            color: '#64748B !important',
             transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
             transition: 'transform 0.2s ease',
             flexShrink: 0,
@@ -71,19 +75,17 @@ const CollapseListItem = ({ subheader, items, icon }: MenuItem) => {
       {/* ── Sub-items ─────────────────────────────────────────────── */}
       <Collapse in={open} timeout="auto" unmountOnExit>
         <List component="div" disablePadding sx={{ pl: 1.5, mb: 0.5 }}>
-          {/* Left accent line */}
           <Box
             sx={{
               position: 'relative',
               '&::before': {
                 content: '""',
                 position: 'absolute',
-                left: 14,
+                left: 12,
                 top: 4,
                 bottom: 4,
                 width: '1px',
-                backgroundColor: 'rgba(255,255,255,0.1)',
-                borderRadius: 1,
+                backgroundColor: '#E5E7EB',
               },
             }}
           >
@@ -95,41 +97,46 @@ const CollapseListItem = ({ subheader, items, icon }: MenuItem) => {
                   component={Link}
                   href={route.path}
                   sx={{
-                    pl: 3.25,
-                    py: 0.625,
-                    mb: 0.125,
-                    borderRadius: 1.5,
-                    backgroundColor: isActive ? 'rgba(46,139,87,0.2)' : 'transparent',
+                    pl: 3,
+                    pr: 1.5,
+                    py: 0.75,
+                    mb: 0.25,
+                    borderRadius: '8px',
+                    backgroundColor: isActive ? '#F1F5F9' : 'transparent',
                     '&:hover': {
-                      backgroundColor: isActive
-                        ? 'rgba(46,139,87,0.25)'
-                        : 'rgba(255,255,255,0.05)',
+                      backgroundColor: isActive ? '#E2E8F0' : '#F8FAFC',
                     },
+                    transition: 'all 120ms ease',
                   }}
                 >
                   {/* Dot indicator */}
                   <Box
                     sx={{
-                      width: 5,
-                      height: 5,
+                      width: isActive ? 5 : 4,
+                      height: isActive ? 5 : 4,
                       borderRadius: '50%',
-                      backgroundColor: isActive ? '#3DAA6B' : 'rgba(255,255,255,0.2)',
+                      backgroundColor: isActive ? '#0F172A' : '#94A3B8',
                       mr: 1.25,
                       flexShrink: 0,
-                      transition: 'background-color 0.15s ease',
+                      transition: 'all 0.15s ease',
                     }}
                   />
                   <ListItemText
-                    primary={route.name}
-                    primaryTypographyProps={{
-                      sx: {
-                        fontSize: '0.8125rem',
-                        fontWeight: isActive ? 600 : 400,
-                        color: isActive ? '#FFFFFF' : 'rgba(255,255,255,0.5)',
-                        letterSpacing: '0.01em',
-                        transition: 'color 0.15s ease',
-                      },
-                    }}
+                    disableTypography
+                    primary={
+                      <Box
+                        component="span"
+                        sx={{
+                          fontSize: '0.8125rem', // 13px Secondary Spec
+                          fontWeight: isActive ? 600 : 400, // 400/600 Spec
+                          color: isActive ? '#0F172A !important' : '#64748B !important',
+                          fontFamily: '"Geist", sans-serif',
+                          display: 'block',
+                        }}
+                      >
+                        {route.name}
+                      </Box>
+                    }
                   />
                 </ListItemButton>
               );

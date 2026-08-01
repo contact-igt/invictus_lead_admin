@@ -216,11 +216,11 @@ export const PixelEyePageShell = ({ children }: { children: ReactNode }) => {
       sx={{
         width: '100%',
         minHeight: '100vh',
-        px: { xs: 2, md: 3, lg: 4 },
-        py: { xs: 3, md: 4, lg: 5 },
+        px: { xs: 2, md: 3 }, // 85% Viewport Density Spec
+        py: { xs: 2, md: 2.5 },
         color: getModeStyles(mode).pageText,
-        background: getModeStyles(mode).pageBackground,
-        transition: 'all 0.3s ease',
+        background: mode === 'dark' ? getModeStyles(mode).pageBackground : '#F8FAFC',
+        transition: 'all 0.2s ease',
       }}
     >
       <Box sx={{ width: '100%', mx: 'auto' }}>{children}</Box>

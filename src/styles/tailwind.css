@@ -2,6 +2,77 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ═══════════════════════════════════════════════════════════════
+   DESIGN.md OVERRIDES — stitch-design-taste
+   Geist font, Charcoal Ink text, no pure black, no neon glows
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Global font override to Geist */
+*, *::before, *::after {
+  font-family: "Geist", "Outfit", ui-sans-serif, system-ui, sans-serif;
+}
+code, pre, .font-mono, [class*="mono"] {
+  font-family: "Geist Mono", "JetBrains Mono", ui-monospace, monospace;
+}
+
+/* Light mode body — Canvas Smoke background */
+html:not(.dark) body {
+  background-color: #F8FAFC;
+  color: #0F172A;
+}
+
+/* ─── CRITICAL: Kill green text leaking from MUI theme into sidebar nav ─── */
+/* MUI ListItemText, ListItemButton, and MuiLink inherit from theme.palette.primary
+   which is green — these overrides enforce Charcoal Ink on all sidebar items */
+html:not(.dark) .MuiListItemButton-root .MuiTypography-root,
+html:not(.dark) .MuiListItemButton-root span,
+html:not(.dark) .MuiListItemText-primary,
+html:not(.dark) .MuiListItemButton-root a,
+html:not(.dark) .MuiDrawer-root .MuiLink-root {
+  color: #0F172A !important;
+}
+/* Kill any green on iconify icons in sidebar */
+html:not(.dark) .MuiDrawer-root .MuiListItemIcon-root svg,
+html:not(.dark) .MuiDrawer-root .MuiListItemIcon-root span {
+  color: #0F172A !important;
+}
+
+/* ─── ENTERPRISE DESIGN SYSTEM OVERRIDES ───────────────────────────────
+   Cards: 18px | Buttons: 12px | Inputs: 12px | Radii, Slate-200 borders, 8px spacing
+   ═══════════════════════════════════════════════════════════════ */
+
+html:not(.dark) .MuiPaper-root:not(.MuiDrawer-paper),
+html:not(.dark) .MuiCard-root {
+  border-radius: 18px !important; /* 18px Card Spec */
+  border: 1px solid #E5E7EB !important; /* Slate-200 Border Spec */
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 4px 12px rgba(15, 23, 42, 0.03) !important;
+  background-color: #FFFFFF !important;
+}
+
+html:not(.dark) .MuiButton-root {
+  border-radius: 12px !important; /* 12px Button Spec */
+  font-family: "Geist", sans-serif !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+}
+
+html:not(.dark) .MuiOutlinedInput-root {
+  border-radius: 12px !important; /* 12px Input Spec */
+  font-family: "Geist", sans-serif !important;
+}
+
+/* ─── KPI card micro-interactions — 1.015 scale, -3px translateY ─────────── */
+.kpi-card {
+  will-change: transform, box-shadow;
+  transition: transform 250ms cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              box-shadow 250ms cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+}
+.kpi-card:hover {
+  transform: translateY(-3px) scale(1.015) !important;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06) !important;
+}
+
+
 /* Dark mode overrides for Material UI components to match dashboard look */
 html.dark body {
 	background: radial-gradient(circle at 10% 20%, rgba(34,197,94,0.06), rgba(34,197,94,0.02) 10%, transparent 30%), #050B07;
