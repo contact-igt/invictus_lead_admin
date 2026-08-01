@@ -69,8 +69,10 @@ const DarkKPICards: React.FC<{ items: KPIItem[]; loading?: boolean }> = ({
   const { mode } = useColorMode();
   const COLORS = mode === 'dark' ? COLORS_DARK : COLORS_LIGHT;
 
-  const gridCols = items.length > 4
-    ? 'grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5'
+  const gridCols = items.length === 5
+    ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-5'
+    : items.length > 4
+    ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5'
     : 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-4';
 
   return (

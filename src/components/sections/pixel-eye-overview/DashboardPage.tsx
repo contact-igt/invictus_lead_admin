@@ -219,32 +219,6 @@ const DashboardPage: React.FC = () => {
       sparklineData: [1, 0, 1, 2, 1, 0, 1],
       onClick: () => navigate(getFollowUpsRoute('priority')),
     },
-    {
-      key: 'outcome-updated',
-      label: 'Outcome Updated',
-      value: metrics.followUpSummary.outcomeUpdated,
-      icon: 'solar:document-text-linear',
-      color: 'primary',
-      status: 'Completed',
-      trend: '+24%',
-      trendDirection: 'up',
-      comparisonText: 'vs last week · Recorded',
-      sparklineData: [5, 8, 10, 12, 11, 13, 14],
-      onClick: () => navigate(getFollowUpsRoute('outcome-updated')),
-    },
-    {
-      key: 'successful-outcomes',
-      label: 'Successful Outcomes',
-      value: metrics.followUpSummary.successfulOutcomes,
-      icon: 'solar:verified-check-linear',
-      color: 'success',
-      status: 'Healthy',
-      trend: '+30%',
-      trendDirection: 'up',
-      comparisonText: 'vs last week · Converted',
-      sparklineData: [0, 0, 1, 1, 0, 1, 1],
-      onClick: () => navigate(getFollowUpsRoute('successful-outcomes')),
-    },
   ];
 
   const handleApplyFilters = (newFilters: DashboardFilters) => {
