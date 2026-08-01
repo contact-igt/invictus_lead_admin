@@ -1,4 +1,4 @@
-﻿export interface LeadRecord {
+export interface LeadRecord {
   id: number;
   client_id?: number | null;
   date?: string | null;
@@ -47,14 +47,37 @@ export interface DashboardFilters {
   agent: string;
 }
 
+export type EnterpriseStatus =
+  | 'Healthy'
+  | 'Running'
+  | 'Pending'
+  | 'Completed'
+  | 'Needs Review'
+  | 'Critical'
+  | 'Draft';
+
 export interface KPIItem {
   key: string;
   label: string;
   value: number;
   icon: string;
-  color: 'primary' | 'success' | 'warning' | 'error';
+  color: 'primary' | 'success' | 'warning' | 'error' | 'info';
   subtext?: string;
   onClick?: () => void;
+  /** Strict Status Taxonomy pill */
+  status?: EnterpriseStatus;
+  /** Trend percentage string e.g. '+18%' or '-4%' */
+  trend?: string;
+  /** Trend direction for color encoding */
+  trendDirection?: 'up' | 'down' | 'neutral';
+  /** Contextual comparison text e.g. 'vs last week · Today' */
+  comparisonText?: string;
+  /** Mini sparkline data array for micro-chart rendering e.g. [12, 18, 14, 22, 28, 25, 34] */
+  sparklineData?: number[];
+  /** Legacy badge string mapping for compatibility */
+  badge?: 'good' | 'great' | 'watch';
+  trendText?: string;
+  progress?: number;
 }
 
 export interface StatusCategoryItem {

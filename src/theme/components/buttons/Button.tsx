@@ -7,69 +7,71 @@ const Button: Components<Omit<Theme, 'components'>>['MuiButton'] = {
   },
   styleOverrides: {
     root: () => ({
-      borderRadius: 10,
+      borderRadius: 12, // 12px Button Spec
       textTransform: 'none',
       fontWeight: 600,
+      fontFamily: '"Geist", sans-serif',
       letterSpacing: '0.01em',
-      transition: 'all 0.18s ease',
+      transition: 'all 0.15s ease',
+      boxShadow: 'none !important',
       '&:active': {
         transform: 'scale(0.98)',
       },
     }),
 
-    // ── Contained / Primary (green) ──────────────────────────────────────────
-    containedPrimary: ({ theme }) => ({
+    // ── Primary (solid green #16A34A, white text, NO glow) ───────────────────
+    containedPrimary: () => ({
       color: '#FFFFFF',
-      backgroundColor: theme.palette.primary.main,  // #2E8B57
+      backgroundColor: '#16A34A',
       '&:hover': {
-        backgroundColor: theme.palette.primary.dark,  // #1F6B40
-        transform: 'translateY(-1px)',
-        boxShadow: theme.customShadows[3],  // green glow
+        backgroundColor: '#15803D',
+        boxShadow: 'none !important',
       },
       '&:active': {
-        backgroundColor: theme.palette.primary.darker,
-        transform: 'scale(0.98)',
-        boxShadow: 'none',
+        backgroundColor: '#166534',
+        boxShadow: 'none !important',
       },
       '&.Mui-disabled': {
-        backgroundColor: '#C3E6D3',
-        color: '#7ECBA5',
+        backgroundColor: '#DCFCE7',
+        color: '#86EFAC',
       },
     }),
 
-    // ── Contained / Secondary (white outlined-style) ─────────────────────────
-    containedSecondary: ({ theme }) => ({
-      color: theme.palette.text.primary,
+    // ── Secondary (white fill, #E5E7EB border, Slate-900 text) ───────────────
+    containedSecondary: () => ({
+      color: '#0F172A',
       backgroundColor: '#FFFFFF',
-      border: `1px solid ${theme.palette.divider}`,
+      border: '1px solid #E5E7EB',
+      boxShadow: 'none !important',
       '&:hover': {
-        backgroundColor: theme.palette.info.dark,  // #E8F5EE
-        borderColor: '#C3E6D3',
+        backgroundColor: '#F8FAFC',
+        borderColor: '#CBD5E1',
       },
     }),
 
     // ── Outlined ─────────────────────────────────────────────────────────────
-    outlinedPrimary: ({ theme }) => ({
-      color: theme.palette.primary.main,
-      borderColor: theme.palette.primary.main,
+    outlinedPrimary: () => ({
+      color: '#16A34A',
+      borderColor: '#E5E7EB',
+      backgroundColor: '#FFFFFF',
       '&:hover': {
-        backgroundColor: theme.palette.primary.lighter,  // #E8F5EE
-        borderColor: theme.palette.primary.dark,
+        backgroundColor: '#F0FDF4',
+        borderColor: '#BBF7D0',
       },
     }),
 
-    // ── Text ─────────────────────────────────────────────────────────────────
-    text: ({ theme }) => ({
-      color: theme.palette.primary.main,
+    // ── Text / Ghost ─────────────────────────────────────────────────────────
+    text: () => ({
+      color: '#0F172A',
       backgroundColor: 'transparent',
       '&:hover': {
-        backgroundColor: theme.palette.primary.lighter,
+        backgroundColor: '#F1F5F9',
       },
     }),
 
-    // ── Sizes ─────────────────────────────────────────────────────────────────
+    // ── Sizes — 48px Default Large ───────────────────────────────────────────
     sizeLarge: {
-      height: 48,
+      height: 48, // 48px Height Spec
       padding: '0 24px',
       fontSize: '0.9375rem',
     },

@@ -11,29 +11,36 @@ import { useAuth } from 'redux/selectors/auth/authSelector';
 import { normalizeClientKey } from 'utils/clientKey';
 import { resolveClientModuleKey } from 'utils/clientModuleResolver';
 
-// Invictus brand diamond logo (dual-tone green)
+// Invictus brand diamond logo (emerald dual-facet)
 const InvictusLogo = ({ size = 36 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 40 40" fill="none">
-    <polygon points="20,2 38,20 20,38 2,20" fill="#1F6B40" />
-    <polygon points="20,8 32,20 20,32 8,20" fill="#2E8B57" />
-    <polygon points="20,14 26,20 20,26 14,20" fill="#3DAA6B" />
+  <svg width={size} height={size} viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+    {/* Left Chevron / Angle shape */}
+    <path
+      d="M23 5 L5 25 L23 45 L23 36 L13 25 L23 14 Z"
+      fill="#00D285"
+    />
+    {/* Right Blade / Vertical Diamond facet */}
+    <path
+      d="M27 5 L45 25 L27 45 L27 5 Z"
+      fill="#009E5E"
+    />
+    {/* Inner facet shading */}
+    <path
+      d="M27 5 L36 25 L27 45 Z"
+      fill="#00B86E"
+      opacity="0.4"
+    />
   </svg>
 );
 
 const roleLabel: Record<string, string> = {
-  'super-admin': 'Super Admin',
-  admin: 'Admin',
-  client: 'Client',
-};
-
-const roleColor: Record<string, string> = {
-  'super-admin': '#1F6B40',
-  admin: '#2E8B57',
-  client: '#3DAA6B',
+  'super-admin': 'SUPER ADMIN',
+  admin: 'ADMIN',
+  client: 'CLIENT',
 };
 
 const getInitials = (name?: string) =>
-  (name || 'U')
+  (name || 'I')
     .split(' ')
     .map(w => w[0])
     .join('')
@@ -68,7 +75,7 @@ const DrawerItems = () => {
         display: 'flex',
         flexDirection: 'column',
         height: '100vh',
-        backgroundColor: '#111714',
+        backgroundColor: '#FFFFFF',
         overflow: 'hidden',
       }}
     >
@@ -76,9 +83,9 @@ const DrawerItems = () => {
       <Box
         sx={{
           px: 2.5,
-          pt: 3,
-          pb: 2.5,
-          borderBottom: '1px solid rgba(255,255,255,0.06)',
+          pt: 2.5,
+          pb: 2,
+          borderBottom: '1px solid #F1F5F9',
           flexShrink: 0,
         }}
       >
@@ -89,112 +96,130 @@ const DrawerItems = () => {
           sx={{
             display: 'flex',
             alignItems: 'center',
-            gap: 1.25,
+            gap: 1.5,
             borderRadius: 2,
             p: 0.5,
-            '&:hover': { opacity: 0.85 },
+            justifyContent: 'flex-start',
+            '&:hover': { opacity: 0.9 },
           }}
         >
-          <InvictusLogo size={34} />
-          <Box>
+          <InvictusLogo size={38} />
+          <Box sx={{ textAlign: 'left' }}>
             <Typography
               sx={{
-                fontFamily: '"Space Grotesk", sans-serif',
-                fontSize: '0.9375rem',
-                fontWeight: 700,
-                color: '#FFFFFF',
-                letterSpacing: '0.06em',
+                fontFamily: '"Geist", sans-serif',
+                fontSize: '1rem',
+                fontWeight: 800,
+                color: '#0F172A !important',
+                letterSpacing: '0.04em',
                 lineHeight: 1.1,
                 textTransform: 'uppercase',
               }}
             >
-              Invictus
+              INVICTUS
             </Typography>
             <Typography
               sx={{
+                fontFamily: '"Geist", sans-serif',
                 fontSize: '0.625rem',
-                fontWeight: 500,
-                color: '#7ECBA5',
-                letterSpacing: '0.12em',
+                fontWeight: 700,
+                color: '#0F172A !important',
+                letterSpacing: '0.18em',
                 textTransform: 'uppercase',
-                lineHeight: 1,
+                lineHeight: 1.2,
+                mt: '1px',
               }}
             >
-              Global Tech
+              GLOBAL TECH
             </Typography>
           </Box>
         </ButtonBase>
       </Box>
 
-      {/* ── User Avatar Block ───────────────────────────────────────── */}
+      {/* ── User Profile Block ───────────────────────────────────────── */}
       <Box
         sx={{
           px: 2.5,
           py: 2,
-          borderBottom: '1px solid rgba(255,255,255,0.06)',
+          borderBottom: '1px solid #F1F5F9',
           flexShrink: 0,
         }}
       >
-        <Stack direction="row" alignItems="center" gap={1.5}>
-          <Box
-            sx={{
-              width: 36,
-              height: 36,
-              borderRadius: '50%',
-              backgroundColor: roleColor[user?.role || 'client'] || '#2E8B57',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-            }}
-          >
-            <Typography
-              sx={{
-                fontFamily: '"Space Grotesk", sans-serif',
-                fontSize: '0.8125rem',
-                fontWeight: 700,
-                color: '#FFFFFF',
-              }}
-            >
-              {getInitials(user?.username || user?.email)}
-            </Typography>
-          </Box>
-          <Box sx={{ minWidth: 0 }}>
-            <Typography
-              noWrap
-              sx={{
-                fontSize: '0.8125rem',
-                fontWeight: 600,
-                color: 'rgba(255,255,255,0.9)',
-                lineHeight: 1.3,
-              }}
-            >
-              {user?.username || user?.email || 'User'}
-            </Typography>
+        <Stack direction="row" alignItems="center" justifyContent="space-between">
+          <Stack direction="row" alignItems="center" gap={1.5} sx={{ minWidth: 0 }}>
             <Box
               sx={{
-                display: 'inline-block',
-                mt: 0.25,
-                px: 0.75,
-                py: 0.125,
-                borderRadius: '4px',
-                backgroundColor: `${roleColor[user?.role || 'client']}22`,
-                border: `1px solid ${roleColor[user?.role || 'client']}44`,
+                width: 38,
+                height: 38,
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                boxShadow: '0 2px 4px rgba(16,185,129,0.2)',
               }}
             >
               <Typography
                 sx={{
-                  fontSize: '0.625rem',
-                  fontWeight: 600,
-                  color: roleColor[user?.role || 'client'],
-                  letterSpacing: '0.06em',
-                  textTransform: 'uppercase',
-                  lineHeight: 1,
+                  fontFamily: '"Geist Mono", monospace',
+                  fontSize: '0.875rem',
+                  fontWeight: 700,
+                  color: '#FFFFFF',
                 }}
               >
-                {roleLabel[user?.role || ''] || user?.role || 'User'}
+                {getInitials(user?.username || user?.email)}
               </Typography>
             </Box>
+            <Box sx={{ minWidth: 0 }}>
+              <Typography
+                noWrap
+                sx={{
+                  fontSize: '0.8125rem',
+                  fontWeight: 700,
+                  color: '#0F172A !important',
+                  lineHeight: 1.3,
+                }}
+              >
+                {user?.username || user?.email || 'invictusglobaltech'}
+              </Typography>
+              <Box
+                sx={{
+                  display: 'inline-block',
+                  mt: 0.25,
+                  px: 1,
+                  py: 0.2,
+                  borderRadius: '12px',
+                  backgroundColor: '#D1FAE5',
+                  border: '1px solid #A7F3D0',
+                }}
+              >
+                <Typography
+                  sx={{
+                    fontSize: '0.625rem',
+                    fontWeight: 700,
+                    color: '#047857',
+                    letterSpacing: '0.04em',
+                    textTransform: 'uppercase',
+                    lineHeight: 1,
+                  }}
+                >
+                  {roleLabel[user?.role || ''] || user?.role || 'SUPER ADMIN'}
+                </Typography>
+              </Box>
+            </Box>
+          </Stack>
+          <Box
+            sx={{
+              color: '#0F172A',
+              display: 'flex',
+              alignItems: 'center',
+              cursor: 'pointer',
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
           </Box>
         </Stack>
       </Box>
@@ -205,27 +230,26 @@ const DrawerItems = () => {
           flex: 1,
           overflowY: 'auto',
           overflowX: 'hidden',
-          py: 1.5,
-          px: 1.5,
-          // Sidebar-specific scrollbar
+          py: 2,
+          px: 2,
           '&::-webkit-scrollbar': { width: 4 },
           '&::-webkit-scrollbar-track': { background: 'transparent' },
-          '&::-webkit-scrollbar-thumb': { background: 'rgba(195,230,211,0.2)', borderRadius: 2 },
-          '&::-webkit-scrollbar-thumb:hover': { background: 'rgba(195,230,211,0.4)' },
+          '&::-webkit-scrollbar-thumb': { background: '#CBD5E1', borderRadius: 2 },
+          '&::-webkit-scrollbar-thumb:hover': { background: '#94A3B8' },
         }}
       >
         <Typography
           sx={{
             px: 1,
-            mb: 0.75,
-            fontSize: '0.5625rem',
+            mb: 1,
+            fontSize: '0.6875rem',
             fontWeight: 700,
-            color: 'rgba(255,255,255,0.28)',
-            letterSpacing: '0.12em',
+            color: '#64748B !important',
+            letterSpacing: '0.08em',
             textTransform: 'uppercase',
           }}
         >
-          Main
+          MAIN
         </Typography>
 
         <List component="nav" disablePadding>
@@ -246,14 +270,14 @@ const DrawerItems = () => {
               mx: 1,
               p: 1.5,
               borderRadius: 2,
-              backgroundColor: 'rgba(224,68,68,0.12)',
-              border: '1px solid rgba(224,68,68,0.3)',
+              backgroundColor: '#FEF2F2',
+              border: '1px solid #FCA5A5',
             }}
           >
-            <Typography sx={{ fontSize: '0.6875rem', color: '#FF9999', fontWeight: 600, mb: 0.5 }}>
+            <Typography sx={{ fontSize: '0.6875rem', color: '#991B1B', fontWeight: 600, mb: 0.5 }}>
               No client linked
             </Typography>
-            <Typography sx={{ fontSize: '0.625rem', color: 'rgba(255,255,255,0.4)', lineHeight: 1.5 }}>
+            <Typography sx={{ fontSize: '0.625rem', color: '#7F1D1D', lineHeight: 1.5 }}>
               This user has no client_id set in the database. Assign a client to this user account.
             </Typography>
           </Box>
@@ -266,14 +290,14 @@ const DrawerItems = () => {
               mx: 1,
               p: 1.5,
               borderRadius: 2,
-              backgroundColor: 'rgba(245,158,58,0.12)',
-              border: '1px solid rgba(245,158,58,0.3)',
+              backgroundColor: '#FFFBEB',
+              border: '1px solid #FDE68A',
             }}
           >
-            <Typography sx={{ fontSize: '0.6875rem', color: '#FFCA7A', fontWeight: 600, mb: 0.5 }}>
+            <Typography sx={{ fontSize: '0.6875rem', color: '#92400E', fontWeight: 600, mb: 0.5 }}>
               Key mismatch
             </Typography>
-            <Typography sx={{ fontSize: '0.625rem', color: 'rgba(255,255,255,0.4)', lineHeight: 1.5 }}>
+            <Typography sx={{ fontSize: '0.625rem', color: '#78350F', lineHeight: 1.5 }}>
               clientKey "{user.clientKey}" not mapped to any module.
             </Typography>
           </Box>
@@ -285,15 +309,16 @@ const DrawerItems = () => {
         sx={{
           px: 2.5,
           py: 1.5,
-          borderTop: '1px solid rgba(255,255,255,0.06)',
+          borderTop: '1px solid #F1F5F9',
           flexShrink: 0,
         }}
       >
         <Typography
           sx={{
             fontSize: '0.625rem',
-            color: 'rgba(255,255,255,0.24)',
+            color: '#94A3B8',
             letterSpacing: '0.04em',
+            fontWeight: 500,
           }}
         >
           © 2025 Invictus Global Tech

@@ -1,52 +1,52 @@
-// ── Invictus Global Tech Brand Colors ────────────────────────────────────────
+// ── Invictus Enterprise Color Tokens ─────────────────────────────────────────
 
 export const green = {
-  tint:    '#E8F5EE',  // card fills, chip bg
-  pale:    '#C3E6D3',  // subtle borders, hover bg
-  light:   '#7ECBA5',  // icons, highlights
-  mid:     '#3DAA6B',  // badges, left-border accents
-  primary: '#2E8B57',  // buttons, active states
-  dark:    '#1F6B40',  // hover states, sidebar active bg
-  deeper:  '#145C30',  // pressed states
-  900:     '#0D3D20',  // darkest green
+  tint:    '#F0FDF4',
+  pale:    '#DCFCE7',
+  light:   '#4ADE80',
+  mid:     '#22C55E',
+  primary: '#16A34A',
+  dark:    '#15803D',
+  deeper:  '#166534',
+  900:     '#14532D',
 };
 
 export const dark = {
-  base:    '#111714',  // sidebar background
-  surface: '#1C2320',  // sidebar hover bg
-  muted:   '#2A3330',  // sidebar section labels
+  base:    '#0F172A',  // Slate-900
+  surface: '#1E293B',  // Slate-800
+  muted:   '#334155',  // Slate-700
 };
 
 export const surface = {
-  page:    '#F4F6F5',  // page/body background
-  card:    '#FFFFFF',  // card/panel background
-  overlay: '#FCFCFC',  // nested surfaces
+  page:    '#F8FAFC',  // Canvas Smoke #F8FAFC
+  card:    '#FFFFFF',  // Pure Surface #FFFFFF
+  overlay: '#F1F5F9',  // Nested surfaces Slate-100
 };
 
 export const text = {
-  primary:   '#111714',
-  secondary:  '#4A5C4D',
-  muted:      '#8A9C8D',
+  primary:   '#0F172A',  // Slate-900 Primary
+  secondary:  '#64748B',  // Slate-500 Secondary
+  muted:      '#94A3B8',  // Slate-400 Muted
   inverse:    '#FFFFFF',
 };
 
 export const status = {
-  successBg:  '#E8F5EE',
-  successFg:  '#2E8B57',
-  warningBg:  '#FFF8E8',
-  warningFg:  '#C47A15',
-  dangerBg:   '#FFF0F0',
-  dangerFg:   '#E04444',
-  infoBg:     '#EEF3FF',
-  infoFg:     '#3B78E0',
-  neutralBg:  '#F4F6F5',
-  neutralFg:  '#8A9C8D',
+  successBg:  '#F0FDF4',
+  successFg:  '#16A34A',
+  infoBg:     '#EFF6FF',
+  infoFg:     '#2563EB',
+  warningBg:  '#FFFBEB',
+  warningFg:  '#F59E0B',
+  dangerBg:   '#FEF2F2',
+  dangerFg:   '#EF4444',
+  neutralBg:  '#F1F5F9',
+  neutralFg:  '#64748B',
 };
 
 export const border = {
-  default:  '#E8EDE9',
-  subtle:   '#F0F3F1',
-  focus:    '#2E8B57',
+  default:  '#E5E7EB',  // Slate-200 Border
+  subtle:   '#F1F5F9',  // Slate-100 Subtle
+  focus:    '#2563EB',  // Blue focus ring
 };
 
 // Legacy exports kept for any remaining references

@@ -148,7 +148,7 @@ const TrendChart = ({ points, loading = false, highlightSeries }: TrendChartProp
   );
 
   return (
-    <PixelEyeCard sx={{ p: 4, h: '100%' }}>
+    <PixelEyeCard sx={{ p: 3.5, height: '100%', minHeight: 450, display: 'flex', flexDirection: 'column' }}>
       <Stack
         direction="row"
         alignItems="flex-start"

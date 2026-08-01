@@ -7,15 +7,13 @@ declare module '@mui/material/styles' {
   }
 }
 
-// [0] sm  — subtle lift (menus, dropdowns)
-// [1] md  — card hover, focus rings
-// [2] lg  — modals, drawers
-// [3] green-glow — primary button hover
+// Enterprise Shadow Tokens — Single subtle shadow only: 0 6px 20px rgba(15,23,42,.05)
+// NO glows, NO colored shadows!
 const customShadows = [
-  '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05)',
-  '0 4px 12px rgba(0,0,0,0.10), 0 2px 4px rgba(0,0,0,0.06)',
-  '0 8px 24px rgba(0,0,0,0.12), 0 4px 8px rgba(0,0,0,0.08)',
-  '0 4px 16px rgba(46,139,87,0.30)',
+  '0 6px 20px rgba(15, 23, 42, 0.05)',  // [0] standard card/surface shadow
+  '0 6px 20px rgba(15, 23, 42, 0.08)',  // [1] hover shadow
+  '0 12px 32px rgba(15, 23, 42, 0.10)', // [2] modal/drawer shadow
+  'none',                              // [3] no glow
 ];
 
 export default customShadows;

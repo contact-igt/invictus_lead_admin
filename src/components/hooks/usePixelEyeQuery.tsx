@@ -223,37 +223,60 @@ const refreshPixelEyeCaches = (queryClient: ReturnType<typeof useQueryClient>) =
   }
 };
 
-// clientKey is included in the query key so super-admin switching between clients
-// gets a fresh fetch instead of returning the previous client's cached data.
-export const usePixelEyeQuery = (clientKey?: string, options?: PixelEyeQueryOptions) =>
-  useQuery<PixelEyeLead[]>(['pixelEyeLeads', clientKey ?? null], async () => {
-    const params = clientKey ? { _client_key: clientKey } : undefined;
-    const res = await _axios('get', '/pixeleye', undefined, 'application/json', params);
-    if (import.meta.env.DEV) {
-       
-      console.debug('usePixelEyeQuery - raw response', res);
-    }
-    if (Array.isArray(res)) {
+export interface PixelEyeQueryFilters {
+  dateFrom?: string;
+  dateTo?: string;
+  agent?: string;
+}
+
+const isQueryOptions = (obj: any): obj is PixelEyeQueryOptions => {
+  return Boolean(obj && typeof obj === 'object' && 'enabled' in obj);
+};
+
+export const usePixelEyeQuery = (
+  clientKey?: string,
+  filtersOrOptions?: PixelEyeQueryFilters | PixelEyeQueryOptions,
+  rawOptions?: PixelEyeQueryOptions,
+) => {
+  const filters = isQueryOptions(filtersOrOptions) ? undefined : filtersOrOptions;
+  const options = isQueryOptions(filtersOrOptions) ? filtersOrOptions : rawOptions;
+
+  return useQuery<PixelEyeLead[]>(
+    ['pixelEyeLeads', clientKey ?? null, filters?.dateFrom ?? '', filters?.dateTo ?? '', filters?.agent ?? ''],
+    async () => {
+      const params: Record<string, string> = {};
+      if (clientKey) params._client_key = clientKey;
+      if (filters?.dateFrom) params.dateFrom = filters.dateFrom;
+      if (filters?.dateTo) params.dateTo = filters.dateTo;
+      if (filters?.agent) params.agent = filters.agent;
+
+      const res = await _axios('get', '/pixeleye', undefined, 'application/json', Object.keys(params).length > 0 ? params : undefined);
       if (import.meta.env.DEV) {
          
-        console.debug('usePixelEyeQuery - returning array length', res.length);
+        console.debug('usePixelEyeQuery - raw response', res);
       }
-      return res as PixelEyeLead[];
-    }
-    if (Array.isArray(res?.data)) {
+      if (Array.isArray(res)) {
+        if (import.meta.env.DEV) {
+           
+          console.debug('usePixelEyeQuery - returning array length', res.length);
+        }
+        return res as PixelEyeLead[];
+      }
+      if (Array.isArray(res?.data)) {
+        if (import.meta.env.DEV) {
+           
+          console.debug('usePixelEyeQuery - returning res.data length', res.data.length);
+        }
+        return res.data as PixelEyeLead[];
+      }
       if (import.meta.env.DEV) {
          
-        console.debug('usePixelEyeQuery - returning res.data length', res.data.length);
+        console.debug('usePixelEyeQuery - returning fallback value', res ?? []);
       }
-      return res.data as PixelEyeLead[];
-    }
-    if (import.meta.env.DEV) {
-       
-      console.debug('usePixelEyeQuery - returning fallback value', res ?? []);
-    }
-    return (res ?? []) as PixelEyeLead[];
-  }, {
-    enabled: options?.enabled ?? true,
+      return (res ?? []) as PixelEyeLead[];
+    },
+    {
+      enabled: options?.enabled ?? true,
     // Avoid aggressive refetching and retries that can cause loops / 429 storms
     retry: (failureCount, error: any) => {
       const status = error?.response?.status;
@@ -265,6 +288,7 @@ export const usePixelEyeQuery = (clientKey?: string, options?: PixelEyeQueryOpti
     staleTime: 1000 * 60 * 2, // 2 minutes
     keepPreviousData: true,
   });
+};
 
 export const usePixelEyeMissedFollowUpsQuery = (
   clientKey?: string,

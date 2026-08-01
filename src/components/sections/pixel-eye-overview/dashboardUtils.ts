@@ -637,7 +637,8 @@ const buildSourceBreakdown = (leads: LeadRecord[]): SourceBreakdownItem[] => {
   const counts = new Map<string, number>();
 
   leads.forEach((lead) => {
-    const src = normalizeText(lead.source) || 'Unknown';
+    const rawSource = normalizeText(lead.source);
+    const src = !rawSource || rawSource === '-' || rawSource === 'null' ? 'Direct / Unassigned' : rawSource;
     counts.set(src, (counts.get(src) ?? 0) + 1);
   });
 
