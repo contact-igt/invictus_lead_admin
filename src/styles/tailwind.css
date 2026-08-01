@@ -37,6 +37,25 @@ html:not(.dark) .MuiDrawer-root .MuiListItemIcon-root span {
   color: #0F172A !important;
 }
 
+/* ─── DARK MODE SIDEBAR OVERRIDES ─────────────────────────────────── */
+html.dark .MuiDrawer-paper {
+  background-color: #0B1410 !important;
+  border-right-color: #15271E !important;
+}
+
+html.dark .MuiDrawer-root .MuiListItemButton-root .MuiTypography-root,
+html.dark .MuiDrawer-root .MuiListItemButton-root span,
+html.dark .MuiDrawer-root .MuiListItemText-primary,
+html.dark .MuiDrawer-root .MuiListItemButton-root a,
+html.dark .MuiDrawer-root .MuiLink-root {
+  color: #CBD5E1 !important;
+}
+
+html.dark .MuiDrawer-root .MuiListItemIcon-root svg,
+html.dark .MuiDrawer-root .MuiListItemIcon-root span {
+  color: #94A3B8 !important;
+}
+
 /* ─── ENTERPRISE DESIGN SYSTEM OVERRIDES ───────────────────────────────
    Cards: 18px | Buttons: 12px | Inputs: 12px | Radii, Slate-200 borders, 8px spacing
    ═══════════════════════════════════════════════════════════════ */

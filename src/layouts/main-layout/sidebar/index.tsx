@@ -1,6 +1,7 @@
 import Box from '@mui/material/Box';
 import Drawer from '@mui/material/Drawer';
 import DrawerItems from './DrawerItems';
+import useColorMode from 'hooks/useColorMode';
 
 interface SidebarProps {
   mobileOpen: boolean;
@@ -9,6 +10,8 @@ interface SidebarProps {
 }
 
 const Sidebar = ({ mobileOpen, setMobileOpen, setIsClosing }: SidebarProps) => {
+  const { mode } = useColorMode();
+
   const handleDrawerClose = () => {
     setIsClosing(true);
     setMobileOpen(false);
@@ -16,6 +19,13 @@ const Sidebar = ({ mobileOpen, setMobileOpen, setIsClosing }: SidebarProps) => {
 
   const handleDrawerTransitionEnd = () => {
     setIsClosing(false);
+  };
+
+  const paperStyles = {
+    backgroundColor: mode === 'dark' ? '#0B1410' : '#FFFFFF',
+    borderRight: mode === 'dark' ? '1px solid #15271E' : '1px solid #E2E8F0',
+    boxShadow: 'none',
+    transition: 'background-color 200ms ease, border-color 200ms ease',
   };
 
   return (
@@ -33,7 +43,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen, setIsClosing }: SidebarProps) => {
         onClose={handleDrawerClose}
         ModalProps={{ keepMounted: true }}
         sx={{ display: { xs: 'block', lg: 'none' } }}
-        PaperProps={{ sx: { backgroundColor: '#FFFFFF', borderRight: '1px solid #E2E8F0', boxShadow: 'none' } }}
+        PaperProps={{ sx: paperStyles }}
       >
         <DrawerItems />
       </Drawer>
@@ -41,7 +51,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen, setIsClosing }: SidebarProps) => {
       <Drawer
         variant="permanent"
         sx={{ display: { xs: 'none', lg: 'block' } }}
-        PaperProps={{ sx: { backgroundColor: '#FFFFFF', borderRight: '1px solid #E2E8F0', boxShadow: 'none' } }}
+        PaperProps={{ sx: paperStyles }}
         open
       >
         <DrawerItems />

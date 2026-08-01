@@ -14,7 +14,7 @@ import PixelEyeDeleteDrawer from './PixelEyeDeleteDrawer';
 import PageLoader from 'components/loader/PageLoader';
 import Button from '@mui/material/Button';
 import { useState, useMemo } from 'react';
-import { Box, MenuItem, InputAdornment, Stack, IconButton, Tooltip } from '@mui/material';
+import { Box, MenuItem, InputAdornment, Stack, IconButton, Tooltip, Typography } from '@mui/material';
 import { ALL_STATUSES } from './pixelEyeStatuses';
 import { useAuth } from 'redux/selectors/auth/authSelector';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -192,7 +192,8 @@ const PixelEyeSection = () => {
         sx={{
           p: 3,
           cursor: 'pointer',
-          transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+          borderRadius: '18px',
+          transition: 'all 0.2s ease',
           '&:hover': {
             transform: 'translateY(-2px)',
             boxShadow:
@@ -200,37 +201,58 @@ const PixelEyeSection = () => {
           },
         }}
       >
-        <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
-          <Box>
-            <Box
-              sx={{
-                fontSize: 12,
-                fontWeight: 800,
-                letterSpacing: '0.12em',
-                textTransform: 'uppercase',
-                color: 'text.secondary',
-              }}
-            >
-              {title}
-            </Box>
-            <Box sx={{ mt: 1, fontSize: { xs: '2rem', md: '2.25rem' }, fontWeight: 900, lineHeight: 1 }}>
-              {count.toLocaleString()}
-            </Box>
-            <Box sx={{ mt: 1, fontSize: 13, color: 'text.secondary' }}>{subtitle}</Box>
-          </Box>
+        <Stack direction="row" alignItems="flex-start" spacing={2.5}>
           <Box
             sx={{
-              width: 52,
-              height: 52,
-              borderRadius: '16px',
+              width: 48,
+              height: 48,
+              borderRadius: '14px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               backgroundColor: iconBg,
               color: iconColor,
+              flexShrink: 0,
             }}
           >
             {icon}
+          </Box>
+          <Box sx={{ minWidth: 0, flex: 1 }}>
+            <Typography
+              sx={{
+                fontSize: '0.6875rem',
+                fontWeight: 800,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                color: mode === 'dark' ? '#94A3B8' : '#64748B',
+                fontFamily: '"Geist", sans-serif',
+              }}
+            >
+              {title}
+            </Typography>
+            <Typography
+              sx={{
+                mt: 0.5,
+                fontSize: '2rem',
+                fontWeight: 900,
+                lineHeight: 1,
+                color: mode === 'dark' ? '#FFFFFF' : '#0F172A',
+                fontFamily: '"Geist Mono", monospace',
+              }}
+            >
+              {count.toLocaleString()}
+            </Typography>
+            <Typography
+              sx={{
+                mt: 0.75,
+                fontSize: '0.75rem',
+                fontWeight: 500,
+                color: mode === 'dark' ? '#64748B' : '#94A3B8',
+                fontFamily: '"Geist", sans-serif',
+              }}
+            >
+              {subtitle}
+            </Typography>
           </Box>
         </Stack>
       </PixelEyeCard>
@@ -494,12 +516,7 @@ const PixelEyeSection = () => {
     }
   };
   const getExportRows = (): PixelEyeRow[] | null => {
-    if (!exportFromDate || !exportToDate) {
-      enqueueSnackbar('Please select date range', { variant: 'warning' });
-      return null;
-    }
-
-    if (exportFromDate > exportToDate) {
+    if (exportFromDate && exportToDate && exportFromDate > exportToDate) {
       enqueueSnackbar('From Date cannot be after To Date', { variant: 'warning' });
       return null;
     }
@@ -775,20 +792,16 @@ const PixelEyeSection = () => {
               <Button
                 variant="outlined"
                 onClick={() => void handleExport('csv')}
-                disabled={isLoading || isExporting || !exportFromDate || !exportToDate}
+                disabled={isLoading || isExporting}
                 startIcon={<Download size={16} />}
                 sx={{
                   ...getPixelEyeButtonSx(mode, 'secondary'),
-                  height: 46,
-                  px: 2,
-                  borderRadius: '14px',
-                  minWidth: { xs: '100%', sm: 140 },
+                  height: 44,
+                  px: 2.5,
+                  borderRadius: '12px',
+                  fontWeight: 600,
+                  fontSize: '0.8125rem',
                   whiteSpace: 'nowrap',
-                  '&.Mui-disabled': {
-                    borderColor: mode === 'dark' ? 'rgba(134, 239, 172, 0.14)' : 'rgba(203, 213, 225, 0.9)',
-                    color: mode === 'dark' ? 'rgba(223, 255, 227, 0.52)' : 'rgba(71, 85, 105, 0.78)',
-                    backgroundColor: mode === 'dark' ? 'rgba(16, 33, 24, 0.72)' : 'rgba(248, 250, 252, 0.95)',
-                  },
                 }}
               >
                 Export CSV
@@ -796,20 +809,16 @@ const PixelEyeSection = () => {
               <Button
                 variant="outlined"
                 onClick={() => void handleExport('pdf')}
-                disabled={isLoading || isExporting || !exportFromDate || !exportToDate}
+                disabled={isLoading || isExporting}
                 startIcon={<Download size={16} />}
                 sx={{
                   ...getPixelEyeButtonSx(mode, 'secondary'),
-                  height: 46,
-                  px: 2,
-                  borderRadius: '14px',
-                  minWidth: { xs: '100%', sm: 140 },
+                  height: 44,
+                  px: 2.5,
+                  borderRadius: '12px',
+                  fontWeight: 600,
+                  fontSize: '0.8125rem',
                   whiteSpace: 'nowrap',
-                  '&.Mui-disabled': {
-                    borderColor: mode === 'dark' ? 'rgba(134, 239, 172, 0.14)' : 'rgba(203, 213, 225, 0.9)',
-                    color: mode === 'dark' ? 'rgba(223, 255, 227, 0.52)' : 'rgba(71, 85, 105, 0.78)',
-                    backgroundColor: mode === 'dark' ? 'rgba(16, 33, 24, 0.72)' : 'rgba(248, 250, 252, 0.95)',
-                  },
                 }}
               >
                 Export PDF

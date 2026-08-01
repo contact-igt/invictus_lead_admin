@@ -9,12 +9,20 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemButton from '@mui/material/ListItemButton';
 import IconifyIcon from 'components/base/IconifyIcon';
 import { useLocation } from 'react-router-dom';
+import useColorMode from 'hooks/useColorMode';
 
 const CollapseListItem = ({ subheader, items, icon }: MenuItem) => {
+  const { mode } = useColorMode();
   const location = useLocation();
   const currentPath = location.pathname;
   const isAnyChildActive = items?.some(child => currentPath === child.path) ?? false;
   const [open, setOpen] = useState(isAnyChildActive);
+
+  const parentActiveBg = mode === 'dark' ? '#10241A' : '#F1F5F9';
+  const parentHoverBg = mode === 'dark' ? '#0E1D15' : '#F8FAFC';
+  const parentActiveColor = mode === 'dark' ? '#4ADE80' : '#0F172A';
+  const parentInactiveColor = mode === 'dark' ? '#CBD5E1' : '#334155';
+  const parentIconColor = isAnyChildActive ? (mode === 'dark' ? '#4ADE80' : '#0F172A') : (mode === 'dark' ? '#94A3B8' : '#64748B');
 
   return (
     <>
@@ -26,9 +34,10 @@ const CollapseListItem = ({ subheader, items, icon }: MenuItem) => {
           borderRadius: '10px',
           px: 1.5,
           py: 0.875,
-          backgroundColor: isAnyChildActive ? '#F1F5F9' : 'transparent',
+          backgroundColor: isAnyChildActive ? parentActiveBg : 'transparent',
+          border: isAnyChildActive && mode === 'dark' ? '1px solid #15271E' : '1px solid transparent',
           '&:hover': {
-            backgroundColor: '#F8FAFC',
+            backgroundColor: isAnyChildActive ? (mode === 'dark' ? '#162E22' : '#E2E8F0') : parentHoverBg,
           },
           transition: 'all 120ms ease',
         }}
@@ -39,7 +48,7 @@ const CollapseListItem = ({ subheader, items, icon }: MenuItem) => {
               icon={icon}
               width={18}
               height={18}
-              sx={{ color: isAnyChildActive ? '#0F172A !important' : '#64748B !important' }}
+              sx={{ color: `${parentIconColor} !important` }}
             />
           )}
         </ListItemIcon>
@@ -49,9 +58,9 @@ const CollapseListItem = ({ subheader, items, icon }: MenuItem) => {
             <Box
               component="span"
               sx={{
-                fontSize: '0.875rem', // 14px Sidebar Spec
-                fontWeight: isAnyChildActive ? 600 : 500, // 500 Spec
-                color: isAnyChildActive ? '#0F172A !important' : '#334155 !important',
+                fontSize: '0.875rem',
+                fontWeight: isAnyChildActive ? 600 : 500,
+                color: `${isAnyChildActive ? parentActiveColor : parentInactiveColor} !important`,
                 fontFamily: '"Geist", sans-serif',
               }}
             >
@@ -64,7 +73,7 @@ const CollapseListItem = ({ subheader, items, icon }: MenuItem) => {
           width={16}
           height={16}
           sx={{
-            color: '#64748B !important',
+            color: `${mode === 'dark' ? '#94A3B8' : '#64748B'} !important`,
             transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
             transition: 'transform 0.2s ease',
             flexShrink: 0,
@@ -85,12 +94,19 @@ const CollapseListItem = ({ subheader, items, icon }: MenuItem) => {
                 top: 4,
                 bottom: 4,
                 width: '1px',
-                backgroundColor: '#E5E7EB',
+                backgroundColor: mode === 'dark' ? '#15271E' : '#E5E7EB',
               },
             }}
           >
             {items?.map((route) => {
               const isActive = currentPath === route.path;
+              const childActiveBg = mode === 'dark' ? '#10241A' : '#F1F5F9';
+              const childHoverBg = isActive
+                ? (mode === 'dark' ? '#162E22' : '#E2E8F0')
+                : (mode === 'dark' ? '#0E1D15' : '#F8FAFC');
+              const childActiveColor = mode === 'dark' ? '#4ADE80' : '#0F172A';
+              const childInactiveColor = mode === 'dark' ? '#94A3B8' : '#64748B';
+
               return (
                 <ListItemButton
                   key={route.pathName}
@@ -102,9 +118,10 @@ const CollapseListItem = ({ subheader, items, icon }: MenuItem) => {
                     py: 0.75,
                     mb: 0.25,
                     borderRadius: '8px',
-                    backgroundColor: isActive ? '#F1F5F9' : 'transparent',
+                    backgroundColor: isActive ? childActiveBg : 'transparent',
+                    border: isActive && mode === 'dark' ? '1px solid #15271E' : '1px solid transparent',
                     '&:hover': {
-                      backgroundColor: isActive ? '#E2E8F0' : '#F8FAFC',
+                      backgroundColor: childHoverBg,
                     },
                     transition: 'all 120ms ease',
                   }}
@@ -115,7 +132,7 @@ const CollapseListItem = ({ subheader, items, icon }: MenuItem) => {
                       width: isActive ? 5 : 4,
                       height: isActive ? 5 : 4,
                       borderRadius: '50%',
-                      backgroundColor: isActive ? '#0F172A' : '#94A3B8',
+                      backgroundColor: isActive ? (mode === 'dark' ? '#4ADE80' : '#0F172A') : (mode === 'dark' ? '#4B6356' : '#94A3B8'),
                       mr: 1.25,
                       flexShrink: 0,
                       transition: 'all 0.15s ease',
@@ -127,9 +144,9 @@ const CollapseListItem = ({ subheader, items, icon }: MenuItem) => {
                       <Box
                         component="span"
                         sx={{
-                          fontSize: '0.8125rem', // 13px Secondary Spec
-                          fontWeight: isActive ? 600 : 400, // 400/600 Spec
-                          color: isActive ? '#0F172A !important' : '#64748B !important',
+                          fontSize: '0.8125rem',
+                          fontWeight: isActive ? 600 : 400,
+                          color: `${isActive ? childActiveColor : childInactiveColor} !important`,
                           fontFamily: '"Geist", sans-serif',
                           display: 'block',
                         }}

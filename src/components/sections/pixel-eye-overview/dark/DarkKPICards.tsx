@@ -103,8 +103,8 @@ const DarkKPICards: React.FC<{ items: KPIItem[]; loading?: boolean }> = ({
           const value = typeof item.value === 'number' ? item.value.toLocaleString() : item.value;
           const isClickable = typeof item.onClick === 'function';
 
-          const cardBg   = mode === 'dark' ? '#0F172A' : '#FFFFFF';
-          const cardBdr  = mode === 'dark' ? 'rgba(226,232,240,0.1)' : '#E5E7EB';
+          const cardBg   = mode === 'dark' ? '#0B1410' : '#FFFFFF';
+          const cardBdr  = mode === 'dark' ? '#15271E' : '#E5E7EB';
           const cardShad = '0 1px 3px rgba(15,23,42,0.04), 0 4px 12px rgba(15,23,42,0.03)';
 
           return (

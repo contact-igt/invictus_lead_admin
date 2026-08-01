@@ -5,17 +5,19 @@ import { TooltipComponent, LegendComponent } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
 import { useMemo } from 'react';
 import useColorMode from 'hooks/useColorMode';
-import { StatusCategoryItem } from '../types';
+import { StatusCategoryItem, SourceBreakdownItem } from '../types';
 import { PixelEyeCard } from 'components/sections/pixel-eye/pixelEyeUi';
+import IconifyIcon from 'components/base/IconifyIcon';
 
 echarts.use([PieChart, TooltipComponent, LegendComponent, CanvasRenderer]);
 
 interface SalesOverviewProps {
   statusBreakdown: StatusCategoryItem[];
+  sources?: SourceBreakdownItem[];
   loading?: boolean;
 }
 
-const SalesOverview = ({ statusBreakdown, loading = false }: SalesOverviewProps) => {
+const SalesOverview = ({ statusBreakdown, sources = [], loading = false }: SalesOverviewProps) => {
   const { mode } = useColorMode();
   const chartData = statusBreakdown;
   const total = chartData.reduce((s, c) => s + c.count, 0);
@@ -34,11 +36,11 @@ const SalesOverview = ({ statusBreakdown, loading = false }: SalesOverviewProps)
       series: [
         {
           type: 'pie',
-          radius: ['55%', '80%'],
+          radius: ['62%', '82%'],
           center: ['50%', '50%'],
-          avoidLabelOverlap: true,
+          avoidLabelOverlap: false,
           label: { show: false },
-          itemStyle: { borderColor: mode === 'dark' ? '#0A0F0D' : '#FFFFFF', borderWidth: 2 },
+          itemStyle: { borderColor: mode === 'dark' ? '#0B1410' : '#FFFFFF', borderWidth: 2 },
           data: chartData.map((s) => ({
             value: s.count,
             name: s.label,
@@ -51,71 +53,101 @@ const SalesOverview = ({ statusBreakdown, loading = false }: SalesOverviewProps)
   );
 
   return (
-    <PixelEyeCard sx={{ p: { xs: 3, md: 4 }, height: '100%', minHeight: 400 }}>
-      <div className="flex-1 flex flex-col h-full">
+    <PixelEyeCard sx={{ p: { xs: 3, md: 3.5 }, height: '100%', minHeight: 380 }}>
+      <div className="flex flex-col h-full justify-between">
+        {/* Header */}
         <div
-          className={`mb-6 pb-4 border-b ${mode === 'dark' ? 'border-[#1E2E25]/50' : 'border-gray-200'}`}
+          className={`mb-4 pb-3 border-b flex items-center justify-between ${mode === 'dark' ? 'border-[#1E2E25]' : 'border-slate-200'}`}
         >
-          <div
-            className={`text-2xl font-black ${mode === 'dark' ? 'text-white' : 'text-gray-900'}`}
-          >
-            Status Distribution
-          </div>
-          <div
-            className={`text-xs font-bold mt-1.5 tracking-widest uppercase ${mode === 'dark' ? 'text-[#4ade80]' : 'text-[#156A45]'}`}
-          >
-            TOTAL LEADS: {total.toLocaleString()}
+          <div className="flex items-center gap-2">
+            <div className={`p-1.5 rounded-lg ${mode === 'dark' ? 'bg-[#10241A] text-[#4ADE80]' : 'bg-slate-100 text-slate-700'}`}>
+              <IconifyIcon icon="solar:settings-minimalistic-bold-duotone" width={18} height={18} />
+            </div>
+            <h3 className={`text-base font-extrabold tracking-tight ${mode === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+              Status Distribution & Acquisition Sources
+            </h3>
           </div>
         </div>
 
         {loading ? (
           <div
-            className={`h-[300px] w-full rounded-2xl animate-pulse ${mode === 'dark' ? 'bg-[#0B1410]' : 'bg-gray-100'}`}
+            className={`h-[280px] w-full rounded-xl animate-pulse ${mode === 'dark' ? 'bg-[#07100C]' : 'bg-slate-100'}`}
           />
         ) : (
-          <div className="flex flex-col lg:flex-row gap-8 items-center lg:items-start justify-between flex-1">
-            <div className="relative w-full sm:w-[280px] h-[280px] flex-shrink-0 flex items-center justify-center">
-              <ReactEchart echarts={echarts} option={option} sx={{ height: 280, width: '100%' }} />
-            </div>
-
-            <div className="flex-1 w-full min-w-0 flex flex-col gap-2.5">
-              {chartData.map((s) => (
-                <div
-                  key={s.label}
-                  title={s.label}
-                  className={`flex items-center justify-between px-4 py-3 rounded-2xl border transition-all duration-300 cursor-pointer group h-[52px] ${
-                    mode === 'dark'
-                      ? 'bg-[#0B1410]/50 border-[#15271E] hover:bg-[#10241A] hover:border-[#22C55E]/40 hover:shadow-lg hover:shadow-[#22C55E]/5'
-                      : 'bg-gray-50/50 border-gray-200 hover:bg-emerald-50/50 hover:border-emerald-200'
-                  }`}
-                >
-                  <div className="flex items-center gap-4 min-w-0 flex-1">
-                    <div
-                      className="w-3.5 h-3.5 rounded-full flex-shrink-0 shadow-lg group-hover:scale-125 transition-transform duration-300"
-                      style={{
-                        background: s.color,
-                        boxShadow: `0 0 15px ${s.color}60`,
-                      }}
-                    />
-                    <div
-                      className={`text-sm font-bold truncate transition-colors duration-300 ${
-                        mode === 'dark'
-                          ? 'text-gray-300 group-hover:text-white'
-                          : 'text-gray-700 group-hover:text-emerald-900'
-                      }`}
-                    >
-                      {s.label}
-                    </div>
-                  </div>
-                  <div className="flex shrink-0 items-center justify-end gap-3 pl-4 tabular-nums">
-                    <div
-                      className={`text-base font-black ${mode === 'dark' ? 'text-white' : 'text-gray-900'}`}
-                    >
-                      {s.count}
-                    </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center flex-1">
+            {/* Left Half: Status Distribution */}
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className={`text-xs font-bold ${mode === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                    Status Distribution
+                  </h4>
+                  <div className={`text-[10px] font-bold tracking-wider uppercase ${mode === 'dark' ? 'text-emerald-400' : 'text-emerald-700'}`}>
+                    TOTAL LEADS: {total.toLocaleString()}
                   </div>
                 </div>
-              ))}
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="relative w-[130px] h-[130px] shrink-0 flex items-center justify-center">
+                  <ReactEchart echarts={echarts} option={option} sx={{ height: 130, width: '100%' }} />
+                </div>
+
+                <div className="flex-1 min-w-0 flex flex-col gap-1.5 text-xs">
+                  {chartData.map((s) => {
+                    const percent = total > 0 ? Math.round((s.count / total) * 100) : 0;
+                    return (
+                      <div key={s.label} className="flex items-center justify-between gap-1.5">
+                        <div className="flex items-center gap-1.5 min-w-0 truncate">
+                          <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: s.color }} />
+                          <span className={`truncate text-[11px] font-semibold ${mode === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>
+                            {s.label}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0 font-mono text-[11px]">
+                          <span className={`font-bold ${mode === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                            {s.count.toLocaleString()}
+                          </span>
+                          <span className="text-slate-400 text-[10px]">
+                            ({percent}%)
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Right Half: Lead Source Distribution */}
+            <div className="flex flex-col gap-3 border-t md:border-t-0 md:border-l pt-4 md:pt-0 md:pl-5 border-slate-200 dark:border-[#1E2E25]">
+              <div className="mb-1">
+                <h4 className={`text-xs font-bold ${mode === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                  Lead Source Distribution
+                </h4>
+              </div>
+
+              <div className="flex flex-col gap-2 text-xs">
+                {sources.slice(0, 5).map((s) => (
+                  <div key={s.source} className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0 truncate">
+                      <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: s.color }} />
+                      <span className={`truncate text-[11px] font-semibold ${mode === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>
+                        {s.source}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 shrink-0 font-mono text-[11px]">
+                      <span className={`font-bold ${mode === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                        {s.count.toLocaleString()}
+                      </span>
+                      <span className={`text-[10px] font-bold ${mode === 'dark' ? 'text-emerald-400' : 'text-emerald-600'}`}>
+                        {s.percent}%
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}
