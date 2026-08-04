@@ -33,7 +33,6 @@ import {
   ExternalLink,
   Briefcase,
   FileText,
-  Download,
   Trash2,
   AlertTriangle,
 } from 'lucide-react';
@@ -44,7 +43,6 @@ import {
   fetchCareersApplications,
   updateCareersApplicationStatusApi,
   deleteCareersApplicationApi,
-  exportCareersApplicationsCSVApi,
 } from 'services/enquiry.service';
 import type {
   GeneralEnquiry,
