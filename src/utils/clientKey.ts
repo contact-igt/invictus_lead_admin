@@ -3,17 +3,18 @@ export const CLIENT_KEY_ALIASES: Readonly<Record<string, string>> = {
     vlslaw: 'vls_law',
 };
 
-export const SUPPORTED_CLIENT_MODULES = ['pixeleye', 'vls_law', 'aarav_eye_care', 'antardrashti_netralaya', 'rio', 'shanti_eye_tech', 'phoenix_fitness'] as const;
+export const SUPPORTED_CLIENT_MODULES = ['pixeleye', 'vls_law', 'aarav_eye_care', 'antardrashti_netralaya', 'rio', 'shanti_eye_tech', 'phoenix_fitness', 'invictus'] as const;
 export type SupportedClientModule = typeof SUPPORTED_CLIENT_MODULES[number];
 
 export const CLIENT_MODULE_OPTIONS: Array<{ label: string; value: SupportedClientModule }> = [
+    { label: 'Invictus Global Tech', value: 'invictus' },
     { label: 'PixelEye', value: 'pixeleye' },
     { label: 'VLS Law', value: 'vls_law' },
     { label: 'Aarav Eye Care', value: 'aarav_eye_care' },
     { label: 'Antardrashti Netralaya', value: 'antardrashti_netralaya' },
     { label: 'Rio', value: 'rio' },
     { label: 'Shanti Eye Tech', value: 'shanti_eye_tech' },
-  { label: 'Phoenix Fitness', value: 'phoenix_fitness' },
+    { label: 'Phoenix Fitness', value: 'phoenix_fitness' },
 ];
 
 export const normalizeClientKey = (key?: string | null): string => {

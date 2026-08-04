@@ -34,6 +34,8 @@ const VlsMactMasterClassPage = lazy(() => import('pages/vls/mact-master-class'))
 const VlsConsumerProtectionLawMasterClassPage = lazy(
   () => import('pages/vls/consumer-protection-law-master-class'),
 );
+const GeneralEnquiriesPage = lazy(() => import('pages/enquiries/GeneralEnquiriesPage'));
+const CareersApplicationsPage = lazy(() => import('pages/enquiries/CareersApplicationsPage'));
 
 const router = createBrowserRouter(
   [
@@ -128,6 +130,18 @@ const router = createBrowserRouter(
             {
               path: paths.vlsConsumerProtectionLawMasterClass,
               element: <VlsConsumerProtectionLawMasterClassPage />,
+            },
+            {
+              path: paths.enquiries,
+              element: <GeneralEnquiriesPage />,
+            },
+            {
+              path: paths.generalEnquiries,
+              element: <GeneralEnquiriesPage />,
+            },
+            {
+              path: paths.careersApplications,
+              element: <CareersApplicationsPage />,
             },
             {
               path: paths.dynamicTable,

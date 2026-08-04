@@ -1,8 +1,8 @@
-﻿import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from 'redux/selectors/auth/authSelector';
 import paths from './paths';
 import sitemap from './sitemap';
-import { getClientHomePath, resolveClientModuleKey } from 'utils/clientModuleResolver';
+import { getClientHomePath, resolveClientModuleKey, isInvictusClientKey, INVICTUS_CLIENT_KEY } from 'utils/clientModuleResolver';
 
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   const location = useLocation();
@@ -54,6 +54,8 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
     requiredKey = 'pixeleye';
   }
 
+  const isInvictusUser = isInvictusClientKey(user?.clientKey);
+
   // 1. Super-admin bypass.
   if (user?.role === 'super-admin') {
     return children;
@@ -63,6 +65,11 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   if (user?.role === 'admin') {
     if (routeId === 'client-management') {
       return <Navigate to="/" replace />;
+    }
+
+    // Invictus admin can access enquiries pages
+    if (isInvictusUser && requiredKey === INVICTUS_CLIENT_KEY) {
+      return children;
     }
 
     if (!requiredKey) {
@@ -81,6 +88,11 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
 
   // 3. Client Access
   if (user?.role === 'client') {
+    // Invictus client users can access enquiries pages directly
+    if (isInvictusUser && requiredKey === INVICTUS_CLIENT_KEY) {
+      return children;
+    }
+
     // Dashboard and all management pages are not allowed for client users.
     if (
       routeId === 'dashboard' ||
