@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, useTheme } from '@mui/material';
 import IconifyIcon from 'components/base/IconifyIcon';
 import StatusChip, { EnterpriseStatus } from './StatusChip';
 
@@ -49,11 +49,36 @@ const Sparkline: React.FC<{ data?: number[]; color?: string }> = ({
 };
 
 const COLOR_CONFIG = {
-  primary: { iconBg: '#EFF6FF', iconColor: '#2563EB', bar: '#2563EB' },
-  success: { iconBg: '#F0FDF4', iconColor: '#16A34A', bar: '#16A34A' },
-  warning: { iconBg: '#FFFBEB', iconColor: '#D97706', bar: '#F59E0B' },
-  error:   { iconBg: '#FEF2F2', iconColor: '#EF4444', bar: '#EF4444' },
-  info:    { iconBg: '#EFF6FF', iconColor: '#2563EB', bar: '#2563EB' },
+  primary: {
+    iconBgLight: '#EFF6FF',
+    iconBgDark: 'rgba(37, 99, 235, 0.2)',
+    iconColorLight: '#2563EB',
+    iconColorDark: '#60A5FA',
+  },
+  success: {
+    iconBgLight: '#F0FDF4',
+    iconBgDark: 'rgba(34, 197, 94, 0.2)',
+    iconColorLight: '#16A34A',
+    iconColorDark: '#4ADE80',
+  },
+  warning: {
+    iconBgLight: '#FFFBEB',
+    iconBgDark: 'rgba(245, 158, 11, 0.2)',
+    iconColorLight: '#D97706',
+    iconColorDark: '#FBBF24',
+  },
+  error: {
+    iconBgLight: '#FEF2F2',
+    iconBgDark: 'rgba(239, 68, 68, 0.2)',
+    iconColorLight: '#EF4444',
+    iconColorDark: '#F87171',
+  },
+  info: {
+    iconBgLight: '#EFF6FF',
+    iconBgDark: 'rgba(37, 99, 235, 0.2)',
+    iconColorLight: '#2563EB',
+    iconColorDark: '#60A5FA',
+  },
 };
 
 export const RichKPICard: React.FC<RichKPICardProps> = ({
@@ -69,9 +94,14 @@ export const RichKPICard: React.FC<RichKPICardProps> = ({
   color = 'primary',
   onClick,
 }) => {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
   const c = COLOR_CONFIG[color] || COLOR_CONFIG.primary;
   const isClickable = Boolean(onClick);
   const formattedValue = typeof value === 'number' ? value.toLocaleString() : value;
+
+  const iconBg = isDark ? c.iconBgDark : c.iconBgLight;
+  const iconColor = isDark ? c.iconColorDark : c.iconColorLight;
 
   return (
     <Box
@@ -79,31 +109,36 @@ export const RichKPICard: React.FC<RichKPICardProps> = ({
       role={isClickable ? 'button' : undefined}
       tabIndex={isClickable ? 0 : undefined}
       sx={{
-        borderRadius: '18px', // 18px Card Spec
-        backgroundColor: '#FFFFFF',
-        border: '1px solid #E5E7EB', // Slate-200 Border
-        boxShadow: '0 6px 20px rgba(15, 23, 42, 0.05)', // Single Shadow Spec
+        borderRadius: '18px',
+        backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : '#FFFFFF',
+        border: '1px solid',
+        borderColor: isDark ? 'rgba(255, 255, 255, 0.1)' : '#E5E7EB',
+        boxShadow: isDark
+          ? '0 6px 20px rgba(0, 0, 0, 0.4)'
+          : '0 6px 20px rgba(15, 23, 42, 0.05)',
         p: '20px 22px 16px',
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'space-between',
+        justify: 'space-between',
         cursor: isClickable ? 'pointer' : 'default',
         transition: 'transform 250ms ease, box-shadow 250ms ease',
         '&:hover': {
           transform: 'translateY(-3px) scale(1.015)',
-          boxShadow: '0 6px 20px rgba(15, 23, 42, 0.08)',
+          boxShadow: isDark
+            ? '0 8px 24px rgba(0, 0, 0, 0.6)'
+            : '0 6px 20px rgba(15, 23, 42, 0.08)',
         },
       }}
     >
       <Box>
-        {/* Top row: 18px Icon + Status Chip */}
+        {/* Top row: Icon + Status Chip */}
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
           <Box
             sx={{
               width: 36,
               height: 36,
               borderRadius: '10px',
-              backgroundColor: c.iconBg,
+              backgroundColor: iconBg,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -114,18 +149,18 @@ export const RichKPICard: React.FC<RichKPICardProps> = ({
               icon={icon}
               width={18}
               height={18}
-              sx={{ color: `${c.iconColor} !important`, fontSize: 18 }}
+              sx={{ color: `${iconColor} !important`, fontSize: 18 }}
             />
           </Box>
           {status && <StatusChip status={status} size="sm" />}
         </Box>
 
-        {/* Card Title (15px, 600 weight) */}
+        {/* Card Title */}
         <Typography
           sx={{
-            fontSize: '0.9375rem', // 15px Card Heading Spec
+            fontSize: '0.9375rem',
             fontWeight: 600,
-            color: '#64748B',
+            color: isDark ? '#94A3B8' : '#64748B',
             fontFamily: '"Geist", sans-serif',
             letterSpacing: '-0.01em',
             mb: 0.75,
@@ -134,26 +169,36 @@ export const RichKPICard: React.FC<RichKPICardProps> = ({
           {title}
         </Typography>
 
-        {/* 36px Geist Mono Metric Number */}
+        {/* Metric Value + Sparkline */}
         <Box sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 1.5, mb: 1.25 }}>
           <Typography
             sx={{
-              fontSize: '2.25rem', // 36px Spec
+              fontSize: '2.25rem',
               fontWeight: 700,
               fontFamily: '"Geist Mono", monospace',
-              color: '#0F172A',
+              color: isDark ? '#F8FAFC' : '#0F172A',
               letterSpacing: '-0.02em',
               lineHeight: 1.1,
             }}
           >
             {formattedValue}
           </Typography>
-          <Sparkline data={sparklineData} color={c.iconColor} />
+          <Sparkline data={sparklineData} color={iconColor} />
         </Box>
       </Box>
 
-      {/* Footer: Trend + Comparison + Timestamp */}
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, pt: 1, borderTop: '1px solid #F1F5F9' }}>
+      {/* Footer */}
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justify: 'space-between',
+          gap: 1,
+          pt: 1,
+          borderTop: '1px solid',
+          borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : '#F1F5F9',
+        }}
+      >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
           {trend && (
             <Box
@@ -161,12 +206,12 @@ export const RichKPICard: React.FC<RichKPICardProps> = ({
               sx={{
                 fontSize: '0.75rem',
                 fontWeight: 600,
-                color: trendDirection === 'down' ? '#EF4444' : '#16A34A',
-                backgroundColor: trendDirection === 'down' ? '#FEF2F2' : '#F0FDF4',
-                px: 0.75,
-                py: 0.25,
-                borderRadius: '4px',
-                fontFamily: '"Geist Mono", monospace',
+                color:
+                  trendDirection === 'up'
+                    ? isDark ? '#4ADE80' : '#16A34A'
+                    : trendDirection === 'down'
+                      ? isDark ? '#F87171' : '#DC2626'
+                      : isDark ? '#94A3B8' : '#64748B',
               }}
             >
               {trend}
@@ -174,10 +219,11 @@ export const RichKPICard: React.FC<RichKPICardProps> = ({
           )}
           {comparisonText && (
             <Typography
+              component="span"
               sx={{
                 fontSize: '0.75rem',
-                color: '#64748B',
-                fontFamily: '"Geist", sans-serif',
+                color: isDark ? '#94A3B8' : '#94A3B8',
+                fontWeight: 400,
               }}
             >
               {comparisonText}
@@ -188,8 +234,8 @@ export const RichKPICard: React.FC<RichKPICardProps> = ({
           <Typography
             sx={{
               fontSize: '0.6875rem',
-              color: '#94A3B8',
-              fontFamily: '"Geist Mono", monospace',
+              color: isDark ? '#64748B' : '#94A3B8',
+              whiteSpace: 'nowrap',
             }}
           >
             {updatedAt}

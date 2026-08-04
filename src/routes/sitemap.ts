@@ -56,6 +56,26 @@ const apiLogsSitemap: MenuItem = {
   active: true,
 };
 
+const enquiriesSitemap: MenuItem = {
+  id: 'enquiries',
+  subheader: 'Invictus',
+  icon: 'hugeicons:file-attachment',
+  active: true,
+  clientKey: 'invictus',
+  items: [
+    {
+      name: 'General Enquiries',
+      pathName: paths.generalEnquiries,
+      path: paths.generalEnquiries,
+    },
+    {
+      name: 'Careers Applications',
+      pathName: paths.careersApplications,
+      path: paths.careersApplications,
+    },
+  ],
+};
+
 const generateDynamicClientMenus = (): MenuItem[] => {
   return Object.entries(ClientRegistry).map(([clientKey, config]: [string, ClientConfig]) => {
     const overviewItem: SubMenuItem = {
@@ -120,6 +140,7 @@ const generateDynamicClientMenus = (): MenuItem[] => {
 
 const sitemap: MenuItem[] = [
   ...baseSitemap,
+  enquiriesSitemap,
   ...generateDynamicClientMenus(),
   clientManagementSitemap,
   apiLogsSitemap,

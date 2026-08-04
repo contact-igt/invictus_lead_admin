@@ -59,7 +59,7 @@ const ClientForm = ({
   const formik = useFormik({
     initialValues: {
       name: initialValues?.name ?? '',
-      module_key: (splitKey.moduleKey || 'pixeleye') as SupportedClientModule,
+      module_key: (splitKey.moduleKey || 'invictus') as SupportedClientModule,
       tenant_key: normalizeClientSegment(splitKey.tenantKey),
     },
     validationSchema,

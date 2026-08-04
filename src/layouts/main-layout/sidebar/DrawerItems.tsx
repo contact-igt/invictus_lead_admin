@@ -9,7 +9,7 @@ import CollapseListItem from './list-items/CollapseListItem';
 import ListItem from './list-items/ListItem';
 import { useAuth } from 'redux/selectors/auth/authSelector';
 import { normalizeClientKey } from 'utils/clientKey';
-import { resolveClientModuleKey } from 'utils/clientModuleResolver';
+import { resolveClientModuleKey, isInvictusClientKey, INVICTUS_CLIENT_KEY } from 'utils/clientModuleResolver';
 import useColorMode from 'hooks/useColorMode';
 
 // Invictus brand diamond logo (emerald dual-facet)
@@ -38,6 +38,9 @@ const roleLabel: Record<string, string> = {
   'super-admin': 'SUPER ADMIN',
   admin: 'ADMIN',
   client: 'CLIENT',
+  'invictus-admin': 'INVICTUS ADMIN',
+  'invictus-frontend': 'INVICTUS FRONTEND',
+  'invictus-backend': 'INVICTUS BACKEND',
 };
 
 const getInitials = (name?: string) =>
@@ -53,6 +56,9 @@ const DrawerItems = () => {
   const { user } = useAuth();
   const userModuleKey = resolveClientModuleKey(user?.clientKey);
 
+  // Check if the logged-in user is an Invictus internal user
+  const isInvictusUser = isInvictusClientKey(user?.clientKey);
+
   const filteredSitemap = sitemap.filter((item: MenuItem) => {
     if (user?.role === 'super-admin') return true;
 
@@ -61,11 +67,15 @@ const DrawerItems = () => {
       if (!item.clientKey) {
         return item.id === 'dashboard' || item.id === 'user-management';
       }
+      // Invictus admin can see enquiries menu
+      if (item.clientKey === INVICTUS_CLIENT_KEY && isInvictusUser) return true;
       return normalizeClientKey(item.clientKey) === normalizeClientKey(userModuleKey);
     }
 
     if (user?.role === 'client') {
       if (!item.clientKey) return false;
+      // Invictus client users see the enquiries menu
+      if (item.clientKey === INVICTUS_CLIENT_KEY && isInvictusUser) return true;
       return normalizeClientKey(item.clientKey) === normalizeClientKey(userModuleKey);
     }
     return false;
