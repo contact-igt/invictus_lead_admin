@@ -1,4 +1,5 @@
-import { Box, Chip, IconButton, Paper, Stack, Tooltip, Typography } from '@mui/material';
+import { useState } from 'react';
+import { Box, Chip, IconButton, Menu, MenuItem, Paper, Stack, Tooltip, Typography } from '@mui/material';
 import { DataGrid, GridColDef, GridPaginationModel } from '@mui/x-data-grid';
 import IconifyIcon from 'components/base/IconifyIcon';
 import type { VlsConsumerProtectionLawMasterClassRegistration } from 'types/vlsConsumerProtectionLawMasterClass';
@@ -7,6 +8,7 @@ import {
   formatVlsConsumerProtectionAmount,
   formatVlsConsumerProtectionDate,
   formatVlsConsumerProtectionDateTime,
+  VLS_CONSUMER_PROTECTION_PAYMENT_STATUS_OPTIONS,
 } from './vlsConsumerProtectionLawMasterClassUtils';
 
 interface VlsConsumerProtectionLawMasterClassTableProps {
@@ -20,11 +22,96 @@ interface VlsConsumerProtectionLawMasterClassTableProps {
   onView: (registration: VlsConsumerProtectionLawMasterClassRegistration) => void;
   onEdit: (registration: VlsConsumerProtectionLawMasterClassRegistration) => void;
   onDelete: (registration: VlsConsumerProtectionLawMasterClassRegistration) => void;
+  onStatusChange?: (id: number, paymentStatus: string) => void;
 }
 
 interface TableRow extends VlsConsumerProtectionLawMasterClassRegistration {
   serial_number: number;
 }
+
+const InlinePaymentStatusCell = ({
+  status,
+  rowId,
+  onStatusChange,
+}: {
+  status: string | null | undefined;
+  rowId: number;
+  onStatusChange?: (id: number, paymentStatus: string) => void;
+}) => {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+  const displayStatus = status || '-';
+  const color =
+    status === 'paid'
+      ? 'success'
+      : status === 'attempted'
+      ? 'warning'
+      : status === 'waitlist'
+      ? 'info'
+      : status === 'failed' || status === 'cancelled'
+      ? 'error'
+      : 'default';
+
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    event.stopPropagation();
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = (event?: React.MouseEvent) => {
+    if (event) event.stopPropagation();
+    setAnchorEl(null);
+  };
+
+  const handleSelectOption = (event: React.MouseEvent, option: string) => {
+    event.stopPropagation();
+    setAnchorEl(null);
+    if (option !== status && onStatusChange) {
+      onStatusChange(rowId, option);
+    }
+  };
+
+  return (
+    <>
+      <Chip
+        label={displayStatus}
+        size="small"
+        color={color}
+        variant="outlined"
+        onClick={handleClick}
+        sx={{
+          cursor: 'pointer',
+          fontWeight: 600,
+          fontSize: '0.75rem',
+          '&:hover': { opacity: 0.85, boxShadow: 1 },
+        }}
+      />
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={() => handleClose()}
+        onClick={(e) => e.stopPropagation()}
+        slotProps={{
+          paper: {
+            sx: {
+              minWidth: 140,
+            },
+          },
+        }}
+      >
+        {VLS_CONSUMER_PROTECTION_PAYMENT_STATUS_OPTIONS.map((option) => (
+          <MenuItem
+            key={option}
+            selected={option === status}
+            onClick={(e) => handleSelectOption(e, option)}
+            sx={{ fontSize: '0.85rem', textTransform: 'capitalize' }}
+          >
+            {option}
+          </MenuItem>
+        ))}
+      </Menu>
+    </>
+  );
+};
 
 const VlsConsumerProtectionLawMasterClassTable = ({
   rows,
@@ -37,6 +124,7 @@ const VlsConsumerProtectionLawMasterClassTable = ({
   onView,
   onEdit,
   onDelete,
+  onStatusChange,
 }: VlsConsumerProtectionLawMasterClassTableProps) => {
   const tableRows: TableRow[] = rows.map((row, index) => ({
     ...row,
@@ -140,21 +228,13 @@ const VlsConsumerProtectionLawMasterClassTable = ({
       headerName: 'Payment Status',
       minWidth: 145,
       flex: 0.9,
-      renderCell: (params) => {
-        const status = params.row.payment_status;
-        if (!status) return '-';
-        const color =
-          status === 'paid'
-            ? 'success'
-            : status === 'attempted'
-            ? 'warning'
-            : status === 'waitlist'
-            ? 'info'
-            : status === 'failed' || status === 'cancelled'
-            ? 'error'
-            : 'default';
-        return <Chip label={status} size="small" color={color} variant="outlined" />;
-      },
+      renderCell: (params) => (
+        <InlinePaymentStatusCell
+          status={params.row.payment_status}
+          rowId={params.row.id}
+          onStatusChange={onStatusChange}
+        />
+      ),
     },
     {
       field: 'captured',

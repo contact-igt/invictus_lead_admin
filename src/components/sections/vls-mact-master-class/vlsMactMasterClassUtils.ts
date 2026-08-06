@@ -14,6 +14,7 @@ interface BackendErrorPayload {
 export const VLS_MACT_COLOR = '#1F6B40';
 export const VLS_MACT_PAYMENT_STATUS_OPTIONS = [
   'paid',
+  'waitlist',
   'attempted',
   'failed',
   'cancelled',

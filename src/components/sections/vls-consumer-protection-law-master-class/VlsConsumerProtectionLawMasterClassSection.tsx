@@ -11,11 +11,15 @@ import {
   Card,
   CardContent,
   CircularProgress,
+  FormControl,
   Grid,
+  IconButton,
   InputAdornment,
+  InputLabel,
   Menu,
   MenuItem,
   Paper,
+  Select,
   Skeleton,
   Stack,
   TextField,
@@ -325,8 +329,15 @@ const VlsConsumerProtectionLawMasterClassSection = () => {
 
   const isFilterActive = hasVlsConsumerProtectionFilters(params);
 
+  const handleInlineStatusChange = (id: number, newStatus: string) => {
+    updateMutation.mutate({
+      id,
+      payload: { payment_status: newStatus },
+    });
+  };
+
   return (
-    <Box p={{ xs: 2, sm: 3 }} display="flex" flexDirection="column" gap={3}>
+    <Box flex={1} display="flex" flexDirection="column" gap={3}>
       <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ sm: 'center' }} spacing={2}>
         <Box>
           <Typography variant="h4" fontWeight={750}>
@@ -396,24 +407,24 @@ const VlsConsumerProtectionLawMasterClassSection = () => {
 
       <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 3 }}>
         <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} sm={6} md={3.5}>
+          <Grid item xs={12} md={4}>
             <TextField
               fullWidth
               size="small"
-              placeholder="Search by name, mobile, email, city..."
+              placeholder="Search by name, mobile, email, city, profession..."
               value={searchInput}
               onChange={(e) => handleSearchChange(e.target.value)}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <IconifyIcon icon="mdi:magnify" width={20} />
+                    <IconifyIcon icon="mdi:magnify" color="text.secondary" />
                   </InputAdornment>
                 ),
                 endAdornment: searchInput ? (
                   <InputAdornment position="end">
-                    <Button size="small" onClick={() => handleSearchChange('')} sx={{ minWidth: 0, p: 0.5 }}>
-                      <IconifyIcon icon="mdi:close" width={18} />
-                    </Button>
+                    <IconButton size="small" onClick={() => handleSearchChange('')}>
+                      <IconifyIcon icon="mdi:close" />
+                    </IconButton>
                   </InputAdornment>
                 ) : null,
               }}
@@ -421,21 +432,22 @@ const VlsConsumerProtectionLawMasterClassSection = () => {
           </Grid>
 
           <Grid item xs={12} sm={6} md={2.5}>
-            <TextField
-              fullWidth
-              select
-              size="small"
-              label="Payment Status"
-              value={paymentStatus}
-              onChange={(e) => handleStatusChange(e.target.value)}
-            >
-              <MenuItem value="">All Statuses</MenuItem>
-              {VLS_CONSUMER_PROTECTION_PAYMENT_STATUS_OPTIONS.map((status) => (
-                <MenuItem key={status} value={status}>
-                  {status}
-                </MenuItem>
-              ))}
-            </TextField>
+            <FormControl fullWidth size="small">
+              <InputLabel id="payment-status-filter-label">Payment Status</InputLabel>
+              <Select
+                labelId="payment-status-filter-label"
+                value={paymentStatus}
+                label="Payment Status"
+                onChange={(e) => handleStatusChange(e.target.value)}
+              >
+                <MenuItem value="">All Payment Statuses</MenuItem>
+                {VLS_CONSUMER_PROTECTION_PAYMENT_STATUS_OPTIONS.map((status) => (
+                  <MenuItem key={status} value={status}>
+                    {status}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           </Grid>
 
           <Grid item xs={12} sm={6} md={2.5}>
@@ -482,6 +494,7 @@ const VlsConsumerProtectionLawMasterClassSection = () => {
           onView={handleOpenView}
           onEdit={handleOpenEdit}
           onDelete={(record) => setDeleteRegistration(record)}
+          onStatusChange={handleInlineStatusChange}
         />
       )}
 
