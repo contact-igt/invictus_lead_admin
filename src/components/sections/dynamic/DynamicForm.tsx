@@ -20,6 +20,7 @@ import IconifyIcon from 'components/base/IconifyIcon';
 import { ColumnConfig } from 'config/clients';
 import dayjs from 'dayjs';
 import { getDayDropdownStatuses, isStatusTerminalForDays } from 'components/sections/pixel-eye/pixelEyeStatuses';
+import { formatVlsDateTime } from 'utils/vlsDateTime';
 
 interface DynamicFormProps {
   title: string;
@@ -135,13 +136,55 @@ const DynamicForm = ({
     const label = (
       <Typography variant="body2" fontWeight={600} color="text.primary" mb={0.5}>
         {col.header}
-        {col.required && (
+        {col.required && !isReadOnly && (
           <Box component="span" sx={{ color: 'error.main', ml: 0.3 }}>
             *
           </Box>
         )}
       </Typography>
     );
+
+    if (isReadOnly) {
+      let displayVal = '---';
+      const rawVal = initialValues?.[col.field] ?? formik.values[col.field];
+      if (col.type === 'date') {
+        displayVal = formatVlsDateTime(rawVal);
+      } else if (col.type === 'status_chip' || col.type === 'select') {
+        const val = formik.values[col.field];
+        if (val) {
+          const color =
+            val === 'paid'
+              ? 'success'
+              : val === 'attempted'
+              ? 'warning'
+              : val === 'waitlist'
+              ? 'info'
+              : val === 'failed' || val === 'cancelled'
+              ? 'error'
+              : 'primary';
+          return (
+            <Box key={col.field}>
+              {label}
+              <Box mt={0.5}>
+                <Chip label={val} size="small" color={color} />
+              </Box>
+            </Box>
+          );
+        }
+        displayVal = '---';
+      } else {
+        displayVal = rawVal !== undefined && rawVal !== null && rawVal !== '' ? String(rawVal) : '---';
+      }
+
+      return (
+        <Box key={col.field}>
+          {label}
+          <Typography variant="body1" fontWeight={500} color="text.primary" mt={0.5} sx={{ overflowWrap: 'anywhere' }}>
+            {displayVal}
+          </Typography>
+        </Box>
+      );
+    }
 
     switch (col.type) {
       case 'select':

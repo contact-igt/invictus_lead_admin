@@ -7,6 +7,7 @@ import ActionMenu from 'components/sections/ActionMenu';
 import dayjs from 'dayjs';
 import { TableConfig, ColumnConfig } from 'config/clients';
 import { getDayDropdownStatuses, isStatusTerminalForDays } from 'components/sections/pixel-eye/pixelEyeStatuses';
+import { formatVlsDateTime } from 'utils/vlsDateTime';
 
 interface DynamicTableProps {
   config: TableConfig;
@@ -41,11 +42,22 @@ const InlineEnumCell = ({
   const isBlockedEmpty = disabled && !value;
   const label = isBlockedEmpty ? '-' : value || `Set ${header}`;
 
+  const getChipColor = () => {
+    if (disabled) return 'default';
+    if (field === 'payment_status' && value) {
+      if (value === 'paid') return 'success';
+      if (value === 'attempted') return 'warning';
+      if (value === 'waitlist') return 'info';
+      if (value === 'failed' || value === 'cancelled') return 'error';
+    }
+    return value ? 'primary' : 'default';
+  };
+
   const chip = (
     <Chip
       label={label}
       size="small"
-      color={disabled ? 'default' : value ? 'primary' : 'default'}
+      color={getChipColor()}
       variant={isBlockedEmpty ? 'filled' : value ? 'filled' : 'outlined'}
       onClick={(e) => {
         e.stopPropagation();
@@ -265,7 +277,7 @@ const DynamicTable = ({
           );
         } else {
           baseCol.renderCell = (params) => (
-            params.value ? dayjs(params.value).format('DD MMM YYYY') : '---'
+            formatVlsDateTime(params.value)
           );
         }
       } else if (col.type === 'time') {

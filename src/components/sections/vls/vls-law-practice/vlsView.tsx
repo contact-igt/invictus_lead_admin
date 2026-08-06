@@ -3,7 +3,7 @@ import { useState } from 'react';
 import Stack from '@mui/material/Stack';
 import { Typography, Box, Button, Divider } from '@mui/material';
 import IconifyIcon from 'components/base/IconifyIcon';
-import dayjs from 'dayjs';
+import { formatVlsDateTime } from 'utils/vlsDateTime';
 
 interface viewProps {
     selectedUser: any;
@@ -17,10 +17,11 @@ const VlsView = ({ selectedUser }: viewProps) => {
         { label: 'Email', value: selectedUser?.email },
         { label: 'Mobile', value: selectedUser?.mobile },
         { label: 'Amount', value: selectedUser?.amount ? `₹${selectedUser.amount}` : null },
+        { label: 'Payment Status', value: selectedUser?.payment_status },
         { label: 'Razorpay Order Id', value: selectedUser?.razorpay_order_id },
         { label: 'Razorpay Payment Id', value: selectedUser?.razorpay_payment_id },
-        { label: 'Program Date', value: selectedUser?.programm_date ? dayjs(selectedUser.programm_date).format("DD MMM YYYY") : null },
-        { label: 'Registered Date', value: selectedUser?.registered_date ? dayjs(selectedUser.registered_date).format("DD MMM YYYY") : null },
+        { label: 'Program Date', value: formatVlsDateTime(selectedUser?.programm_date) },
+        { label: 'Registered Date', value: formatVlsDateTime(selectedUser?.registered_date) },
         { label: 'Page Name', value: selectedUser?.page_name },
         { label: 'IP Address', value: selectedUser?.ip_address },
         { label: 'UTM Source', value: selectedUser?.utm_source },
