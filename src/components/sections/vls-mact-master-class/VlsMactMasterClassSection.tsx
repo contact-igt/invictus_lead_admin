@@ -162,6 +162,13 @@ const VlsMactMasterClassSection = () => {
   const updateMutation = useUpdateVlsMactMasterClassRegistration(clientKey);
   const deleteMutation = useDeleteVlsMactMasterClassRegistration(clientKey);
 
+  const handleInlineStatusChange = (id: number, newStatus: string) => {
+    updateMutation.mutate({
+      id,
+      payload: { payment_status: newStatus },
+    });
+  };
+
   const response = registrationsQuery.data;
   const rows = response?.data ?? [];
   const summary = summaryQuery.data?.data ?? EMPTY_SUMMARY;
@@ -553,6 +560,7 @@ const VlsMactMasterClassSection = () => {
             onView={(registration) => openDrawer('view', registration)}
             onEdit={(registration) => openDrawer('edit', registration)}
             onDelete={setDeleteRegistration}
+            onStatusChange={handleInlineStatusChange}
           />
         </Paper>
       )}
