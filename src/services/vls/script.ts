@@ -25,7 +25,7 @@ export interface VlsPropertyLaw {
     razorpay_order_id: string | null;
     razorpay_payment_id: string | null;
     razorpay_signature: string | null;
-    payment_status: 'paid' | 'attempted' | 'failed' | 'cancelled';
+    payment_status: 'paid' | 'attempted' | 'failed' | 'cancelled' | 'waitlist';
     page_name: string | null;
     ip_address: string | null;
     utm_source: string | null;
@@ -49,7 +49,7 @@ export interface VlsFamilyLaw {
     razorpay_order_id: string | null;
     razorpay_payment_id: string | null;
     razorpay_signature: string | null;
-    payment_status: 'paid' | 'attempted' | 'failed' | 'cancelled';
+    payment_status: 'paid' | 'attempted' | 'failed' | 'cancelled' | 'waitlist';
     page_name: string | null;
     ip_address: string | null;
     utm_source: string | null;

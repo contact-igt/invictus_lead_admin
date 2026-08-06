@@ -116,8 +116,8 @@ const VlsConsumerProtectionLawMasterClassTable = ({
     {
       field: 'registered_date',
       headerName: 'Registered Date',
-      minWidth: 150,
-      flex: 0.9,
+      minWidth: 195,
+      flex: 1.5,
       renderCell: (params) => (
         <Typography variant="body2" color="text.secondary">
           {formatVlsConsumerProtectionDate(params.row.registered_date)}
@@ -128,7 +128,7 @@ const VlsConsumerProtectionLawMasterClassTable = ({
       field: 'programm_date',
       headerName: 'Programme Date',
       minWidth: 150,
-      flex: 0.9,
+      flex: 1.1,
       renderCell: (params) => (
         <Typography variant="body2" color="text.secondary">
           {formatVlsConsumerProtectionDate(params.row.programm_date)}
@@ -140,12 +140,21 @@ const VlsConsumerProtectionLawMasterClassTable = ({
       headerName: 'Payment Status',
       minWidth: 145,
       flex: 0.9,
-      renderCell: (params) =>
-        params.row.payment_status ? (
-          <Chip label={params.row.payment_status} size="small" variant="outlined" />
-        ) : (
-          '-'
-        ),
+      renderCell: (params) => {
+        const status = params.row.payment_status;
+        if (!status) return '-';
+        const color =
+          status === 'paid'
+            ? 'success'
+            : status === 'attempted'
+            ? 'warning'
+            : status === 'waitlist'
+            ? 'info'
+            : status === 'failed' || status === 'cancelled'
+            ? 'error'
+            : 'default';
+        return <Chip label={status} size="small" color={color} variant="outlined" />;
+      },
     },
     {
       field: 'captured',

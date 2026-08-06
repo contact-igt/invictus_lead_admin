@@ -105,10 +105,21 @@ const VlsLawPracticeTable = ({ searchText, usersData, handleRemove, handleView }
             align: 'center',
             headerAlign: 'center',
             renderCell: (params) => {
-                const color = params.value === 'paid' ? 'success' : 'error';
+                const status = params.value;
+                if (!status) return '---';
+                const color =
+                    status === 'paid'
+                        ? 'success'
+                        : status === 'attempted'
+                        ? 'warning'
+                        : status === 'waitlist'
+                        ? 'info'
+                        : status === 'failed' || status === 'cancelled'
+                        ? 'error'
+                        : 'default';
                 return (
                     <Stack direction="column" alignItems="center" justifyContent="center" height={1}>
-                        <Chip label={params.value ? params?.value : "failed"} size="small" color={color} />
+                        <Chip label={status} size="small" color={color} />
                     </Stack>
                 );
             }

@@ -19,16 +19,14 @@ export const VLS_CONSUMER_PROTECTION_PAYMENT_STATUS_OPTIONS = [
   'cancelled',
 ] as const;
 
+import { formatVlsDateTime } from 'utils/vlsDateTime';
+
 export const formatVlsConsumerProtectionDateTime = (value?: string | null): string => {
-  if (!value) return '-';
-  const parsed = dayjs(value);
-  return parsed.isValid() ? parsed.format('DD MMM YYYY, hh:mm A') : '-';
+  return formatVlsDateTime(value);
 };
 
 export const formatVlsConsumerProtectionDate = (value?: string | null): string => {
-  if (!value) return '-';
-  const parsed = dayjs(value);
-  return parsed.isValid() ? parsed.format('DD MMM YYYY') : '-';
+  return formatVlsDateTime(value);
 };
 
 export const formatVlsConsumerProtectionAmount = (value?: string | number | null): string => {

@@ -3,7 +3,7 @@ import { useState } from 'react';
 import Stack from '@mui/material/Stack';
 import { Typography, Box, Button, Divider } from '@mui/material';
 import IconifyIcon from 'components/base/IconifyIcon';
-import dayjs from 'dayjs';
+import { formatVlsDateTime } from 'utils/vlsDateTime';
 
 interface viewProps {
     selectedUser: any;
@@ -20,7 +20,7 @@ const VlsAibeView = ({ selectedUser }: viewProps) => {
         { label: 'Payment Status', value: selectedUser?.payment_status },
         { label: 'Razorpay Order Id', value: selectedUser?.razorpay_order_id },
         { label: 'Razorpay Payment Id', value: selectedUser?.razorpay_payment_id },
-        { label: 'Registered Date', value: selectedUser?.registered_date ? dayjs(selectedUser.registered_date).format("DD MMM YYYY") : null },
+        { label: 'Registered Date', value: formatVlsDateTime(selectedUser?.registered_date) },
         { label: 'IP Address', value: selectedUser?.ip_address },
         { label: 'UTM Source', value: selectedUser?.utm_source },
         { label: 'UTM Medium', value: selectedUser?.utm_medium },

@@ -19,16 +19,14 @@ export const VLS_MACT_PAYMENT_STATUS_OPTIONS = [
   'cancelled',
 ] as const;
 
+import { formatVlsDateTime } from 'utils/vlsDateTime';
+
 export const formatVlsMactDateTime = (value?: string | null): string => {
-  if (!value) return '-';
-  const parsed = dayjs(value);
-  return parsed.isValid() ? parsed.format('DD MMM YYYY, hh:mm A') : '-';
+  return formatVlsDateTime(value);
 };
 
 export const formatVlsMactDate = (value?: string | null): string => {
-  if (!value) return '-';
-  const parsed = dayjs(value);
-  return parsed.isValid() ? parsed.format('DD MMM YYYY') : '-';
+  return formatVlsDateTime(value);
 };
 
 export const formatVlsMactAmount = (value?: string | number | null): string => {
