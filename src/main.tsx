@@ -58,10 +58,10 @@ const AppLoader = () => {
         <div style={{ width: 240 }}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: 8 }}>
             <span style={{ fontSize: 11, letterSpacing: '0.08em', color: subColor, fontWeight: 500 }}>LOADING</span>
-            <span style={{ fontSize: 12, color: '#2E8B57', fontWeight: 700 }}>{progress}%</span>
+            <span style={{ fontSize: 12, color: '#29AF81', fontWeight: 700 }}>{progress}%</span>
           </div>
           <div style={{ width: '100%', height: 5, borderRadius: 3, backgroundColor: trackColor, overflow: 'hidden' }}>
-            <div style={{ height: '100%', borderRadius: 3, backgroundColor: '#2E8B57', width: `${progress}%`, transition: 'width 0.08s linear' }} />
+            <div style={{ height: '100%', borderRadius: 3, backgroundColor: '#29AF81', width: `${progress}%`, transition: 'width 0.08s linear' }} />
           </div>
         </div>
 

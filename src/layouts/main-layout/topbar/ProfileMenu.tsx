@@ -67,10 +67,10 @@ const ProfileMenu = ({ user, mode }: any) => {
         sx={{
           borderRadius: '8px',
           border: mode === 'dark' ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.08)',
-          bgcolor: mode === 'dark' ? 'rgba(22,163,74,0.08)' : 'background.paper',
+          bgcolor: mode === 'dark' ? 'rgba(41,175,129,0.08)' : 'background.paper',
           '&:hover': {
-            bgcolor: mode === 'dark' ? 'rgba(22,163,74,0.12)' : 'action.hover',
-            borderColor: mode === 'dark' ? 'rgba(34,197,94,0.3)' : 'rgba(0,0,0,0.15)'
+            bgcolor: mode === 'dark' ? 'rgba(41,175,129,0.12)' : 'action.hover',
+            borderColor: mode === 'dark' ? 'rgba(41,175,129,0.3)' : 'rgba(0,0,0,0.15)'
           }
         }}
       >
@@ -78,10 +78,10 @@ const ProfileMenu = ({ user, mode }: any) => {
           sx={{
             height: 40,
             width: 40,
-            bgcolor: mode === 'dark' ? '#16A34A' : 'primary.main',
+            bgcolor: '#29AF81',
             fontWeight: 600,
             fontSize: 16,
-            boxShadow: mode === 'dark' ? '0 0 12px rgba(34,197,94,0.3)' : 'none',
+            boxShadow: mode === 'dark' ? '0 0 12px rgba(41,175,129,0.35)' : 'none',
           }}
         >
           {firstLetter(user?.username)}
@@ -101,7 +101,7 @@ const ProfileMenu = ({ user, mode }: any) => {
             bgcolor: mode === 'dark' ? '#0D1410' : 'background.paper',
             border: mode === 'dark' ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.08)',
             boxShadow: mode === 'dark' 
-              ? '0 8px 24px rgba(0,0,0,0.65), 0 2px 6px rgba(46,139,87,0.08)' 
+              ? '0 8px 24px rgba(0,0,0,0.65), 0 2px 6px rgba(41,175,129,0.1)' 
               : '0 4px 12px rgba(0,0,0,0.1)',
           }
         }}
@@ -113,7 +113,7 @@ const ProfileMenu = ({ user, mode }: any) => {
             onClick={handleProfileMenuClose} 
             sx={{ 
               '&:hover': { 
-                bgcolor: mode === 'dark' ? 'rgba(22,163,74,0.1)' : 'info.light' 
+                bgcolor: mode === 'dark' ? 'rgba(41,175,129,0.1)' : 'info.light' 
               } 
             }}
           >
@@ -122,10 +122,10 @@ const ProfileMenu = ({ user, mode }: any) => {
                 mr: 1,
                 height: 42,
                 width: 42,
-                bgcolor: mode === 'dark' ? '#16A34A' : 'primary.main',
+                bgcolor: '#29AF81',
                 fontWeight: 700,
                 fontSize: 18,
-                boxShadow: mode === 'dark' ? '0 0 8px rgba(34,197,94,0.3)' : 'none',
+                boxShadow: mode === 'dark' ? '0 0 8px rgba(41,175,129,0.3)' : 'none',
               }}
             >
               {firstLetter(user?.username)}
@@ -160,11 +160,11 @@ const ProfileMenu = ({ user, mode }: any) => {
                 sx={{ 
                   py: 1,
                   '&:hover': {
-                    bgcolor: mode === 'dark' ? 'rgba(22,163,74,0.1)' : 'action.hover'
+                    bgcolor: mode === 'dark' ? 'rgba(41,175,129,0.1)' : 'action.hover'
                   }
                 }}
               >
-                <ListItemIcon sx={{ mr: 1, color: mode === 'dark' ? '#22C55E' : 'text.secondary', fontSize: 'h5.fontSize' }}>
+                <ListItemIcon sx={{ mr: 1, color: mode === 'dark' ? '#29AF81' : 'text.secondary', fontSize: 'h5.fontSize' }}>
                   <IconifyIcon icon={item.icon} />
                 </ListItemIcon>
                 <Typography variant="body2" color={mode === 'dark' ? '#DFFFE3' : 'text.secondary'} fontWeight={500}>

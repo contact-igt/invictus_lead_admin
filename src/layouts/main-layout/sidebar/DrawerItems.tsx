@@ -12,28 +12,6 @@ import { normalizeClientKey } from 'utils/clientKey';
 import { resolveClientModuleKey, isInvictusClientKey, INVICTUS_CLIENT_KEY } from 'utils/clientModuleResolver';
 import useColorMode from 'hooks/useColorMode';
 
-// Invictus brand diamond logo (emerald dual-facet)
-const InvictusLogo = ({ size = 36 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
-    {/* Left Chevron / Angle shape */}
-    <path
-      d="M23 5 L5 25 L23 45 L23 36 L13 25 L23 14 Z"
-      fill="#00D285"
-    />
-    {/* Right Blade / Vertical Diamond facet */}
-    <path
-      d="M27 5 L45 25 L27 45 L27 5 Z"
-      fill="#009E5E"
-    />
-    {/* Inner facet shading */}
-    <path
-      d="M27 5 L36 25 L27 45 Z"
-      fill="#00B86E"
-      opacity="0.4"
-    />
-  </svg>
-);
-
 const roleLabel: Record<string, string> = {
   'super-admin': 'SUPER ADMIN',
   admin: 'ADMIN',
@@ -109,43 +87,24 @@ const DrawerItems = () => {
           sx={{
             display: 'flex',
             alignItems: 'center',
-            gap: 1.5,
             borderRadius: 2,
             p: 0.5,
             justifyContent: 'flex-start',
             '&:hover': { opacity: 0.9 },
           }}
         >
-          <InvictusLogo size={38} />
-          <Box sx={{ textAlign: 'left' }}>
-            <Typography
-              sx={{
-                fontFamily: '"Geist", sans-serif',
-                fontSize: '1rem',
-                fontWeight: 800,
-                color: mode === 'dark' ? '#FFFFFF !important' : '#0F172A !important',
-                letterSpacing: '0.04em',
-                lineHeight: 1.1,
-                textTransform: 'uppercase',
-              }}
-            >
-              INVICTUS
-            </Typography>
-            <Typography
-              sx={{
-                fontFamily: '"Geist", sans-serif',
-                fontSize: '0.625rem',
-                fontWeight: 700,
-                color: mode === 'dark' ? '#4ADE80 !important' : '#0F172A !important',
-                letterSpacing: '0.18em',
-                textTransform: 'uppercase',
-                lineHeight: 1.2,
-                mt: '1px',
-              }}
-            >
-              GLOBAL TECH
-            </Typography>
-          </Box>
+          <Box
+            component="img"
+            src="/assets/brand-logo.png"
+            alt="Invictus OS"
+            sx={{
+              height: 38,
+              width: 'auto',
+              maxHeight: 44,
+              objectFit: 'contain',
+              filter: mode === 'dark' ? 'invert(1) hue-rotate(180deg)' : 'none',
+            }}
+          />
         </ButtonBase>
       </Box>
 
@@ -165,12 +124,12 @@ const DrawerItems = () => {
                 width: 38,
                 height: 38,
                 borderRadius: '50%',
-                background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                background: 'linear-gradient(135deg, #29AF81 0%, #1A8F68 100%)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 flexShrink: 0,
-                boxShadow: '0 2px 4px rgba(16,185,129,0.2)',
+                boxShadow: '0 2px 4px rgba(41,175,129,0.25)',
               }}
             >
               <Typography
@@ -203,15 +162,15 @@ const DrawerItems = () => {
                   px: 1,
                   py: 0.2,
                   borderRadius: '12px',
-                  backgroundColor: mode === 'dark' ? '#10241A' : '#D1FAE5',
-                  border: mode === 'dark' ? '1px solid #15271E' : '1px solid #A7F3D0',
+                  backgroundColor: mode === 'dark' ? 'rgba(41,175,129,0.12)' : '#D1FAE5',
+                  border: mode === 'dark' ? '1px solid rgba(41,175,129,0.3)' : '1px solid #A7F3D0',
                 }}
               >
                 <Typography
                   sx={{
                     fontSize: '0.625rem',
                     fontWeight: 700,
-                    color: mode === 'dark' ? '#4ADE80' : '#047857',
+                    color: mode === 'dark' ? '#29AF81' : '#047857',
                     letterSpacing: '0.04em',
                     textTransform: 'uppercase',
                     lineHeight: 1,

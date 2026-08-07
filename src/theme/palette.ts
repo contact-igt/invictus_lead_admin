@@ -29,20 +29,20 @@ declare module '@mui/material/styles' {
 const palette: PaletteOptions = {
   // ── Primary: Invictus Green ────────────────────────────────────────────────
   primary: {
-    lighter: green.tint,      // #E8F5EE — chip bg, hover tints
-    light: green.light,     // #7ECBA5 — icon fills, highlights
-    main: green.primary,   // #2E8B57 — buttons, active states ← BRAND
-    dark: green.dark,      // #1F6B40 — button hover, sidebar active
-    darker: green.deeper,    // #145C30 — pressed states
-    state: green.mid,       // #3DAA6B — badge accents, left borders
+    lighter: green.tint,      // #EAF8F3 — chip bg, hover tints
+    light: green.light,     // #52C79F — icon fills, highlights
+    main: green.primary,   // #29AF81 — buttons, active states ← BRAND
+    dark: green.dark,      // #218D68 — button hover, sidebar active
+    darker: green.deeper,    // #196B4F — pressed states
+    state: green.mid,       // #29AF81 — badge accents, left borders
   },
 
   // ── Secondary: used for outlined/secondary UI elements ───────────────────
   secondary: {
-    lighter: green.pale,      // #C3E6D3
-    light: green.mid,       // #3DAA6B
-    main: green.dark,      // #1F6B40
-    dark: dark.base,       // #111714
+    lighter: green.pale,      // #C4EFE1
+    light: green.mid,       // #29AF81
+    main: green.dark,      // #218D68
+    dark: dark.base,       // #0F172A
     darker: '#000000',
   },
 
@@ -54,19 +54,19 @@ const palette: PaletteOptions = {
   // info.darker  → border color
   info: {
     lighter: surface.card,    // #FFFFFF — Paper, button text color
-    light: surface.page,    // #F4F6F5 — body background
-    main: border.default,  // #E8EDE9 — DataGrid row borders
-    dark: green.tint,      // #E8F5EE — hover backgrounds
-    darker: green.pale,      // #C3E6D3 — border accents
+    light: surface.page,    // #F8FAFC — body background
+    main: border.default,  // #E5E7EB — DataGrid row borders
+    dark: green.tint,      // #EAF8F3 — hover backgrounds
+    darker: green.pale,      // #C4EFE1 — border accents
   },
 
   // ── Success ────────────────────────────────────────────────────────────────
   success: {
-    lighter: status.successBg,  // #E8F5EE
-    light: green.light,       // #7ECBA5
-    main: green.primary,     // #2E8B57
-    dark: green.dark,        // #1F6B40
-    darker: green.deeper,      // #145C30
+    lighter: status.successBg,  // #EAF8F3
+    light: green.light,       // #52C79F
+    main: green.primary,     // #29AF81
+    dark: green.dark,        // #218D68
+    darker: green.deeper,      // #196B4F
   },
 
   // ── Warning ────────────────────────────────────────────────────────────────

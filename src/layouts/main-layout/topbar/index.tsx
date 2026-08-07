@@ -105,16 +105,16 @@ const Topbar = ({ isClosing, mobileOpen, setMobileOpen }: TopbarProps) => {
               height: 40, 
               width: 40,
               border: mode === 'dark' ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.08)', 
-              bgcolor: mode === 'dark' ? 'rgba(22,163,74,0.08)' : 'background.paper',
+              bgcolor: mode === 'dark' ? 'rgba(41,175,129,0.08)' : 'background.paper',
               '&:hover': {
-                bgcolor: mode === 'dark' ? 'rgba(22,163,74,0.12)' : 'action.hover',
-                borderColor: mode === 'dark' ? 'rgba(34,197,94,0.3)' : 'rgba(0,0,0,0.15)'
+                bgcolor: mode === 'dark' ? 'rgba(41,175,129,0.12)' : 'action.hover',
+                borderColor: mode === 'dark' ? 'rgba(41,175,129,0.3)' : 'rgba(0,0,0,0.15)'
               }
             }}
           >
             <IconifyIcon 
               icon={mode === 'dark' ? 'eva:sun-fill' : 'eva:moon-fill'} 
-              sx={{ fontSize: 20, color: mode === 'dark' ? '#22C55E' : 'text.primary' }} 
+              sx={{ fontSize: 20, color: mode === 'dark' ? '#29AF81' : 'text.primary' }} 
             />
           </IconButton>
         </Tooltip>
@@ -125,10 +125,10 @@ const Topbar = ({ isClosing, mobileOpen, setMobileOpen }: TopbarProps) => {
             height: 40, 
             width: 40,
             border: mode === 'dark' ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.08)',
-            bgcolor: mode === 'dark' ? 'rgba(22,163,74,0.08)' : 'background.paper',
+            bgcolor: mode === 'dark' ? 'rgba(41,175,129,0.08)' : 'background.paper',
             '&:hover': {
-              bgcolor: mode === 'dark' ? 'rgba(22,163,74,0.12)' : 'action.hover',
-              borderColor: mode === 'dark' ? 'rgba(34,197,94,0.3)' : 'rgba(0,0,0,0.15)'
+              bgcolor: mode === 'dark' ? 'rgba(41,175,129,0.12)' : 'action.hover',
+              borderColor: mode === 'dark' ? 'rgba(41,175,129,0.3)' : 'rgba(0,0,0,0.15)'
             }
           }}
         >
@@ -137,14 +137,14 @@ const Topbar = ({ isClosing, mobileOpen, setMobileOpen }: TopbarProps) => {
             variant="dot" 
             sx={{ 
               '& .MuiBadge-badge': { 
-                backgroundColor: '#16A34A',
-                boxShadow: mode === 'dark' ? '0 0 8px rgba(34,197,94,0.5)' : 'none'
+                backgroundColor: '#29AF81',
+                boxShadow: mode === 'dark' ? '0 0 8px rgba(41,175,129,0.5)' : 'none'
               } 
             }}
           >
             <IconifyIcon 
               icon="solar:bell-outline" 
-              sx={{ fontSize: 20, color: mode === 'dark' ? '#22C55E' : 'text.primary' }} 
+              sx={{ fontSize: 20, color: mode === 'dark' ? '#29AF81' : 'text.primary' }} 
             />
           </Badge>
         </IconButton>

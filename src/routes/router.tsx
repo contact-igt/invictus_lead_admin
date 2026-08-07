@@ -198,7 +198,7 @@ const router = createBrowserRouter(
           element: (
             <Suspense fallback={<PageLoader />}>
               <AuthLayout>
-                <Suspense fallback={<PageLoader />}>
+                <Suspense fallback={null}>
                   <Outlet />
                 </Suspense>
               </AuthLayout>

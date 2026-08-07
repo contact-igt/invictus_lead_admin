@@ -57,8 +57,8 @@ export const GeneralEnquiriesPage: React.FC = () => {
     closedCount: 0,
   });
 
-  const loadData = useCallback(async () => {
-    setLoading(true);
+  const loadData = useCallback(async (showLoading = true) => {
+    if (showLoading) setLoading(true);
     try {
       const res = await fetchGeneralEnquiries({
         page,
@@ -81,7 +81,7 @@ export const GeneralEnquiriesPage: React.FC = () => {
     } catch (err) {
       console.error('Failed to load general enquiries', err);
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
     }
   }, [page, search, statusFilter]);
 
@@ -91,13 +91,14 @@ export const GeneralEnquiriesPage: React.FC = () => {
 
   const handleStatusChange = async (id: string, newStatus: GeneralEnquiryStatus) => {
     try {
-      await updateGeneralEnquiryStatusApi(id, newStatus);
       setData((prev) =>
         prev.map((item) => (item.id === id ? { ...item, status: newStatus } : item))
       );
-      loadData();
+      await updateGeneralEnquiryStatusApi(id, newStatus);
+      loadData(false);
     } catch (err) {
       console.error('Failed to update status', err);
+      loadData(false);
     }
   };
 

@@ -19,21 +19,21 @@ const Button: Components<Omit<Theme, 'components'>>['MuiButton'] = {
       },
     }),
 
-    // ── Primary (solid green #16A34A, white text, NO glow) ───────────────────
+    // ── Primary (solid green #29AF81, white text, NO glow) ───────────────────
     containedPrimary: () => ({
       color: '#FFFFFF',
-      backgroundColor: '#16A34A',
+      backgroundColor: '#29AF81',
       '&:hover': {
-        backgroundColor: '#15803D',
+        backgroundColor: '#218D68',
         boxShadow: 'none !important',
       },
       '&:active': {
-        backgroundColor: '#166534',
+        backgroundColor: '#196B4F',
         boxShadow: 'none !important',
       },
       '&.Mui-disabled': {
-        backgroundColor: '#DCFCE7',
-        color: '#86EFAC',
+        backgroundColor: '#EAF8F3',
+        color: '#52C79F',
       },
     }),
 
@@ -51,12 +51,12 @@ const Button: Components<Omit<Theme, 'components'>>['MuiButton'] = {
 
     // ── Outlined ─────────────────────────────────────────────────────────────
     outlinedPrimary: () => ({
-      color: '#16A34A',
+      color: '#29AF81',
       borderColor: '#E5E7EB',
       backgroundColor: '#FFFFFF',
       '&:hover': {
-        backgroundColor: '#F0FDF4',
-        borderColor: '#BBF7D0',
+        backgroundColor: '#EAF8F3',
+        borderColor: '#C4EFE1',
       },
     }),
 

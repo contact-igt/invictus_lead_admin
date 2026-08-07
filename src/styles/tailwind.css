@@ -213,10 +213,27 @@ html:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
 }
 
 html.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-	background: #16A34A;
+	background: #29AF81;
 }
 
 html:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-	background: #16A34A;
+	background: #29AF81;
+}
+
+/* Toast Success Notification Override — Invictus Brand Green #29AF81 */
+.SnackbarItem-variantSuccess,
+.notistack-MuiContent-success,
+.MuiAlert-filledSuccess {
+	background-color: #29AF81 !important;
+	color: #ffffff !important;
+}
+.SnackbarItem-variantSuccess .SnackbarItem-message,
+.notistack-MuiContent-success .notistack-MuiContent-message {
+	color: #ffffff !important;
+	font-weight: 500;
+}
+.SnackbarItem-variantSuccess .notistack-MuiContent-icon,
+.SnackbarItem-variantSuccess svg {
+	color: #ffffff !important;
 }
 

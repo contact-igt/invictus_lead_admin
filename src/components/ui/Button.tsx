@@ -14,9 +14,9 @@ export const Button = React.forwardRef<HTMLButtonElement, EnterpriseButtonProps>
       case 'primary':
         buttonVariantProps = { variant: 'contained' };
         customStyles = {
-          backgroundColor: '#16A34A',
+          backgroundColor: '#29AF81',
           color: '#FFFFFF',
-          '&:hover': { backgroundColor: '#15803D', boxShadow: 'none' },
+          '&:hover': { backgroundColor: '#218D68', boxShadow: 'none' },
         };
         break;
       case 'secondary':
@@ -48,9 +48,9 @@ export const Button = React.forwardRef<HTMLButtonElement, EnterpriseButtonProps>
         buttonVariantProps = { variant: 'outlined' };
         customStyles = {
           backgroundColor: '#FFFFFF',
-          color: '#16A34A',
+          color: '#29AF81',
           borderColor: '#E5E7EB',
-          '&:hover': { backgroundColor: '#F0FDF4', borderColor: '#BBF7D0' },
+          '&:hover': { backgroundColor: '#EAF8F3', borderColor: '#C4EFE1' },
         };
         break;
       case 'text':
