@@ -75,8 +75,8 @@ export const CareersApplicationsPage: React.FC = () => {
     hiredCount: 0,
   });
 
-  const loadData = useCallback(async () => {
-    setLoading(true);
+  const loadData = useCallback(async (showLoading = true) => {
+    if (showLoading) setLoading(true);
     try {
       const res = await fetchCareersApplications({
         page,
@@ -100,7 +100,7 @@ export const CareersApplicationsPage: React.FC = () => {
     } catch (err) {
       console.error('Failed to load careers applications', err);
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
     }
   }, [page, search, statusFilter, roleFilter]);
 
@@ -110,13 +110,14 @@ export const CareersApplicationsPage: React.FC = () => {
 
   const handleStatusChange = async (id: string, newStatus: CareersStatus) => {
     try {
-      await updateCareersApplicationStatusApi(id, newStatus);
       setData((prev) =>
         prev.map((item) => (item.id === id ? { ...item, status: newStatus } : item))
       );
-      loadData();
+      await updateCareersApplicationStatusApi(id, newStatus);
+      loadData(false);
     } catch (err) {
       console.error('Failed to update status', err);
+      loadData(false);
     }
   };
 
@@ -250,64 +251,75 @@ export const CareersApplicationsPage: React.FC = () => {
         }}
       >
         {/* Filters Toolbar */}
+        {/* Filters Toolbar */}
         <Box
           sx={{
             p: 2.5,
             display: 'flex',
-            flexWrap: 'wrap',
+            flexDirection: 'column',
             gap: 2,
-            alignItems: 'center',
-            justify: 'space-between',
             bgcolor: isDark ? 'rgba(255, 255, 255, 0.02)' : '#F8FAFC',
             borderBottom: '1px solid',
             borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : '#E2E8F0',
           }}
         >
-          {/* Left: Role Filter Chips & Search */}
-          <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
-            <Box sx={{ display: 'flex', gap: 1, mr: 1, flexWrap: 'wrap' }}>
-              {['All', 'Graphic Designer', 'Video Editor', 'HR & Operations Executive', 'HR & Operations Intern'].map((roleItem) => {
-                const isSelected = roleFilter === roleItem;
-                return (
-                  <Chip
-                    key={roleItem}
-                    label={roleItem}
-                    onClick={() => {
-                      setRoleFilter(roleItem);
-                      setPage(1);
-                    }}
-                    sx={{
-                      fontWeight: 600,
-                      cursor: 'pointer',
+          {/* Top Row: Role Filter Chips */}
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
+            <Typography variant="body2" sx={{ fontWeight: 600, mr: 1, color: isDark ? '#94A3B8' : '#64748B' }}>
+              Role:
+            </Typography>
+            {['All', 'Graphic Designer', 'Video Editor', 'HR & Operations Executive', 'HR & Operations Intern', 'Telecalling Executive'].map((roleItem) => {
+              const isSelected = roleFilter === roleItem;
+              return (
+                <Chip
+                  key={roleItem}
+                  label={roleItem}
+                  onClick={() => {
+                    setRoleFilter(roleItem);
+                    setPage(1);
+                  }}
+                  sx={{
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    bgcolor: isSelected
+                      ? '#2563EB'
+                      : isDark
+                        ? 'rgba(255, 255, 255, 0.06)'
+                        : '#FFFFFF',
+                    color: isSelected
+                      ? '#FFFFFF'
+                      : isDark
+                        ? '#CBD5E1'
+                        : '#475569',
+                    border: '1px solid',
+                    borderColor: isSelected
+                      ? '#2563EB'
+                      : isDark
+                        ? 'rgba(255, 255, 255, 0.15)'
+                        : '#CBD5E1',
+                    '&:hover': {
                       bgcolor: isSelected
-                        ? '#2563EB'
+                        ? '#1D4ED8'
                         : isDark
-                          ? 'rgba(255, 255, 255, 0.06)'
-                          : '#FFFFFF',
-                      color: isSelected
-                        ? '#FFFFFF'
-                        : isDark
-                          ? '#CBD5E1'
-                          : '#475569',
-                      border: '1px solid',
-                      borderColor: isSelected
-                        ? '#2563EB'
-                        : isDark
-                          ? 'rgba(255, 255, 255, 0.15)'
-                          : '#CBD5E1',
-                      '&:hover': {
-                        bgcolor: isSelected
-                          ? '#1D4ED8'
-                          : isDark
-                            ? 'rgba(255, 255, 255, 0.12)'
-                            : '#F1F5F9',
-                      },
-                    }}
-                  />
-                );
-              })}
-            </Box>
+                          ? 'rgba(255, 255, 255, 0.12)'
+                          : '#F1F5F9',
+                    },
+                  }}
+                />
+              );
+            })}
+          </Box>
 
+          {/* Bottom Row: Search & Filters Dropdowns + Export Button */}
+          <Box
+            sx={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: 2,
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
             <TextField
               size="small"
               placeholder="Search by reference IGT-XXXXXX, applicant, email, city..."
@@ -320,7 +332,8 @@ export const CareersApplicationsPage: React.FC = () => {
                 startAdornment: <Search style={{ width: 18, height: 18, marginRight: 8, color: '#94A3B8' }} />,
               }}
               sx={{
-                width: 340,
+                width: 360,
+                maxWidth: '100%',
                 bgcolor: isDark ? 'rgba(255, 255, 255, 0.06)' : '#FFFFFF',
                 borderRadius: 1.5,
                 '& .MuiInputBase-input': {
@@ -328,57 +341,56 @@ export const CareersApplicationsPage: React.FC = () => {
                 },
               }}
             />
-          </Box>
 
-          {/* Right: Role & Status Select Dropdowns + Export Button */}
-          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-              <Typography variant="body2" sx={{ fontWeight: 600, color: isDark ? '#CBD5E1' : '#475569' }}>
-                Role:
-              </Typography>
-              <Select
-                size="small"
-                value={roleFilter}
-                onChange={(e) => {
-                  setRoleFilter(e.target.value);
-                  setPage(1);
-                }}
-                sx={{
-                  bgcolor: isDark ? 'rgba(255, 255, 255, 0.06)' : '#FFFFFF',
-                  color: isDark ? '#F8FAFC' : '#0F172A',
-                  minWidth: 200,
-                  borderRadius: 1.5,
-                  '.MuiSvgIcon-root': { color: isDark ? '#94A3B8' : '#475569' },
-                }}
-              >
-                <MenuItem value="All">All Roles</MenuItem>
-                <MenuItem value="Graphic Designer">Graphic Designer</MenuItem>
-                <MenuItem value="Video Editor">Video Editor</MenuItem>
-                <MenuItem value="HR & Operations Executive">HR & Operations Executive</MenuItem>
-                <MenuItem value="HR & Operations Intern">HR & Operations Intern</MenuItem>
-              </Select>
-            </Box>
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
+              <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                <Typography variant="body2" sx={{ fontWeight: 600, color: isDark ? '#CBD5E1' : '#475569' }}>
+                  Role:
+                </Typography>
+                <Select
+                  size="small"
+                  value={roleFilter}
+                  onChange={(e) => {
+                    setRoleFilter(e.target.value);
+                    setPage(1);
+                  }}
+                  sx={{
+                    bgcolor: isDark ? 'rgba(255, 255, 255, 0.06)' : '#FFFFFF',
+                    color: isDark ? '#F8FAFC' : '#0F172A',
+                    minWidth: 200,
+                    borderRadius: 1.5,
+                    '.MuiSvgIcon-root': { color: isDark ? '#94A3B8' : '#475569' },
+                  }}
+                >
+                  <MenuItem value="All">All Roles</MenuItem>
+                  <MenuItem value="Graphic Designer">Graphic Designer</MenuItem>
+                  <MenuItem value="Video Editor">Video Editor</MenuItem>
+                  <MenuItem value="HR & Operations Executive">HR & Operations Executive</MenuItem>
+                  <MenuItem value="HR & Operations Intern">HR & Operations Intern</MenuItem>
+                  <MenuItem value="Telecalling Executive">Telecalling Executive</MenuItem>
+                </Select>
+              </Box>
 
-            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-              <Typography variant="body2" sx={{ fontWeight: 600, color: isDark ? '#CBD5E1' : '#475569' }}>
-                Status:
-              </Typography>
-              <Select
-                size="small"
-                value={statusFilter}
-                onChange={(e) => {
-                  setStatusFilter(e.target.value);
-                  setPage(1);
-                }}
-                displayEmpty
-                sx={{
-                  bgcolor: isDark ? 'rgba(255, 255, 255, 0.06)' : '#FFFFFF',
-                  color: isDark ? '#F8FAFC' : '#0F172A',
-                  minWidth: 150,
-                  borderRadius: 1.5,
-                  '.MuiSvgIcon-root': { color: isDark ? '#94A3B8' : '#475569' },
-                }}
-              >
+              <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                <Typography variant="body2" sx={{ fontWeight: 600, color: isDark ? '#CBD5E1' : '#475569' }}>
+                  Status:
+                </Typography>
+                <Select
+                  size="small"
+                  value={statusFilter}
+                  onChange={(e) => {
+                    setStatusFilter(e.target.value);
+                    setPage(1);
+                  }}
+                  displayEmpty
+                  sx={{
+                    bgcolor: isDark ? 'rgba(255, 255, 255, 0.06)' : '#FFFFFF',
+                    color: isDark ? '#F8FAFC' : '#0F172A',
+                    minWidth: 150,
+                    borderRadius: 1.5,
+                    '.MuiSvgIcon-root': { color: isDark ? '#94A3B8' : '#475569' },
+                  }}
+                >
                 <MenuItem value="">All Statuses</MenuItem>
                 <MenuItem value="New">New</MenuItem>
                 <MenuItem value="Shortlisted">Shortlisted</MenuItem>
@@ -409,6 +421,7 @@ export const CareersApplicationsPage: React.FC = () => {
             </Button>
           </Box>
         </Box>
+      </Box>
 
         {/* Data Table */}
         <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 0, bgcolor: 'transparent' }}>

@@ -44,6 +44,18 @@ const CssBaseline: Components<Omit<Theme, 'components'>>['MuiCssBaseline'] = {
     'button, a, input, select, textarea': {
       transition: 'all 0.18s ease',
     },
+    // Toast notification override — use brand green #29AF81 for success toasts
+    '.SnackbarItem-variantSuccess, .notistack-MuiContent-success, .MuiAlert-filledSuccess': {
+      backgroundColor: '#29AF81 !important',
+      color: '#FFFFFF !important',
+    },
+    '.SnackbarItem-variantSuccess .SnackbarItem-message, .notistack-MuiContent-success .notistack-MuiContent-message': {
+      color: '#FFFFFF !important',
+      fontWeight: 500,
+    },
+    '.SnackbarItem-variantSuccess .notistack-MuiContent-icon, .SnackbarItem-variantSuccess svg': {
+      color: '#FFFFFF !important',
+    },
   }),
 };
 

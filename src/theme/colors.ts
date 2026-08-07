@@ -1,14 +1,14 @@
 // ── Invictus Enterprise Color Tokens ─────────────────────────────────────────
 
 export const green = {
-  tint:    '#F0FDF4',
-  pale:    '#DCFCE7',
-  light:   '#4ADE80',
-  mid:     '#22C55E',
-  primary: '#16A34A',
-  dark:    '#15803D',
-  deeper:  '#166534',
-  900:     '#14532D',
+  tint:    '#EAF8F3',
+  pale:    '#C4EFE1',
+  light:   '#52C79F',
+  mid:     '#29AF81',
+  primary: '#29AF81',
+  dark:    '#218D68',
+  deeper:  '#196B4F',
+  900:     '#124B37',
 };
 
 export const dark = {
@@ -32,7 +32,7 @@ export const text = {
 
 export const status = {
   successBg:  '#F0FDF4',
-  successFg:  '#16A34A',
+  successFg:  '#29AF81',
   infoBg:     '#EFF6FF',
   infoFg:     '#2563EB',
   warningBg:  '#FFFBEB',

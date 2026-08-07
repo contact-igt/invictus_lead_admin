@@ -146,10 +146,10 @@ export const EnquiriesPage: React.FC = () => {
   // Handle Status Update for General Enquiry
   const handleGeneralStatusChange = async (id: string, newStatus: GeneralEnquiryStatus) => {
     try {
-      await updateGeneralEnquiryStatusApi(id, newStatus);
       setGeneralData((prev) =>
         prev.map((item) => (item.id === id ? { ...item, status: newStatus } : item))
       );
+      await updateGeneralEnquiryStatusApi(id, newStatus);
     } catch (err) {
       console.error('Failed to update general enquiry status', err);
     }
@@ -158,10 +158,10 @@ export const EnquiriesPage: React.FC = () => {
   // Handle Status Update for Careers Application
   const handleCareersStatusChange = async (id: string, newStatus: CareersStatus) => {
     try {
-      await updateCareersApplicationStatusApi(id, newStatus);
       setCareersData((prev) =>
         prev.map((item) => (item.id === id ? { ...item, status: newStatus } : item))
       );
+      await updateCareersApplicationStatusApi(id, newStatus);
     } catch (err) {
       console.error('Failed to update careers application status', err);
     }
@@ -281,41 +281,51 @@ export const EnquiriesPage: React.FC = () => {
           sx={{
             p: 2.5,
             display: 'flex',
-            flexWrap: 'wrap',
+            flexDirection: 'column',
             gap: 2,
-            alignItems: 'center',
-            justify: 'space-between',
             bgcolor: '#F8FAFC',
           }}
         >
-          {/* Left: Role Filter Pills (Careers tab only) or Search */}
-          <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
-            {activeTab === 'careers' && (
-              <Box sx={{ display: 'flex', gap: 1, mr: 1, flexWrap: 'wrap' }}>
-                {['All', 'Graphic Designer', 'Video Editor', 'HR & Operations Executive', 'HR & Operations Intern'].map((roleItem) => (
-                  <Chip
-                    key={roleItem}
-                    label={roleItem}
-                    onClick={() => {
-                      setRoleFilter(roleItem);
-                      setCareersPage(1);
-                    }}
-                    sx={{
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      bgcolor: roleFilter === roleItem ? '#2563EB' : '#FFFFFF',
-                      color: roleFilter === roleItem ? '#FFFFFF' : '#475569',
-                      border: '1px solid',
-                      borderColor: roleFilter === roleItem ? '#2563EB' : '#CBD5E1',
-                      '&:hover': {
-                        bgcolor: roleFilter === roleItem ? '#1D4ED8' : '#F1F5F9',
-                      },
-                    }}
-                  />
-                ))}
-              </Box>
-            )}
+          {/* Top Row: Role Filter Chips (Careers tab only) */}
+          {activeTab === 'careers' && (
+            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, mr: 1, color: '#64748B' }}>
+                Role:
+              </Typography>
+              {['All', 'Graphic Designer', 'Video Editor', 'HR & Operations Executive', 'HR & Operations Intern', 'Telecalling Executive'].map((roleItem) => (
+                <Chip
+                  key={roleItem}
+                  label={roleItem}
+                  onClick={() => {
+                    setRoleFilter(roleItem);
+                    setCareersPage(1);
+                  }}
+                  sx={{
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    bgcolor: roleFilter === roleItem ? '#2563EB' : '#FFFFFF',
+                    color: roleFilter === roleItem ? '#FFFFFF' : '#475569',
+                    border: '1px solid',
+                    borderColor: roleFilter === roleItem ? '#2563EB' : '#CBD5E1',
+                    '&:hover': {
+                      bgcolor: roleFilter === roleItem ? '#1D4ED8' : '#F1F5F9',
+                    },
+                  }}
+                />
+              ))}
+            </Box>
+          )}
 
+          {/* Bottom Row: Search & Filters Dropdowns */}
+          <Box
+            sx={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: 2,
+              alignItems: 'center',
+              justify: 'space-between',
+            }}
+          >
             <TextField
               size="small"
               placeholder={
@@ -328,34 +338,33 @@ export const EnquiriesPage: React.FC = () => {
               InputProps={{
                 startAdornment: <Search style={{ width: 18, height: 18, marginRight: 8, color: '#94A3B8' }} />,
               }}
-              sx={{ width: 340, bgcolor: '#FFFFFF' }}
+              sx={{ width: 360, maxWidth: '100%', bgcolor: '#FFFFFF' }}
             />
-          </Box>
 
-          {/* Right: Role & Status Dropdown Filters */}
-          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-            {activeTab === 'careers' && (
-              <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                <Typography variant="body2" sx={{ fontWeight: 600, color: '#475569' }}>
-                  Role:
-                </Typography>
-                <Select
-                  size="small"
-                  value={roleFilter}
-                  onChange={(e) => {
-                    setRoleFilter(e.target.value);
-                    setCareersPage(1);
-                  }}
-                  sx={{ bgcolor: '#FFFFFF', minWidth: 200 }}
-                >
-                  <MenuItem value="All">All Roles</MenuItem>
-                  <MenuItem value="Graphic Designer">Graphic Designer</MenuItem>
-                  <MenuItem value="Video Editor">Video Editor</MenuItem>
-                  <MenuItem value="HR & Operations Executive">HR & Operations Executive</MenuItem>
-                  <MenuItem value="HR & Operations Intern">HR & Operations Intern</MenuItem>
-                </Select>
-              </Box>
-            )}
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
+              {activeTab === 'careers' && (
+                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: '#475569' }}>
+                    Role:
+                  </Typography>
+                  <Select
+                    size="small"
+                    value={roleFilter}
+                    onChange={(e) => {
+                      setRoleFilter(e.target.value);
+                      setCareersPage(1);
+                    }}
+                    sx={{ bgcolor: '#FFFFFF', minWidth: 200 }}
+                  >
+                    <MenuItem value="All">All Roles</MenuItem>
+                    <MenuItem value="Graphic Designer">Graphic Designer</MenuItem>
+                    <MenuItem value="Video Editor">Video Editor</MenuItem>
+                    <MenuItem value="HR & Operations Executive">HR & Operations Executive</MenuItem>
+                    <MenuItem value="HR & Operations Intern">HR & Operations Intern</MenuItem>
+                    <MenuItem value="Telecalling Executive">Telecalling Executive</MenuItem>
+                  </Select>
+                </Box>
+              )}
 
             <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
               <Typography variant="body2" sx={{ fontWeight: 600, color: '#475569' }}>
@@ -376,28 +385,28 @@ export const EnquiriesPage: React.FC = () => {
                 displayEmpty
                 sx={{ bgcolor: '#FFFFFF', minWidth: 150 }}
               >
-              <MenuItem value="">All Statuses</MenuItem>
-              {activeTab === 'general' ? (
-                <>
-                  <MenuItem value="New">New</MenuItem>
-                  <MenuItem value="Contacted">Contacted</MenuItem>
-                  <MenuItem value="In Progress">In Progress</MenuItem>
-                  <MenuItem value="Closed">Closed</MenuItem>
-                </>
-              ) : (
-                <>
-                  <MenuItem value="New">New</MenuItem>
-                  <MenuItem value="Shortlisted">Shortlisted</MenuItem>
-                  <MenuItem value="Under Review">Under Review</MenuItem>
-                  <MenuItem value="Rejected">Rejected</MenuItem>
-                  <MenuItem value="Hired">Hired</MenuItem>
-                </>
-              )}
-            </Select>
-          </Box>
-
+                <MenuItem value="">All Statuses</MenuItem>
+                {activeTab === 'general' ? (
+                  <>
+                    <MenuItem value="New">New</MenuItem>
+                    <MenuItem value="Contacted">Contacted</MenuItem>
+                    <MenuItem value="In Progress">In Progress</MenuItem>
+                    <MenuItem value="Closed">Closed</MenuItem>
+                  </>
+                ) : (
+                  <>
+                    <MenuItem value="New">New</MenuItem>
+                    <MenuItem value="Shortlisted">Shortlisted</MenuItem>
+                    <MenuItem value="Under Review">Under Review</MenuItem>
+                    <MenuItem value="Rejected">Rejected</MenuItem>
+                    <MenuItem value="Hired">Hired</MenuItem>
+                  </>
+                )}
+              </Select>
+            </Box>
           </Box>
         </Box>
+      </Box>
 
         {/* Content Table */}
         <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 0 }}>

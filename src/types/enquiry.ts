@@ -6,7 +6,8 @@ export type CareersRole =
   | 'Graphic Designer'
   | 'Video Editor'
   | 'HR & Operations Executive'
-  | 'HR & Operations Intern';
+  | 'HR & Operations Intern'
+  | 'Telecalling Executive';
 
 export type ExperienceLevel =
   | 'under_6_months'

@@ -1,18 +1,64 @@
 import { PropsWithChildren } from 'react';
-import { useLocation } from 'react-router-dom';
-import paths from 'routes/paths';
 import Box from '@mui/material/Box';
-import Stack from '@mui/material/Stack';
-import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import Image from 'components/base/Image';
+import { Icon } from '@iconify/react';
 
 const LogoImg = '/assets/brand-logo.png';
 
-const AuthLayout = ({ children }: PropsWithChildren) => {
-  const location = useLocation();
-  const isSignin = location.pathname === paths.signin;
+// ── Design Tokens ────────────────────────────────────────────────────────────
+const BG_LEFT      = '#070A14';   // 45% left panel background
+const BG_RIGHT     = '#090D1A';   // 55% right panel background
+const GREEN_ACCENT = '#1A8F68';   // Exact green theme color (#1a8f68)
+const TEXT_LIGHT   = 'rgba(240,246,252,0.95)';
+const TEXT_MUTED   = 'rgba(240,246,252,0.50)';
 
+// ── Feature pills (Lead Admin panel suitable) ────────────────────────────────
+const PILLS = [
+  { icon: 'hugeicons:user-multiple',      label: 'Leads & Enquiries', isGreen: false },
+  { icon: 'hugeicons:chart-bar-line-01',  label: 'Team Analytics',    isGreen: false },
+  { icon: 'hugeicons:megaphone-02',       label: 'Campaign Tracker',  isGreen: true  },
+  { icon: 'hugeicons:globe-02',           label: 'Client Portals',    isGreen: false },
+  { icon: 'hugeicons:activity-02',        label: 'Live Pipeline',     isGreen: false },
+];
+
+// ── Sub-component: Feature Pill ──────────────────────────────────────────────
+const FeaturePill = ({ icon, label, isGreen }: { icon: string; label: string; isGreen?: boolean }) => (
+  <Box
+    sx={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: 1,
+      px: 1.8,
+      py: 0.9,
+      borderRadius: '24px',
+      bgcolor: '#111625',
+      border: '1px solid rgba(255,255,255,0.08)',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+      cursor: 'default',
+      transition: 'all 0.2s ease',
+      '&:hover': {
+        borderColor: 'rgba(26,143,104,0.4)',
+        bgcolor: '#161D30',
+      },
+    }}
+  >
+    <Icon icon={icon} width={15} height={15} color={isGreen ? GREEN_ACCENT : 'rgba(240,246,252,0.7)'} />
+    <Typography
+      sx={{
+        fontSize: '0.78rem',
+        fontWeight: 600,
+        color: 'rgba(240,246,252,0.85)',
+        letterSpacing: '0.01em',
+        whiteSpace: 'nowrap',
+      }}
+    >
+      {label}
+    </Typography>
+  </Box>
+);
+
+// ── Main Layout ──────────────────────────────────────────────────────────────
+const AuthLayout = ({ children }: PropsWithChildren) => {
   return (
     <Box
       component="main"
@@ -20,128 +66,190 @@ const AuthLayout = ({ children }: PropsWithChildren) => {
         display: 'flex',
         minHeight: '100vh',
         width: '100%',
+        bgcolor: BG_LEFT,
+        position: 'relative',
+        overflow: 'hidden',
       }}
     >
-      {/* Left branding panel — hidden on mobile */}
+      {/* ══════════════════════════════════════════════════════════════════════
+          LEFT PANEL — 43% Width Branding + Hero
+      ══════════════════════════════════════════════════════════════════════ */}
       <Box
         sx={{
           display: { xs: 'none', md: 'flex' },
           flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flex: 1,
-          bgcolor: 'primary.main',
-          px: 6,
-          py: 8,
-          gap: 3,
+          justifyContent: 'space-between',
+          flex: { md: '0 0 43%' },
+          width: { md: '43%' },
+          maxWidth: { md: '43%' },
+          px: { md: 5, lg: 7 },
+          py: 6,
           position: 'relative',
-          overflow: 'hidden',
+          zIndex: 1,
+          minHeight: '100vh',
+          bgcolor: BG_LEFT,
+          borderRight: '1px solid rgba(255,255,255,0.05)',
         }}
       >
-        {/* decorative circle top-right */}
+        {/* Radial green glow background */}
         <Box
           sx={{
             position: 'absolute',
-            width: 320,
-            height: 320,
-            top: -100,
-            right: -100,
+            bottom: '10%',
+            left: '-10%',
+            width: '450px',
+            height: '450px',
             borderRadius: '50%',
-            bgcolor: 'rgba(255,255,255,0.07)',
+            background: `radial-gradient(circle, rgba(26,143,104,0.15) 0%, rgba(26,143,104,0.02) 45%, transparent 70%)`,
             pointerEvents: 'none',
-          }}
-        />
-        {/* decorative circle bottom-left */}
-        <Box
-          sx={{
-            position: 'absolute',
-            width: 240,
-            height: 240,
-            bottom: -80,
-            left: -80,
-            borderRadius: '50%',
-            bgcolor: 'rgba(255,255,255,0.05)',
-            pointerEvents: 'none',
+            zIndex: -1,
           }}
         />
 
-        <Stack alignItems="center" spacing={2.5} sx={{ position: 'relative', zIndex: 1 }}>
+        {/* Top Left Brand Logo Image */}
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <Box
+            component="img"
+            src={LogoImg}
+            alt="Invictus OS"
             sx={{
-              bgcolor: 'rgba(255,255,255,0.12)',
-              borderRadius: 4,
-              px: 4,
-              py: 3,
-              backdropFilter: 'blur(6px)',
-              border: '1px solid rgba(255,255,255,0.18)',
+              height: 48,
+              width: 'auto',
+              maxHeight: 52,
+              objectFit: 'contain',
+              filter: 'invert(1) hue-rotate(180deg)',
+            }}
+          />
+        </Box>
+
+        {/* Hero Content */}
+        <Box sx={{ my: 'auto', py: 4 }}>
+          {/* Green Eyebrow Tag */}
+          <Typography
+            sx={{
+              fontSize: '0.72rem',
+              fontWeight: 700,
+              color: GREEN_ACCENT,
+              letterSpacing: '0.15em',
+              textTransform: 'uppercase',
+              mb: 2.5,
             }}
           >
-            <Image src={LogoImg} alt="Invictus logo" height={56} width={220} />
+            WELCOME | LEAD MANAGEMENT
+          </Typography>
+
+          {/* Large Headline */}
+          <Typography
+            sx={{
+              fontSize: { md: '2.5rem', lg: '3.2rem' },
+              fontWeight: 800,
+              lineHeight: 1.12,
+              color: TEXT_LIGHT,
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Build robust,
+          </Typography>
+          <Typography
+            sx={{
+              fontSize: { md: '2.5rem', lg: '3.2rem' },
+              fontWeight: 800,
+              lineHeight: 1.12,
+              color: GREEN_ACCENT,
+              letterSpacing: '-0.02em',
+              mb: 3,
+            }}
+          >
+            scale limitlessly.
+          </Typography>
+
+          {/* Subtitle */}
+          <Typography
+            sx={{
+              fontSize: '0.92rem',
+              color: TEXT_MUTED,
+              lineHeight: 1.6,
+              mb: 4,
+              maxWidth: 420,
+            }}
+          >
+            Your central workspace for lead management, client portals, and team performance analytics.
+          </Typography>
+
+          {/* Feature Pills */}
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.2, maxWidth: 440 }}>
+            {PILLS.map((pill) => (
+              <FeaturePill key={pill.label} icon={pill.icon} label={pill.label} isGreen={pill.isGreen} />
+            ))}
           </Box>
+        </Box>
 
-          <Typography
-            variant="h4"
-            fontWeight={800}
-            color="white"
-            align="center"
-            sx={{ lineHeight: 1.25, mt: 1 }}
-          >
-            Welcome to Invictus
-          </Typography>
-
-          <Typography
-            variant="body1"
-            color="rgba(255,255,255,0.75)"
-            align="center"
-            sx={{ maxWidth: 320 }}
-          >
-            Your all-in-one platform for lead management, client tracking, and team performance analytics.
-          </Typography>
-        </Stack>
+        {/* Footer Copyright */}
+        <Typography
+          sx={{
+            fontSize: '0.72rem',
+            color: 'rgba(240,246,252,0.35)',
+            letterSpacing: '0.01em',
+          }}
+        >
+          © 2026 Invictus Global Tech Pvt. Ltd. · Chennai, India
+        </Typography>
       </Box>
 
-      {/* Right form panel */}
-      <Stack
-        alignItems="center"
-        justifyContent="center"
+      {/* ══════════════════════════════════════════════════════════════════════
+          RIGHT PANEL — 57% Width Form Area
+      ══════════════════════════════════════════════════════════════════════ */}
+      <Box
         sx={{
-          flex: { xs: 1, md: 'none' },
-          width: { xs: '100%', md: 480 },
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flex: { xs: '1 1 100%', md: '0 0 57%' },
+          width: { xs: '100%', md: '57%' },
+          maxWidth: { xs: '100%', md: '57%' },
           minHeight: '100vh',
-          bgcolor: '#F8FAFC',
-          px: { xs: 2, sm: 4 },
-          py: 6,
+          bgcolor: BG_RIGHT,
+          px: { xs: 3, sm: 6, lg: 10 },
+          py: { xs: 8, md: 8 },
+          position: 'relative',
+          zIndex: 1,
         }}
       >
-        {/* Logo visible only on mobile (left panel is hidden) */}
+        {/* Mobile Logo */}
         <Box
           sx={{
             display: { xs: 'flex', md: 'none' },
+            position: 'absolute',
+            top: 28,
+            left: 0,
+            right: 0,
             justifyContent: 'center',
-            mb: 3,
           }}
         >
-          <Image src={LogoImg} alt="Invictus logo" height={44} width={180} />
+          <Box
+            component="img"
+            src={LogoImg}
+            alt="Invictus OS"
+            sx={{
+              height: 38,
+              width: 'auto',
+              objectFit: 'contain',
+              filter: 'invert(1) hue-rotate(180deg)',
+            }}
+          />
         </Box>
 
-        <Paper
-          elevation={0}
-          sx={{
-            px: { xs: 3, sm: 4 },
-            py: 3.5,
-            width: '100%',
-            maxWidth: 420,
-            borderRadius: 4,
-            boxShadow: '0 8px 32px rgba(15,23,42,0.10)',
-            border: '1px solid rgba(15,23,42,0.07)',
-            bgcolor: isSignin ? '#ffffff' : undefined,
-          }}
-        >
+        {/* Form Container */}
+        <Box sx={{ width: '100%', maxWidth: 420 }}>
           {children}
-        </Paper>
-      </Stack>
+        </Box>
+      </Box>
     </Box>
   );
 };
 
 export default AuthLayout;
+
+
+
+
