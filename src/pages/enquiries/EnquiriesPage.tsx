@@ -35,12 +35,17 @@ import {
   FileText,
   Trash2,
   AlertTriangle,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
 } from 'lucide-react';
 import {
   fetchGeneralEnquiries,
+  fetchGeneralEnquiryLocations,
   updateGeneralEnquiryStatusApi,
   deleteGeneralEnquiryApi,
   fetchCareersApplications,
+  fetchCareersApplicationLocations,
   updateCareersApplicationStatusApi,
   deleteCareersApplicationApi,
 } from 'services/enquiry.service';
@@ -77,6 +82,12 @@ export const EnquiriesPage: React.FC = () => {
   const [generalTotal, setGeneralTotal] = useState<number>(0);
   const [generalPage, setGeneralPage] = useState<number>(1);
   const [generalStatusFilter, setGeneralStatusFilter] = useState<string>('');
+  const [generalCityFilter, setGeneralCityFilter] = useState<string>('');
+  const [generalStateFilter, setGeneralStateFilter] = useState<string>('');
+  const [generalSortBy, setGeneralSortBy] = useState<string>('submitted_at');
+  const [generalSortOrder, setGeneralSortOrder] = useState<'ASC' | 'DESC'>('DESC');
+  const [generalCities, setGeneralCities] = useState<string[]>([]);
+  const [generalStates, setGeneralStates] = useState<string[]>([]);
 
   // Careers Applications State
   const [careersData, setCareersData] = useState<CareersApplication[]>([]);
@@ -84,6 +95,12 @@ export const EnquiriesPage: React.FC = () => {
   const [careersPage, setCareersPage] = useState<number>(1);
   const [careersStatusFilter, setCareersStatusFilter] = useState<string>('');
   const [roleFilter, setRoleFilter] = useState<string>('All');
+  const [careersCityFilter, setCareersCityFilter] = useState<string>('');
+  const [careersStateFilter, setCareersStateFilter] = useState<string>('');
+  const [careersSortBy, setCareersSortBy] = useState<string>('createdAt');
+  const [careersSortOrder, setCareersSortOrder] = useState<'ASC' | 'DESC'>('DESC');
+  const [careersCities, setCareersCities] = useState<string[]>([]);
+  const [careersStates, setCareersStates] = useState<string[]>([]);
 
   // Common Search & Loading State
   const [search, setSearch] = useState<string>('');
@@ -96,6 +113,36 @@ export const EnquiriesPage: React.FC = () => {
   const [deleteCareersConfirm, setDeleteCareersConfirm] = useState<CareersApplication | null>(null);
   const [deleting, setDeleting] = useState<boolean>(false);
 
+  // Load Location Options
+  const loadGeneralLocations = useCallback(async () => {
+    try {
+      const res = await fetchGeneralEnquiryLocations();
+      if (res.success && res.data) {
+        setGeneralCities(res.data.cities || []);
+        setGeneralStates(res.data.states || []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch general locations', err);
+    }
+  }, []);
+
+  const loadCareersLocations = useCallback(async () => {
+    try {
+      const res = await fetchCareersApplicationLocations();
+      if (res.success && res.data) {
+        setCareersCities(res.data.cities || []);
+        setCareersStates(res.data.states || []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch careers locations', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadGeneralLocations();
+    loadCareersLocations();
+  }, [loadGeneralLocations, loadCareersLocations]);
+
   // Load General Enquiries
   const loadGeneralEnquiries = useCallback(async () => {
     setLoading(true);
@@ -105,15 +152,30 @@ export const EnquiriesPage: React.FC = () => {
         limit: 10,
         search,
         status: generalStatusFilter,
+        city: generalCityFilter,
+        state: generalStateFilter,
+        sortBy: generalSortBy,
+        sortOrder: generalSortOrder,
       });
-      setGeneralData(res.data || []);
+      const rows = res.data || [];
+      setGeneralData(rows);
       setGeneralTotal(res.total || 0);
+
+      // Dynamic auto-push new cities/states to filter set
+      const newCities = rows.map((r) => r.city).filter((c): c is string => typeof c === 'string' && c.trim() !== '');
+      const newStates = rows.map((r) => r.state).filter((s): s is string => typeof s === 'string' && s.trim() !== '');
+      if (newCities.length > 0) {
+        setGeneralCities((prev) => Array.from(new Set([...prev, ...newCities])).sort((a, b) => a.localeCompare(b)));
+      }
+      if (newStates.length > 0) {
+        setGeneralStates((prev) => Array.from(new Set([...prev, ...newStates])).sort((a, b) => a.localeCompare(b)));
+      }
     } catch (err) {
       console.error('Failed to load general enquiries', err);
     } finally {
       setLoading(false);
     }
-  }, [generalPage, search, generalStatusFilter]);
+  }, [generalPage, search, generalStatusFilter, generalCityFilter, generalStateFilter, generalSortBy, generalSortOrder]);
 
   // Load Careers Applications
   const loadCareersApplications = useCallback(async () => {
@@ -125,15 +187,30 @@ export const EnquiriesPage: React.FC = () => {
         search,
         status: careersStatusFilter,
         role: roleFilter === 'All' ? '' : roleFilter,
+        city: careersCityFilter,
+        state: careersStateFilter,
+        sortBy: careersSortBy,
+        sortOrder: careersSortOrder,
       });
-      setCareersData(res.data || []);
+      const rows = res.data || [];
+      setCareersData(rows);
       setCareersTotal(res.total || 0);
+
+      // Dynamic auto-push new cities/states to filter set
+      const newCities = rows.map((r) => r.current_city).filter((c): c is string => typeof c === 'string' && c.trim() !== '');
+      const newStates = rows.map((r) => r.state).filter((s): s is string => typeof s === 'string' && s.trim() !== '');
+      if (newCities.length > 0) {
+        setCareersCities((prev) => Array.from(new Set([...prev, ...newCities])).sort((a, b) => a.localeCompare(b)));
+      }
+      if (newStates.length > 0) {
+        setCareersStates((prev) => Array.from(new Set([...prev, ...newStates])).sort((a, b) => a.localeCompare(b)));
+      }
     } catch (err) {
       console.error('Failed to load careers applications', err);
     } finally {
       setLoading(false);
     }
-  }, [careersPage, search, careersStatusFilter, roleFilter]);
+  }, [careersPage, search, careersStatusFilter, roleFilter, careersCityFilter, careersStateFilter, careersSortBy, careersSortOrder]);
 
   useEffect(() => {
     if (activeTab === 'general') {
@@ -142,6 +219,26 @@ export const EnquiriesPage: React.FC = () => {
       loadCareersApplications();
     }
   }, [activeTab, loadGeneralEnquiries, loadCareersApplications]);
+
+  const handleGeneralSortToggle = (column: string) => {
+    if (generalSortBy === column) {
+      setGeneralSortOrder((prev) => (prev === 'ASC' ? 'DESC' : 'ASC'));
+    } else {
+      setGeneralSortBy(column);
+      setGeneralSortOrder('ASC');
+    }
+    setGeneralPage(1);
+  };
+
+  const handleCareersSortToggle = (column: string) => {
+    if (careersSortBy === column) {
+      setCareersSortOrder((prev) => (prev === 'ASC' ? 'DESC' : 'ASC'));
+    } else {
+      setCareersSortBy(column);
+      setCareersSortOrder('ASC');
+    }
+    setCareersPage(1);
+  };
 
   // Handle Status Update for General Enquiry
   const handleGeneralStatusChange = async (id: string, newStatus: GeneralEnquiryStatus) => {
@@ -366,6 +463,59 @@ export const EnquiriesPage: React.FC = () => {
                 </Box>
               )}
 
+            {activeTab === 'careers' && (
+              <>
+                {/* City Filter */}
+                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: '#475569' }}>
+                    City:
+                  </Typography>
+                  <Select
+                    size="small"
+                    value={careersCityFilter}
+                    onChange={(e) => {
+                      setCareersCityFilter(e.target.value);
+                      setCareersPage(1);
+                    }}
+                    displayEmpty
+                    sx={{ bgcolor: '#FFFFFF', minWidth: 150 }}
+                  >
+                    <MenuItem value="">All Cities</MenuItem>
+                    {careersCities.map((c) => (
+                      <MenuItem key={c} value={c}>
+                        {c}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </Box>
+
+                {/* State Filter */}
+                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: '#475569' }}>
+                    State:
+                  </Typography>
+                  <Select
+                    size="small"
+                    value={careersStateFilter}
+                    onChange={(e) => {
+                      setCareersStateFilter(e.target.value);
+                      setCareersPage(1);
+                    }}
+                    displayEmpty
+                    sx={{ bgcolor: '#FFFFFF', minWidth: 150 }}
+                  >
+                    <MenuItem value="">All States</MenuItem>
+                    {careersStates.map((s) => (
+                      <MenuItem key={s} value={s}>
+                        {s}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </Box>
+              </>
+            )}
+
+            {/* Status Filter */}
             <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
               <Typography variant="body2" sx={{ fontWeight: 600, color: '#475569' }}>
                 Status:
@@ -418,9 +568,34 @@ export const EnquiriesPage: React.FC = () => {
             <Table>
               <TableHead sx={{ bgcolor: '#F8FAFC' }}>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Name</TableCell>
+                  <TableCell
+                    sx={{ fontWeight: 700, color: '#475569', cursor: 'pointer', userSelect: 'none' }}
+                    onClick={() => handleGeneralSortToggle('name')}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      Name
+                      {generalSortBy === 'name' ? (
+                        generalSortOrder === 'ASC' ? <ArrowUp style={{ width: 14, height: 14, color: '#2563EB' }} /> : <ArrowDown style={{ width: 14, height: 14, color: '#2563EB' }} />
+                      ) : (
+                        <ArrowUpDown style={{ width: 14, height: 14, color: '#94A3B8' }} />
+                      )}
+                    </Box>
+                  </TableCell>
                   <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Mobile</TableCell>
                   <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Email</TableCell>
+                  <TableCell
+                    sx={{ fontWeight: 700, color: '#475569', cursor: 'pointer', userSelect: 'none' }}
+                    onClick={() => handleGeneralSortToggle('city')}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      City / State
+                      {generalSortBy === 'city' ? (
+                        generalSortOrder === 'ASC' ? <ArrowUp style={{ width: 14, height: 14, color: '#2563EB' }} /> : <ArrowDown style={{ width: 14, height: 14, color: '#2563EB' }} />
+                      ) : (
+                        <ArrowUpDown style={{ width: 14, height: 14, color: '#94A3B8' }} />
+                      )}
+                    </Box>
+                  </TableCell>
                   <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Industry</TableCell>
                   <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Applied For</TableCell>
                   <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Status</TableCell>
@@ -433,7 +608,7 @@ export const EnquiriesPage: React.FC = () => {
               <TableBody>
                 {generalData.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} align="center" sx={{ py: 6, color: '#94A3B8' }}>
+                    <TableCell colSpan={9} align="center" sx={{ py: 6, color: '#94A3B8' }}>
                       No general enquiry records found.
                     </TableCell>
                   </TableRow>
@@ -445,6 +620,9 @@ export const EnquiriesPage: React.FC = () => {
                         <TableCell sx={{ fontWeight: 600, color: '#0F172A' }}>{row.name}</TableCell>
                         <TableCell sx={{ color: '#334155' }}>{row.mobile}</TableCell>
                         <TableCell sx={{ color: '#334155' }}>{row.email}</TableCell>
+                        <TableCell sx={{ color: '#334155' }}>
+                          {row.city || row.state ? `${row.city || '-'}${row.state ? `, ${row.state}` : ''}` : '-'}
+                        </TableCell>
                         <TableCell sx={{ color: '#475569' }}>{row.industry}</TableCell>
                         <TableCell sx={{ color: '#475569' }}>{row.applied_for}</TableCell>
                         <TableCell>
@@ -505,7 +683,32 @@ export const EnquiriesPage: React.FC = () => {
                 <TableRow>
                   <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Ref ID</TableCell>
                   <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Role</TableCell>
-                  <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Applicant</TableCell>
+                  <TableCell
+                    sx={{ fontWeight: 700, color: '#475569', cursor: 'pointer', userSelect: 'none' }}
+                    onClick={() => handleCareersSortToggle('full_name')}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      Applicant Name
+                      {careersSortBy === 'full_name' ? (
+                        careersSortOrder === 'ASC' ? <ArrowUp style={{ width: 14, height: 14, color: '#2563EB' }} /> : <ArrowDown style={{ width: 14, height: 14, color: '#2563EB' }} />
+                      ) : (
+                        <ArrowUpDown style={{ width: 14, height: 14, color: '#94A3B8' }} />
+                      )}
+                    </Box>
+                  </TableCell>
+                  <TableCell
+                    sx={{ fontWeight: 700, color: '#475569', cursor: 'pointer', userSelect: 'none' }}
+                    onClick={() => handleCareersSortToggle('current_city')}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      City / State
+                      {careersSortBy === 'current_city' ? (
+                        careersSortOrder === 'ASC' ? <ArrowUp style={{ width: 14, height: 14, color: '#2563EB' }} /> : <ArrowDown style={{ width: 14, height: 14, color: '#2563EB' }} />
+                      ) : (
+                        <ArrowUpDown style={{ width: 14, height: 14, color: '#94A3B8' }} />
+                      )}
+                    </Box>
+                  </TableCell>
                   <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Experience</TableCell>
                   <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Portfolio / Links</TableCell>
                   <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Screening Flags</TableCell>
@@ -518,7 +721,7 @@ export const EnquiriesPage: React.FC = () => {
               <TableBody>
                 {careersData.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} align="center" sx={{ py: 6, color: '#94A3B8' }}>
+                    <TableCell colSpan={9} align="center" sx={{ py: 6, color: '#94A3B8' }}>
                       No career application records found.
                     </TableCell>
                   </TableRow>
@@ -536,8 +739,11 @@ export const EnquiriesPage: React.FC = () => {
                             {row.full_name}
                           </Typography>
                           <Typography variant="caption" sx={{ color: '#64748B', display: 'block' }}>
-                            {row.email} • {row.phone} ({row.current_city})
+                            {row.email} • {row.phone}
                           </Typography>
+                        </TableCell>
+                        <TableCell sx={{ color: '#334155' }}>
+                          {row.current_city}{row.state ? `, ${row.state}` : ''}
                         </TableCell>
                         <TableCell sx={{ color: '#334155' }}>
                           {row.experience.replace(/_/g, ' ')}

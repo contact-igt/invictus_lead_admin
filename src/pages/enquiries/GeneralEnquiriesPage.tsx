@@ -24,10 +24,11 @@ import {
   Button,
   useTheme,
 } from '@mui/material';
-import { Search, Eye, Trash2, AlertTriangle } from 'lucide-react';
+import { Search, Eye, Trash2, AlertTriangle, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { RichKPICard } from 'components/ui/RichKPICard';
 import {
   fetchGeneralEnquiries,
+  fetchGeneralEnquiryLocations,
   updateGeneralEnquiryStatusApi,
   deleteGeneralEnquiryApi,
 } from 'services/enquiry.service';
@@ -42,6 +43,13 @@ export const GeneralEnquiriesPage: React.FC = () => {
   const [page, setPage] = useState<number>(1);
   const [search, setSearch] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('');
+  const [cityFilter, setCityFilter] = useState<string>('');
+  const [stateFilter, setStateFilter] = useState<string>('');
+  const [sortBy, setSortBy] = useState<string>('submitted_at');
+  const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>('DESC');
+  const [cities, setCities] = useState<string[]>([]);
+  const [states, setStates] = useState<string[]>([]);
+
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedEnquiry, setSelectedEnquiry] = useState<GeneralEnquiry | null>(null);
 
@@ -57,6 +65,22 @@ export const GeneralEnquiriesPage: React.FC = () => {
     closedCount: 0,
   });
 
+  const loadLocations = useCallback(async () => {
+    try {
+      const res = await fetchGeneralEnquiryLocations();
+      if (res.success && res.data) {
+        setCities(res.data.cities || []);
+        setStates(res.data.states || []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch general locations', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadLocations();
+  }, [loadLocations]);
+
   const loadData = useCallback(async (showLoading = true) => {
     if (showLoading) setLoading(true);
     try {
@@ -65,9 +89,24 @@ export const GeneralEnquiriesPage: React.FC = () => {
         limit: 10,
         search,
         status: statusFilter,
+        city: cityFilter,
+        state: stateFilter,
+        sortBy,
+        sortOrder,
       });
-      setData(res.data || []);
+      const rows = res.data || [];
+      setData(rows);
       setTotal(res.total || 0);
+
+      // Dynamic auto-push new cities/states to filter set
+      const newCities = rows.map((r) => r.city).filter((c): c is string => typeof c === 'string' && c.trim() !== '');
+      const newStates = rows.map((r) => r.state).filter((s): s is string => typeof s === 'string' && s.trim() !== '');
+      if (newCities.length > 0) {
+        setCities((prev) => Array.from(new Set([...prev, ...newCities])).sort((a, b) => a.localeCompare(b)));
+      }
+      if (newStates.length > 0) {
+        setStates((prev) => Array.from(new Set([...prev, ...newStates])).sort((a, b) => a.localeCompare(b)));
+      }
 
       // Compute overview metrics from total dataset
       const allRes = await fetchGeneralEnquiries({ page: 1, limit: 100 });
@@ -83,11 +122,21 @@ export const GeneralEnquiriesPage: React.FC = () => {
     } finally {
       if (showLoading) setLoading(false);
     }
-  }, [page, search, statusFilter]);
+  }, [page, search, statusFilter, cityFilter, stateFilter, sortBy, sortOrder]);
 
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  const handleSortToggle = (column: string) => {
+    if (sortBy === column) {
+      setSortOrder((prev) => (prev === 'ASC' ? 'DESC' : 'ASC'));
+    } else {
+      setSortBy(column);
+      setSortOrder('ASC');
+    }
+    setPage(1);
+  };
 
   const handleStatusChange = async (id: string, newStatus: GeneralEnquiryStatus) => {
     try {
@@ -240,32 +289,35 @@ export const GeneralEnquiriesPage: React.FC = () => {
             }}
           />
 
-          <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
-            <Typography variant="body2" sx={{ fontWeight: 600, color: isDark ? '#CBD5E1' : '#475569' }}>
-              Status:
-            </Typography>
-            <Select
-              size="small"
-              value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value);
-                setPage(1);
-              }}
-              displayEmpty
-              sx={{
-                bgcolor: isDark ? 'rgba(255, 255, 255, 0.06)' : '#FFFFFF',
-                color: isDark ? '#F8FAFC' : '#0F172A',
-                minWidth: 150,
-                borderRadius: 1.5,
-                '.MuiSvgIcon-root': { color: isDark ? '#94A3B8' : '#475569' },
-              }}
-            >
-              <MenuItem value="">All Statuses</MenuItem>
-              <MenuItem value="New">New</MenuItem>
-              <MenuItem value="Contacted">Contacted</MenuItem>
-              <MenuItem value="In Progress">In Progress</MenuItem>
-              <MenuItem value="Closed">Closed</MenuItem>
-            </Select>
+          <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
+            {/* Status Filter */}
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: isDark ? '#CBD5E1' : '#475569' }}>
+                Status:
+              </Typography>
+              <Select
+                size="small"
+                value={statusFilter}
+                onChange={(e) => {
+                  setStatusFilter(e.target.value);
+                  setPage(1);
+                }}
+                displayEmpty
+                sx={{
+                  bgcolor: isDark ? 'rgba(255, 255, 255, 0.06)' : '#FFFFFF',
+                  color: isDark ? '#F8FAFC' : '#0F172A',
+                  minWidth: 150,
+                  borderRadius: 1.5,
+                  '.MuiSvgIcon-root': { color: isDark ? '#94A3B8' : '#475569' },
+                }}
+              >
+                <MenuItem value="">All Statuses</MenuItem>
+                <MenuItem value="New">New</MenuItem>
+                <MenuItem value="Contacted">Contacted</MenuItem>
+                <MenuItem value="In Progress">In Progress</MenuItem>
+                <MenuItem value="Closed">Closed</MenuItem>
+              </Select>
+            </Box>
           </Box>
         </Box>
 
@@ -279,9 +331,34 @@ export const GeneralEnquiriesPage: React.FC = () => {
             <Table>
               <TableHead sx={{ bgcolor: isDark ? 'rgba(255, 255, 255, 0.04)' : '#F8FAFC' }}>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 700, color: isDark ? '#CBD5E1' : '#475569' }}>Name</TableCell>
+                  <TableCell
+                    sx={{ fontWeight: 700, color: isDark ? '#CBD5E1' : '#475569', cursor: 'pointer', userSelect: 'none' }}
+                    onClick={() => handleSortToggle('name')}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      Name
+                      {sortBy === 'name' ? (
+                        sortOrder === 'ASC' ? <ArrowUp style={{ width: 14, height: 14, color: '#2563EB' }} /> : <ArrowDown style={{ width: 14, height: 14, color: '#2563EB' }} />
+                      ) : (
+                        <ArrowUpDown style={{ width: 14, height: 14, color: '#94A3B8' }} />
+                      )}
+                    </Box>
+                  </TableCell>
                   <TableCell sx={{ fontWeight: 700, color: isDark ? '#CBD5E1' : '#475569' }}>Mobile</TableCell>
                   <TableCell sx={{ fontWeight: 700, color: isDark ? '#CBD5E1' : '#475569' }}>Email</TableCell>
+                  <TableCell
+                    sx={{ fontWeight: 700, color: isDark ? '#CBD5E1' : '#475569', cursor: 'pointer', userSelect: 'none' }}
+                    onClick={() => handleSortToggle('city')}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      City / State
+                      {sortBy === 'city' ? (
+                        sortOrder === 'ASC' ? <ArrowUp style={{ width: 14, height: 14, color: '#2563EB' }} /> : <ArrowDown style={{ width: 14, height: 14, color: '#2563EB' }} />
+                      ) : (
+                        <ArrowUpDown style={{ width: 14, height: 14, color: '#94A3B8' }} />
+                      )}
+                    </Box>
+                  </TableCell>
                   <TableCell sx={{ fontWeight: 700, color: isDark ? '#CBD5E1' : '#475569' }}>Industry</TableCell>
                   <TableCell sx={{ fontWeight: 700, color: isDark ? '#CBD5E1' : '#475569' }}>Applied For</TableCell>
                   <TableCell sx={{ fontWeight: 700, color: isDark ? '#CBD5E1' : '#475569' }}>Status</TableCell>
@@ -294,7 +371,7 @@ export const GeneralEnquiriesPage: React.FC = () => {
               <TableBody>
                 {data.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} align="center" sx={{ py: 6, color: isDark ? '#64748B' : '#94A3B8' }}>
+                    <TableCell colSpan={9} align="center" sx={{ py: 6, color: isDark ? '#64748B' : '#94A3B8' }}>
                       No general enquiry records found.
                     </TableCell>
                   </TableRow>
@@ -314,6 +391,9 @@ export const GeneralEnquiriesPage: React.FC = () => {
                         <TableCell sx={{ fontWeight: 600, color: isDark ? '#F8FAFC' : '#0F172A' }}>{row.name}</TableCell>
                         <TableCell sx={{ color: isDark ? '#CBD5E1' : '#334155' }}>{row.mobile}</TableCell>
                         <TableCell sx={{ color: isDark ? '#CBD5E1' : '#334155' }}>{row.email}</TableCell>
+                        <TableCell sx={{ color: isDark ? '#CBD5E1' : '#334155' }}>
+                          {row.city || row.state ? `${row.city || '-'}${row.state ? `, ${row.state}` : ''}` : '-'}
+                        </TableCell>
                         <TableCell sx={{ color: isDark ? '#94A3B8' : '#475569' }}>{row.industry}</TableCell>
                         <TableCell sx={{ color: isDark ? '#94A3B8' : '#475569' }}>{row.applied_for}</TableCell>
                         <TableCell>

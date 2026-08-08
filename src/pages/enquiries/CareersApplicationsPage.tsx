@@ -25,10 +25,11 @@ import {
   Tooltip,
   useTheme,
 } from '@mui/material';
-import { Search, Eye, ExternalLink, FileText, Download, Trash2, AlertTriangle } from 'lucide-react';
+import { Search, Eye, ExternalLink, FileText, Download, Trash2, AlertTriangle, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { RichKPICard } from 'components/ui/RichKPICard';
 import {
   fetchCareersApplications,
+  fetchCareersApplicationLocations,
   updateCareersApplicationStatusApi,
   exportCareersApplicationsCSVApi,
   deleteCareersApplicationApi,
@@ -60,6 +61,13 @@ export const CareersApplicationsPage: React.FC = () => {
   const [search, setSearch] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [roleFilter, setRoleFilter] = useState<string>('All');
+  const [cityFilter, setCityFilter] = useState<string>('');
+  const [stateFilter, setStateFilter] = useState<string>('');
+  const [sortBy, setSortBy] = useState<string>('createdAt');
+  const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>('DESC');
+  const [cities, setCities] = useState<string[]>([]);
+  const [states, setStates] = useState<string[]>([]);
+
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedCareer, setSelectedCareer] = useState<CareersApplication | null>(null);
 
@@ -75,6 +83,22 @@ export const CareersApplicationsPage: React.FC = () => {
     hiredCount: 0,
   });
 
+  const loadLocations = useCallback(async () => {
+    try {
+      const res = await fetchCareersApplicationLocations();
+      if (res.success && res.data) {
+        setCities(res.data.cities || []);
+        setStates(res.data.states || []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch careers locations', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadLocations();
+  }, [loadLocations]);
+
   const loadData = useCallback(async (showLoading = true) => {
     if (showLoading) setLoading(true);
     try {
@@ -84,9 +108,36 @@ export const CareersApplicationsPage: React.FC = () => {
         search,
         status: statusFilter,
         role: roleFilter === 'All' ? '' : roleFilter,
+        city: cityFilter,
+        state: stateFilter,
+        sortBy,
+        sortOrder,
       });
-      setData(res.data || []);
+      const rows = res.data || [];
+      setData(rows);
       setTotal(res.total || 0);
+
+      // Dynamic auto-push new cities/states to filter set
+      const extractedCities: string[] = [];
+      const extractedStates: string[] = [];
+      rows.forEach((r) => {
+        if (typeof r.current_city === 'string' && r.current_city.trim() !== '') {
+          const parts = r.current_city.split(',').map((s) => s.trim()).filter(Boolean);
+          if (parts.length > 0) extractedCities.push(parts[0]);
+          if (parts.length > 1 && (!r.state || r.state.trim() === '')) {
+            extractedStates.push(parts[1]);
+          }
+        }
+        if (typeof r.state === 'string' && r.state.trim() !== '') {
+          extractedStates.push(r.state.trim());
+        }
+      });
+      if (extractedCities.length > 0) {
+        setCities((prev) => Array.from(new Set([...prev, ...extractedCities])).sort((a, b) => a.localeCompare(b)));
+      }
+      if (extractedStates.length > 0) {
+        setStates((prev) => Array.from(new Set([...prev, ...extractedStates])).sort((a, b) => a.localeCompare(b)));
+      }
 
       // Compute overview metrics from total dataset
       const allRes = await fetchCareersApplications({ page: 1, limit: 100 });
@@ -102,11 +153,21 @@ export const CareersApplicationsPage: React.FC = () => {
     } finally {
       if (showLoading) setLoading(false);
     }
-  }, [page, search, statusFilter, roleFilter]);
+  }, [page, search, statusFilter, roleFilter, cityFilter, stateFilter, sortBy, sortOrder]);
 
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  const handleSortToggle = (column: string) => {
+    if (sortBy === column) {
+      setSortOrder((prev) => (prev === 'ASC' ? 'DESC' : 'ASC'));
+    } else {
+      setSortBy(column);
+      setSortOrder('ASC');
+    }
+    setPage(1);
+  };
 
   const handleStatusChange = async (id: string, newStatus: CareersStatus) => {
     try {
@@ -373,6 +434,64 @@ export const CareersApplicationsPage: React.FC = () => {
 
               <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                 <Typography variant="body2" sx={{ fontWeight: 600, color: isDark ? '#CBD5E1' : '#475569' }}>
+                  City:
+                </Typography>
+                <Select
+                  size="small"
+                  value={cityFilter}
+                  onChange={(e) => {
+                    setCityFilter(e.target.value);
+                    setPage(1);
+                  }}
+                  displayEmpty
+                  sx={{
+                    bgcolor: isDark ? 'rgba(255, 255, 255, 0.06)' : '#FFFFFF',
+                    color: isDark ? '#F8FAFC' : '#0F172A',
+                    minWidth: 140,
+                    borderRadius: 1.5,
+                    '.MuiSvgIcon-root': { color: isDark ? '#94A3B8' : '#475569' },
+                  }}
+                >
+                  <MenuItem value="">All Cities</MenuItem>
+                  {cities.map((c) => (
+                    <MenuItem key={c} value={c}>
+                      {c}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </Box>
+
+              <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                <Typography variant="body2" sx={{ fontWeight: 600, color: isDark ? '#CBD5E1' : '#475569' }}>
+                  State:
+                </Typography>
+                <Select
+                  size="small"
+                  value={stateFilter}
+                  onChange={(e) => {
+                    setStateFilter(e.target.value);
+                    setPage(1);
+                  }}
+                  displayEmpty
+                  sx={{
+                    bgcolor: isDark ? 'rgba(255, 255, 255, 0.06)' : '#FFFFFF',
+                    color: isDark ? '#F8FAFC' : '#0F172A',
+                    minWidth: 140,
+                    borderRadius: 1.5,
+                    '.MuiSvgIcon-root': { color: isDark ? '#94A3B8' : '#475569' },
+                  }}
+                >
+                  <MenuItem value="">All States</MenuItem>
+                  {states.map((s) => (
+                    <MenuItem key={s} value={s}>
+                      {s}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </Box>
+
+              <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                <Typography variant="body2" sx={{ fontWeight: 600, color: isDark ? '#CBD5E1' : '#475569' }}>
                   Status:
                 </Typography>
                 <Select
@@ -391,37 +510,37 @@ export const CareersApplicationsPage: React.FC = () => {
                     '.MuiSvgIcon-root': { color: isDark ? '#94A3B8' : '#475569' },
                   }}
                 >
-                <MenuItem value="">All Statuses</MenuItem>
-                <MenuItem value="New">New</MenuItem>
-                <MenuItem value="Shortlisted">Shortlisted</MenuItem>
-                <MenuItem value="Under Review">Under Review</MenuItem>
-                <MenuItem value="Rejected">Rejected</MenuItem>
-                <MenuItem value="Hired">Hired</MenuItem>
-              </Select>
-            </Box>
+                  <MenuItem value="">All Statuses</MenuItem>
+                  <MenuItem value="New">New</MenuItem>
+                  <MenuItem value="Shortlisted">Shortlisted</MenuItem>
+                  <MenuItem value="Under Review">Under Review</MenuItem>
+                  <MenuItem value="Rejected">Rejected</MenuItem>
+                  <MenuItem value="Hired">Hired</MenuItem>
+                </Select>
+              </Box>
 
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<Download style={{ width: 16, height: 16 }} />}
-              onClick={handleExportCSV}
-              sx={{
-                textTransform: 'none',
-                fontWeight: 600,
-                bgcolor: isDark ? 'rgba(255, 255, 255, 0.06)' : '#FFFFFF',
-                borderColor: isDark ? 'rgba(255, 255, 255, 0.15)' : '#CBD5E1',
-                color: isDark ? '#F8FAFC' : '#334155',
-                '&:hover': {
-                  bgcolor: isDark ? 'rgba(255, 255, 255, 0.12)' : '#F1F5F9',
-                  borderColor: isDark ? 'rgba(255, 255, 255, 0.3)' : '#94A3B8',
-                },
-              }}
-            >
-              Export CSV
-            </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<Download style={{ width: 16, height: 16 }} />}
+                onClick={handleExportCSV}
+                sx={{
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  bgcolor: isDark ? 'rgba(255, 255, 255, 0.06)' : '#FFFFFF',
+                  borderColor: isDark ? 'rgba(255, 255, 255, 0.15)' : '#CBD5E1',
+                  color: isDark ? '#F8FAFC' : '#334155',
+                  '&:hover': {
+                    bgcolor: isDark ? 'rgba(255, 255, 255, 0.12)' : '#F1F5F9',
+                    borderColor: isDark ? 'rgba(255, 255, 255, 0.3)' : '#94A3B8',
+                  },
+                }}
+              >
+                Export CSV
+              </Button>
+            </Box>
           </Box>
         </Box>
-      </Box>
 
         {/* Data Table */}
         <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 0, bgcolor: 'transparent' }}>
@@ -435,7 +554,32 @@ export const CareersApplicationsPage: React.FC = () => {
                 <TableRow>
                   <TableCell sx={{ fontWeight: 700, color: isDark ? '#CBD5E1' : '#475569' }}>Ref ID</TableCell>
                   <TableCell sx={{ fontWeight: 700, color: isDark ? '#CBD5E1' : '#475569' }}>Role</TableCell>
-                  <TableCell sx={{ fontWeight: 700, color: isDark ? '#CBD5E1' : '#475569' }}>Applicant</TableCell>
+                  <TableCell
+                    sx={{ fontWeight: 700, color: isDark ? '#CBD5E1' : '#475569', cursor: 'pointer', userSelect: 'none' }}
+                    onClick={() => handleSortToggle('full_name')}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      Applicant Name
+                      {sortBy === 'full_name' ? (
+                        sortOrder === 'ASC' ? <ArrowUp style={{ width: 14, height: 14, color: '#2563EB' }} /> : <ArrowDown style={{ width: 14, height: 14, color: '#2563EB' }} />
+                      ) : (
+                        <ArrowUpDown style={{ width: 14, height: 14, color: '#94A3B8' }} />
+                      )}
+                    </Box>
+                  </TableCell>
+                  <TableCell
+                    sx={{ fontWeight: 700, color: isDark ? '#CBD5E1' : '#475569', cursor: 'pointer', userSelect: 'none' }}
+                    onClick={() => handleSortToggle('current_city')}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      City / State
+                      {sortBy === 'current_city' ? (
+                        sortOrder === 'ASC' ? <ArrowUp style={{ width: 14, height: 14, color: '#2563EB' }} /> : <ArrowDown style={{ width: 14, height: 14, color: '#2563EB' }} />
+                      ) : (
+                        <ArrowUpDown style={{ width: 14, height: 14, color: '#94A3B8' }} />
+                      )}
+                    </Box>
+                  </TableCell>
                   <TableCell sx={{ fontWeight: 700, color: isDark ? '#CBD5E1' : '#475569' }}>Experience</TableCell>
                   <TableCell sx={{ fontWeight: 700, color: isDark ? '#CBD5E1' : '#475569' }}>Portfolio / Links</TableCell>
                   <TableCell sx={{ fontWeight: 700, color: isDark ? '#CBD5E1' : '#475569' }}>Screening Flags</TableCell>
@@ -448,7 +592,7 @@ export const CareersApplicationsPage: React.FC = () => {
               <TableBody>
                 {data.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} align="center" sx={{ py: 6, color: isDark ? '#64748B' : '#94A3B8' }}>
+                    <TableCell colSpan={9} align="center" sx={{ py: 6, color: isDark ? '#64748B' : '#94A3B8' }}>
                       No career application records found.
                     </TableCell>
                   </TableRow>
@@ -474,8 +618,11 @@ export const CareersApplicationsPage: React.FC = () => {
                             {row.full_name}
                           </Typography>
                           <Typography variant="caption" sx={{ color: isDark ? '#94A3B8' : '#64748B', display: 'block' }}>
-                            {row.email} • {row.phone} ({row.current_city})
+                            {row.email} • {row.phone}
                           </Typography>
+                        </TableCell>
+                        <TableCell sx={{ color: isDark ? '#CBD5E1' : '#334155' }}>
+                          {row.current_city}{row.state ? `, ${row.state}` : ''}
                         </TableCell>
                         <TableCell sx={{ color: isDark ? '#CBD5E1' : '#334155' }}>
                           {row.experience.replace(/_/g, ' ')}

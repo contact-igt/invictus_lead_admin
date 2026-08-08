@@ -27,6 +27,8 @@ export interface GeneralEnquiry {
   applied_for: string;
   submitted_at: string;
   ip_address?: string | null;
+  city?: string | null;
+  state?: string | null;
   status: GeneralEnquiryStatus;
   createdAt?: string;
   updatedAt?: string;
@@ -41,6 +43,7 @@ export interface CareersApplication {
   phone: string;
   email: string;
   current_city: string;
+  state?: string | null;
   notice_period: string;
   experience: ExperienceLevel;
   portfolio_or_showreel: string;
@@ -62,6 +65,10 @@ export interface GeneralEnquiryListParams {
   limit?: number;
   search?: string;
   status?: string;
+  city?: string;
+  state?: string;
+  sortBy?: string;
+  sortOrder?: 'ASC' | 'DESC';
 }
 
 export interface CareersListParams {
@@ -70,6 +77,18 @@ export interface CareersListParams {
   search?: string;
   status?: string;
   role?: string;
+  city?: string;
+  state?: string;
+  sortBy?: string;
+  sortOrder?: 'ASC' | 'DESC';
+}
+
+export interface LocationOptionsResponse {
+  success: boolean;
+  data: {
+    cities: string[];
+    states: string[];
+  };
 }
 
 export interface GeneralEnquiryListResponse {
