@@ -28,7 +28,6 @@ import { Search, Eye, Trash2, AlertTriangle, ArrowUpDown, ArrowUp, ArrowDown } f
 import { RichKPICard } from 'components/ui/RichKPICard';
 import {
   fetchGeneralEnquiries,
-  fetchGeneralEnquiryLocations,
   updateGeneralEnquiryStatusApi,
   deleteGeneralEnquiryApi,
 } from 'services/enquiry.service';
@@ -43,12 +42,8 @@ export const GeneralEnquiriesPage: React.FC = () => {
   const [page, setPage] = useState<number>(1);
   const [search, setSearch] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('');
-  const [cityFilter, setCityFilter] = useState<string>('');
-  const [stateFilter, setStateFilter] = useState<string>('');
   const [sortBy, setSortBy] = useState<string>('submitted_at');
   const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>('DESC');
-  const [cities, setCities] = useState<string[]>([]);
-  const [states, setStates] = useState<string[]>([]);
 
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedEnquiry, setSelectedEnquiry] = useState<GeneralEnquiry | null>(null);
@@ -65,22 +60,6 @@ export const GeneralEnquiriesPage: React.FC = () => {
     closedCount: 0,
   });
 
-  const loadLocations = useCallback(async () => {
-    try {
-      const res = await fetchGeneralEnquiryLocations();
-      if (res.success && res.data) {
-        setCities(res.data.cities || []);
-        setStates(res.data.states || []);
-      }
-    } catch (err) {
-      console.error('Failed to fetch general locations', err);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadLocations();
-  }, [loadLocations]);
-
   const loadData = useCallback(async (showLoading = true) => {
     if (showLoading) setLoading(true);
     try {
@@ -89,24 +68,12 @@ export const GeneralEnquiriesPage: React.FC = () => {
         limit: 10,
         search,
         status: statusFilter,
-        city: cityFilter,
-        state: stateFilter,
         sortBy,
         sortOrder,
       });
       const rows = res.data || [];
       setData(rows);
       setTotal(res.total || 0);
-
-      // Dynamic auto-push new cities/states to filter set
-      const newCities = rows.map((r) => r.city).filter((c): c is string => typeof c === 'string' && c.trim() !== '');
-      const newStates = rows.map((r) => r.state).filter((s): s is string => typeof s === 'string' && s.trim() !== '');
-      if (newCities.length > 0) {
-        setCities((prev) => Array.from(new Set([...prev, ...newCities])).sort((a, b) => a.localeCompare(b)));
-      }
-      if (newStates.length > 0) {
-        setStates((prev) => Array.from(new Set([...prev, ...newStates])).sort((a, b) => a.localeCompare(b)));
-      }
 
       // Compute overview metrics from total dataset
       const allRes = await fetchGeneralEnquiries({ page: 1, limit: 100 });
@@ -122,7 +89,7 @@ export const GeneralEnquiriesPage: React.FC = () => {
     } finally {
       if (showLoading) setLoading(false);
     }
-  }, [page, search, statusFilter, cityFilter, stateFilter, sortBy, sortOrder]);
+  }, [page, search, statusFilter, sortBy, sortOrder]);
 
   useEffect(() => {
     loadData();

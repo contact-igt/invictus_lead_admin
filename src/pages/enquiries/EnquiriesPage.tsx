@@ -41,7 +41,6 @@ import {
 } from 'lucide-react';
 import {
   fetchGeneralEnquiries,
-  fetchGeneralEnquiryLocations,
   updateGeneralEnquiryStatusApi,
   deleteGeneralEnquiryApi,
   fetchCareersApplications,
@@ -82,12 +81,8 @@ export const EnquiriesPage: React.FC = () => {
   const [generalTotal, setGeneralTotal] = useState<number>(0);
   const [generalPage, setGeneralPage] = useState<number>(1);
   const [generalStatusFilter, setGeneralStatusFilter] = useState<string>('');
-  const [generalCityFilter, setGeneralCityFilter] = useState<string>('');
-  const [generalStateFilter, setGeneralStateFilter] = useState<string>('');
   const [generalSortBy, setGeneralSortBy] = useState<string>('submitted_at');
   const [generalSortOrder, setGeneralSortOrder] = useState<'ASC' | 'DESC'>('DESC');
-  const [generalCities, setGeneralCities] = useState<string[]>([]);
-  const [generalStates, setGeneralStates] = useState<string[]>([]);
 
   // Careers Applications State
   const [careersData, setCareersData] = useState<CareersApplication[]>([]);
@@ -114,18 +109,6 @@ export const EnquiriesPage: React.FC = () => {
   const [deleting, setDeleting] = useState<boolean>(false);
 
   // Load Location Options
-  const loadGeneralLocations = useCallback(async () => {
-    try {
-      const res = await fetchGeneralEnquiryLocations();
-      if (res.success && res.data) {
-        setGeneralCities(res.data.cities || []);
-        setGeneralStates(res.data.states || []);
-      }
-    } catch (err) {
-      console.error('Failed to fetch general locations', err);
-    }
-  }, []);
-
   const loadCareersLocations = useCallback(async () => {
     try {
       const res = await fetchCareersApplicationLocations();
@@ -139,9 +122,8 @@ export const EnquiriesPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    loadGeneralLocations();
     loadCareersLocations();
-  }, [loadGeneralLocations, loadCareersLocations]);
+  }, [loadCareersLocations]);
 
   // Load General Enquiries
   const loadGeneralEnquiries = useCallback(async () => {
@@ -152,30 +134,18 @@ export const EnquiriesPage: React.FC = () => {
         limit: 10,
         search,
         status: generalStatusFilter,
-        city: generalCityFilter,
-        state: generalStateFilter,
         sortBy: generalSortBy,
         sortOrder: generalSortOrder,
       });
       const rows = res.data || [];
       setGeneralData(rows);
       setGeneralTotal(res.total || 0);
-
-      // Dynamic auto-push new cities/states to filter set
-      const newCities = rows.map((r) => r.city).filter((c): c is string => typeof c === 'string' && c.trim() !== '');
-      const newStates = rows.map((r) => r.state).filter((s): s is string => typeof s === 'string' && s.trim() !== '');
-      if (newCities.length > 0) {
-        setGeneralCities((prev) => Array.from(new Set([...prev, ...newCities])).sort((a, b) => a.localeCompare(b)));
-      }
-      if (newStates.length > 0) {
-        setGeneralStates((prev) => Array.from(new Set([...prev, ...newStates])).sort((a, b) => a.localeCompare(b)));
-      }
     } catch (err) {
       console.error('Failed to load general enquiries', err);
     } finally {
       setLoading(false);
     }
-  }, [generalPage, search, generalStatusFilter, generalCityFilter, generalStateFilter, generalSortBy, generalSortOrder]);
+  }, [generalPage, search, generalStatusFilter, generalSortBy, generalSortOrder]);
 
   // Load Careers Applications
   const loadCareersApplications = useCallback(async () => {
