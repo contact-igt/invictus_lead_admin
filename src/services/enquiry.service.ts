@@ -6,12 +6,17 @@ import type {
   CareersListResponse,
   GeneralEnquiryStatus,
   CareersStatus,
+  LocationOptionsResponse,
 } from 'types/enquiry';
 
 export const fetchGeneralEnquiries = async (
   params: GeneralEnquiryListParams = {}
 ): Promise<GeneralEnquiryListResponse> => {
   return await _axios('get', '/invictus-enquiries/general', undefined, 'application/json', params);
+};
+
+export const fetchGeneralEnquiryLocations = async (): Promise<LocationOptionsResponse> => {
+  return await _axios('get', '/invictus-enquiries/general/locations');
 };
 
 export const updateGeneralEnquiryStatusApi = async (
@@ -31,6 +36,10 @@ export const fetchCareersApplications = async (
   params: CareersListParams = {}
 ): Promise<CareersListResponse> => {
   return await _axios('get', '/invictus-enquiries/careers', undefined, 'application/json', params);
+};
+
+export const fetchCareersApplicationLocations = async (): Promise<LocationOptionsResponse> => {
+  return await _axios('get', '/invictus-enquiries/careers/locations');
 };
 
 export const updateCareersApplicationStatusApi = async (

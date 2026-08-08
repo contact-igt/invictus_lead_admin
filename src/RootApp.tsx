@@ -8,7 +8,7 @@ import { QueryClientProvider, QueryClient } from 'react-query';
 import { ReactQueryDevtools } from 'react-query/devtools';
 import { SnackbarProvider } from 'notistack';
 import { PersistGate } from 'redux-persist/integration/react';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import ScreenGuard from 'screenGuard';
 import ErrorBoundary from 'components/common/ErrorBoundary';

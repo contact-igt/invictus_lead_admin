@@ -26,14 +26,14 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     setAuthData: (
-      state,
+      state: AuthState,
       action: PayloadAction<{ token: string; refreshToken: string; user: User }>
     ) => {
       state.token = action.payload.token;
       state.refreshToken = action.payload.refreshToken;
       state.user = action.payload.user;
     },
-    clearAuthData: (state) => {
+    clearAuthData: (state: AuthState) => {
       state.token = null;
       state.refreshToken = null;
       state.user = null;

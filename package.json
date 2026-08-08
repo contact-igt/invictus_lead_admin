@@ -4,8 +4,8 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
+    "dev": "vite --force",
+    "build": "tsc --skipLibCheck && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "predeploy": "vite build && cp ./dist/index.html ./dist/404.html",
@@ -16,8 +16,8 @@
     "@emotion/styled": "^11.11.5",
     "@iconify/react": "^5.0.1",
     "@mui/material": "^5.15.20",
-    "@mui/x-data-grid": "^7.8.0",
-    "@mui/x-date-pickers": "^7.8.0",
+    "@mui/x-data-grid": "^7.29.13",
+    "@mui/x-date-pickers": "^7.29.4",
     "@reduxjs/toolkit": "^2.7.0",
     "@tailwindcss/forms": "^0.5.11",
     "autoprefixer": "^10.5.0",
@@ -31,7 +31,7 @@
     "file-saver": "^2.0.5",
     "formik": "^2.4.6",
     "jwt-decode": "^4.0.0",
-    "lucide-react": "^1.14.0",
+    "lucide-react": "^0.460.0",
     "notistack": "^3.0.2",
     "postcss": "^8.5.14",
     "react": "^18.2.0",
@@ -53,10 +53,6 @@
     "xlsx": "^0.18.5",
     "yup": "^1.6.1"
   },
-  "optionalDependencies": {
-    "@esbuild/linux-x64": "0.21.5",
-    "@rollup/rollup-linux-x64-gnu": "4.18.0"
-  },
   "devDependencies": {
     "@types/echarts": "^4.9.22",
     "@types/file-saver": "^2.0.7",
@@ -68,7 +64,7 @@
     "@types/react-world-flags": "^1.6.0",
     "@typescript-eslint/eslint-plugin": "^7.2.0",
     "@typescript-eslint/parser": "^7.2.0",
-    "@vitejs/plugin-react-swc": "^3.5.0",
+    "@vitejs/plugin-react": "^4.3.4",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.1.3",
