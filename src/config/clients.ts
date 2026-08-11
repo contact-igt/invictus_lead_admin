@@ -392,6 +392,50 @@ export const ClientRegistry: Record<string, ClientConfig> = {
           { key: "dop_ai_waitlist", label: "Waitlist", type: "filter_count", filterField: "payment_status", filterValue: "waitlist", color: "warning", icon: "mingcute:user-wait-line" },
         ],
       },
+
+      // -- TABLE 7: VLS AI FOR ADVOCATES --------------------------------------
+      {
+        id: "vls-ai-for-advocates",
+        title: "VLS AI for Advocates",
+        endpoint: "/vls-ai-for-advocates",
+        columns: [
+          { field: "name", header: "Name", type: "text", flex: 1.3, minWidth: 150, required: true },
+          { field: "mobile", header: "Mobile", type: "phone", flex: 1.1, minWidth: 130, required: true },
+          { field: "email", header: "Email", type: "email", flex: 1.3, minWidth: 160 },
+          { field: "years_of_practice", header: "Years of Practice", type: "text", flex: 1, minWidth: 130 },
+          { field: "amount", header: "Amount (\u20B9)", type: "text", flex: 0.9, minWidth: 110 },
+          { field: "registered_date", header: "Registered On", type: "date", flex: 1.5, minWidth: 195 },
+          { field: "programm_date", header: "Program Date", type: "date", flex: 1.3, minWidth: 150 },
+          {
+            field: "payment_status",
+            header: "Payment",
+            type: "status_chip",
+            flex: 1.1,
+            minWidth: 130,
+            required: true,
+            options: ["paid", "attempted", "failed", "cancelled", "waitlist"],
+          },
+          { field: "page_name", header: "Page Name", type: "text", flex: 1.3, minWidth: 180 },
+          { field: "razorpay_order_id", header: "Order ID", type: "text", flex: 1.2, minWidth: 160 },
+          { field: "razorpay_payment_id", header: "Payment ID", type: "text", flex: 1.2, minWidth: 160 },
+          { field: "captured", header: "Captured", type: "text", flex: 0.9, minWidth: 110 },
+          { field: "ip_address", header: "IP Address", type: "text", flex: 1, minWidth: 120 },
+          { field: "utm_source", header: "UTM Source", type: "text", flex: 1, minWidth: 120 },
+          { field: "utm_medium", header: "UTM Medium", type: "text", flex: 1, minWidth: 120 },
+          { field: "utm_campaign", header: "UTM Campaign", type: "text", flex: 1, minWidth: 130 },
+          { field: "utm_term", header: "UTM Term", type: "text", flex: 1, minWidth: 120 },
+          { field: "utm_content", header: "UTM Content", type: "text", flex: 1, minWidth: 120 },
+        ],
+        metrics: [
+          { key: "vls_ai_advocate_total", label: "Total Registrations", type: "count", color: "primary", icon: "mingcute:user-star-line" },
+          { key: "vls_ai_advocate_today", label: "Today's Registrations", type: "today_count", filterField: "registered_date", color: "info", icon: "mingcute:calendar-2-line" },
+          { key: "vls_ai_advocate_month", label: "This Month", type: "this_month_count", filterField: "registered_date", color: "secondary", icon: "mingcute:calendar-month-line" },
+          { key: "vls_ai_advocate_paid", label: "Paid", type: "filter_count", filterField: "payment_status", filterValue: "paid", color: "success", icon: "mingcute:currency-rupee-line" },
+          { key: "vls_ai_advocate_attempted", label: "Attempted", type: "filter_count", filterField: "payment_status", filterValue: "attempted", color: "warning", icon: "mingcute:time-line" },
+          { key: "vls_ai_advocate_failed", label: "Failed", type: "filter_count", filterField: "payment_status", filterValue: "failed", color: "error", icon: "mingcute:close-circle-line" },
+          { key: "vls_ai_advocate_waitlist", label: "Waitlist", type: "filter_count", filterField: "payment_status", filterValue: "waitlist", color: "warning", icon: "mingcute:user-wait-line" },
+        ],
+      },
     ]
   }
 };
