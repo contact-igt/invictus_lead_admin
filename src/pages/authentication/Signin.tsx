@@ -57,9 +57,25 @@ const darkInputSx = {
   color: TEXT_LIGHT,
   fontWeight: 500,
   '& input': {
+    backgroundColor: 'transparent !important',
+    border: '0 !important',
+    boxShadow: 'none !important',
     color: TEXT_LIGHT,
+    caretColor: TEXT_LIGHT,
+    outline: '0 !important',
     py: '13px',
     '&::placeholder': { color: 'rgba(240,246,252,0.35)', opacity: 1 },
+    '&:focus': {
+      backgroundColor: 'transparent !important',
+      boxShadow: 'none !important',
+      outline: '0 !important',
+    },
+    '&:-webkit-autofill, &:-webkit-autofill:hover, &:-webkit-autofill:focus': {
+      WebkitBoxShadow: `0 0 0 1000px ${INPUT_BG} inset`,
+      WebkitTextFillColor: TEXT_LIGHT,
+      caretColor: TEXT_LIGHT,
+      transition: 'background-color 9999s ease-in-out 0s',
+    },
   },
   '& .MuiOutlinedInput-notchedOutline': {
     borderColor: 'rgba(255,255,255,0.10)',
