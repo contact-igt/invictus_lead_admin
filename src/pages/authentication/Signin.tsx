@@ -51,7 +51,7 @@ const FieldLabel = ({ children }: { children: React.ReactNode }) => (
 
 // ── Dark Input SX Style ───────────────────────────────────────────────────────
 const darkInputSx = {
-  bgcolor: INPUT_BG,
+  backgroundColor: `${INPUT_BG} !important`,
   borderRadius: '14px',
   fontSize: '0.9rem',
   color: TEXT_LIGHT,
@@ -226,7 +226,13 @@ const Signin = () => {
                     onClick={() => setShowPassword(!showPassword)}
                     edge="end"
                     size="small"
-                    sx={{ color: 'rgba(240,246,252,0.40)', mr: 0.25 }}
+                    sx={{
+                      color: 'rgba(240,246,252,0.55)',
+                      backgroundColor: 'transparent !important',
+                      border: 0,
+                      mr: 0.25,
+                      '&:hover': { backgroundColor: 'rgba(240,246,252,0.06) !important' },
+                    }}
                   >
                     <Icon
                       icon={showPassword ? 'hugeicons:view' : 'hugeicons:view-off'}
