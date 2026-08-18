@@ -96,7 +96,7 @@ const ProfileMenu = ({ user, mode }: any) => {
         onClick={handleProfileMenuClose}
         sx={{
           mt: 1.5,
-          '& .MuiList-root': { p: 0, width: 230 },
+          '& .MuiList-root': { p: 0, width: 320, maxWidth: 'calc(100vw - 32px)' },
           '& .MuiPaper-root': {
             bgcolor: mode === 'dark' ? '#0D1410' : 'background.paper',
             border: mode === 'dark' ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.08)',
