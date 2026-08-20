@@ -107,6 +107,11 @@ const generateDynamicClientMenus = (): MenuItem[] => {
         pathName: `/pages/d/${clientKey}/vls/consumer-protection-law-master-class`,
         path: `/pages/d/${clientKey}/vls/consumer-protection-law-master-class`,
       });
+      items.push({
+        name: 'Taxation Law',
+        pathName: `/pages/d/${clientKey}/vls/taxation-law`,
+        path: `/pages/d/${clientKey}/vls/taxation-law`,
+      });
     }
 
     if (clientKey === 'pixeleye') {

@@ -33,6 +33,7 @@ export default {
   phoenixFitness: (clientKey: string) => `/${rootPaths.pageRoot}/d/${clientKey}/phoenix-fitness`,
   vlsMactMasterClass: `/${rootPaths.pageRoot}/d/:clientKey/vls/mact-master-class`,
   vlsConsumerProtectionLawMasterClass: `/${rootPaths.pageRoot}/d/:clientKey/vls/consumer-protection-law-master-class`,
+  vlsTaxationLaw: `/${rootPaths.pageRoot}/d/:clientKey/vls/taxation-law`,
 
   // Dynamic client module route
   dynamicTable: `/${rootPaths.pageRoot}/d/:clientKey?/:tableId`,
