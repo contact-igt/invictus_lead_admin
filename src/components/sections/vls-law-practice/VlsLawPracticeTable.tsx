@@ -2,30 +2,31 @@ import { useState } from 'react';
 import { Box, Chip, IconButton, Menu, MenuItem, Paper, Stack, Tooltip, Typography } from '@mui/material';
 import { DataGrid, GridColDef, GridPaginationModel } from '@mui/x-data-grid';
 import IconifyIcon from 'components/base/IconifyIcon';
-import type { VlsTaxationLawRegistration } from 'types/vlsTaxationLaw';
+import type { VlsLawPracticeRegistration } from 'types/vlsLawPractice';
 import {
   formatCaptured,
-  formatVlsTaxationLawAmount,
-  formatVlsTaxationLawDate,
-  formatVlsTaxationLawDateTime,
-  VLS_TAXATION_LAW_PAYMENT_STATUS_OPTIONS,
-} from './vlsTaxationLawUtils';
+  formatVlsLawPracticeAmount,
+  formatVlsLawPracticeDate,
+  formatVlsLawPracticeDateTime,
+  formatVlsLawPracticePageName,
+  VLS_LAW_PRACTICE_PAYMENT_STATUS_OPTIONS,
+} from './vlsLawPracticeUtils';
 
-interface VlsTaxationLawTableProps {
-  rows: VlsTaxationLawRegistration[];
+interface VlsLawPracticeTableProps {
+  rows: VlsLawPracticeRegistration[];
   page: number;
   limit: number;
   total: number;
   isLoading: boolean;
   hasFilters: boolean;
   onPaginationChange: (page: number, limit: number) => void;
-  onView: (registration: VlsTaxationLawRegistration) => void;
-  onEdit: (registration: VlsTaxationLawRegistration) => void;
-  onDelete: (registration: VlsTaxationLawRegistration) => void;
+  onView: (registration: VlsLawPracticeRegistration) => void;
+  onEdit: (registration: VlsLawPracticeRegistration) => void;
+  onDelete: (registration: VlsLawPracticeRegistration) => void;
   onStatusChange?: (id: number, paymentStatus: string) => void;
 }
 
-interface TableRow extends VlsTaxationLawRegistration {
+interface TableRow extends VlsLawPracticeRegistration {
   serial_number: number;
 }
 
@@ -98,7 +99,7 @@ const InlinePaymentStatusCell = ({
           },
         }}
       >
-        {VLS_TAXATION_LAW_PAYMENT_STATUS_OPTIONS.map((option) => (
+        {VLS_LAW_PRACTICE_PAYMENT_STATUS_OPTIONS.map((option) => (
           <MenuItem
             key={option}
             selected={option === status}
@@ -113,7 +114,7 @@ const InlinePaymentStatusCell = ({
   );
 };
 
-const VlsTaxationLawTable = ({
+const VlsLawPracticeTable = ({
   rows,
   page,
   limit,
@@ -125,7 +126,7 @@ const VlsTaxationLawTable = ({
   onEdit,
   onDelete,
   onStatusChange,
-}: VlsTaxationLawTableProps) => {
+}: VlsLawPracticeTableProps) => {
   const tableRows: TableRow[] = rows.map((row, index) => ({
     ...row,
     serial_number: (page - 1) * limit + index + 1,
@@ -161,21 +162,21 @@ const VlsTaxationLawTable = ({
       flex: 0.75,
       align: 'right',
       headerAlign: 'right',
-      renderCell: (params) => <Typography variant="body2" fontWeight={650}>{formatVlsTaxationLawAmount(params.row.amount)}</Typography>,
+      renderCell: (params) => <Typography variant="body2" fontWeight={650}>{formatVlsLawPracticeAmount(params.row.amount)}</Typography>,
     },
     {
       field: 'registered_date',
       headerName: 'Registered Date',
       minWidth: 195,
       flex: 1.5,
-      renderCell: (params) => <Typography variant="body2" color="text.secondary">{formatVlsTaxationLawDate(params.row.registered_date)}</Typography>,
+      renderCell: (params) => <Typography variant="body2" color="text.secondary">{formatVlsLawPracticeDate(params.row.registered_date)}</Typography>,
     },
     {
       field: 'programm_date',
       headerName: 'Programme Date',
       minWidth: 150,
       flex: 1.1,
-      renderCell: (params) => <Typography variant="body2" color="text.secondary">{formatVlsTaxationLawDate(params.row.programm_date)}</Typography>,
+      renderCell: (params) => <Typography variant="body2" color="text.secondary">{formatVlsLawPracticeDate(params.row.programm_date)}</Typography>,
     },
     {
       field: 'payment_status',
@@ -205,18 +206,15 @@ const VlsTaxationLawTable = ({
       ),
     },
     {
-      field: 'razorpay_order_id',
-      headerName: 'Razorpay Order ID',
-      minWidth: 175,
-      flex: 1,
-      renderCell: (params) => <Typography variant="body2" noWrap title={params.row.razorpay_order_id || ''} sx={{ fontFamily: 'monospace', fontSize: '0.78rem' }}>{params.row.razorpay_order_id || '-'}</Typography>,
-    },
-    {
       field: 'page_name',
-      headerName: 'Page Name',
-      minWidth: 160,
-      flex: 1,
-      renderCell: (params) => <Typography variant="body2" noWrap title={params.row.page_name || ''}>{params.row.page_name || '-'}</Typography>,
+      headerName: 'Program',
+      minWidth: 190,
+      flex: 1.2,
+      renderCell: (params) => (
+        <Typography variant="body2" noWrap title={formatVlsLawPracticePageName(params.row.page_name)}>
+          {formatVlsLawPracticePageName(params.row.page_name)}
+        </Typography>
+      ),
     },
     {
       field: 'utm_source',
@@ -226,25 +224,11 @@ const VlsTaxationLawTable = ({
       renderCell: (params) => params.row.utm_source ? <Chip label={params.row.utm_source} size="small" color="info" variant="outlined" /> : '-',
     },
     {
-      field: 'utm_medium',
-      headerName: 'UTM Medium',
-      minWidth: 130,
-      flex: 0.8,
-      renderCell: (params) => <Typography variant="body2" noWrap title={params.row.utm_medium || ''}>{params.row.utm_medium || '-'}</Typography>,
-    },
-    {
-      field: 'utm_campaign',
-      headerName: 'UTM Campaign',
-      minWidth: 150,
-      flex: 0.9,
-      renderCell: (params) => <Typography variant="body2" noWrap title={params.row.utm_campaign || ''}>{params.row.utm_campaign || '-'}</Typography>,
-    },
-    {
       field: 'created_at',
       headerName: 'Created At',
       minWidth: 185,
       flex: 1,
-      renderCell: (params) => <Typography variant="body2" color="text.secondary">{formatVlsTaxationLawDateTime(params.row.created_at)}</Typography>,
+      renderCell: (params) => <Typography variant="body2" color="text.secondary">{formatVlsLawPracticeDateTime(params.row.created_at)}</Typography>,
     },
     {
       field: 'actions',
@@ -273,9 +257,9 @@ const VlsTaxationLawTable = ({
       <Paper variant="outlined" sx={{ width: '100%', minWidth: 0, py: 8, px: 3, textAlign: 'center', borderRadius: 3 }}>
         <IconifyIcon icon="hugeicons:inbox" width={34} color="text.secondary" />
         <Typography variant="h6" mt={1.5}>
-          {hasFilters ? 'No registrations match the selected filters.' : 'No Taxation Law registrations yet'}
+          {hasFilters ? 'No registrations match the selected filters.' : 'No Law Practice enrollments yet'}
         </Typography>
-        {!hasFilters && <Typography variant="body2" color="text.secondary" mt={0.5}>Add the first registration to get started.</Typography>}
+        {!hasFilters && <Typography variant="body2" color="text.secondary" mt={0.5}>Add the first enrollment to get started.</Typography>}
       </Paper>
     );
   }
@@ -297,7 +281,7 @@ const VlsTaxationLawTable = ({
         rowHeight={62}
         sx={{
           width: '100%',
-          minWidth: 2400,
+          minWidth: 1950,
           border: 0,
           minHeight: 360,
           '& .MuiDataGrid-columnHeaders': { bgcolor: 'action.hover' },
@@ -316,4 +300,4 @@ const VlsTaxationLawTable = ({
   );
 };
 
-export default VlsTaxationLawTable;
+export default VlsLawPracticeTable;

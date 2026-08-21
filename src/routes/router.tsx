@@ -31,6 +31,7 @@ const RioPage = lazy(() => import('pages/rio'));
 const ShantiEyeTechPage = lazy(() => import('pages/shantiEyeTech'));
 const PhoenixFitnessPage = lazy(() => import('pages/phoenixFitness'));
 const VlsMactMasterClassPage = lazy(() => import('pages/vls/mact-master-class'));
+const VlsLawPracticePage = lazy(() => import('pages/vls/vls-law-practice'));
 const VlsConsumerProtectionLawMasterClassPage = lazy(
   () => import('pages/vls/consumer-protection-law-master-class'),
 );
@@ -127,6 +128,10 @@ const router = createBrowserRouter(
             {
               path: paths.vlsMactMasterClass,
               element: <VlsMactMasterClassPage />,
+            },
+            {
+              path: paths.vlsLawPractice,
+              element: <VlsLawPracticePage />,
             },
             {
               path: paths.vlsConsumerProtectionLawMasterClass,

@@ -1,12 +1,5 @@
-import Stack from '@mui/material/Stack';
-import VlsLawPracticeSection from 'components/sections/vls/vls-law-practice';
+import VlsLawPracticeSection from 'components/sections/vls-law-practice/VlsLawPracticeSection';
 
-const VlsLawPractice = () => {
-    return (
-        <Stack direction="column" width="100%" minHeight="100vh" p={3.5} spacing={3.5}>
-            <VlsLawPracticeSection />
-        </Stack>
-    );
-};
+const VlsLawPracticePage = () => <VlsLawPracticeSection />;
 
-export default VlsLawPractice;
+export default VlsLawPracticePage;

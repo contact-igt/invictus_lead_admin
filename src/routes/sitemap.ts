@@ -98,6 +98,11 @@ const generateDynamicClientMenus = (): MenuItem[] => {
 
     if (clientKey === 'vls_law') {
       items.push({
+        name: 'Law Practice Enrollments',
+        pathName: `/pages/d/${clientKey}/vls/law-practice`,
+        path: `/pages/d/${clientKey}/vls/law-practice`,
+      });
+      items.push({
         name: 'MACT Master Class',
         pathName: `/pages/d/${clientKey}/vls/mact-master-class`,
         path: `/pages/d/${clientKey}/vls/mact-master-class`,

@@ -32,6 +32,7 @@ export default {
     `/${rootPaths.pageRoot}/d/${clientKey}/shanti-eye-tech`,
   phoenixFitness: (clientKey: string) => `/${rootPaths.pageRoot}/d/${clientKey}/phoenix-fitness`,
   vlsMactMasterClass: `/${rootPaths.pageRoot}/d/:clientKey/vls/mact-master-class`,
+  vlsLawPractice: `/${rootPaths.pageRoot}/d/:clientKey/vls/law-practice`,
   vlsConsumerProtectionLawMasterClass: `/${rootPaths.pageRoot}/d/:clientKey/vls/consumer-protection-law-master-class`,
   vlsTaxationLaw: `/${rootPaths.pageRoot}/d/:clientKey/vls/taxation-law`,
 
