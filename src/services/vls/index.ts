@@ -2,10 +2,6 @@ import { _axios } from 'helper/axios';
 import { VlsPropertyLaw, VlsFamilyLaw, VlsAibe, VlsAiForAdvocates } from './script';
 
 export class VlsApiData {
-  getAllVlsLawPractice = async () => {
-    return await _axios('get', '/dynamic/vlslaw_practice');
-  };
-
   getAllVlsLawAcademy = async () => {
     return await _axios('get', '/dynamic/vlslaw_academy');
   };
@@ -29,10 +25,6 @@ export class VlsApiData {
 
   deleteVlsAibeById = async (id: number | string) => {
     return await _axios('delete', `/vls-aibe/${id}`);
-  };
-
-  deleteVlsLawPracticeById = async (id: number | string) => {
-    return await _axios('delete', `/dynamic/vlslaw_practice/${id}`);
   };
 
   deleteVlsLawAcademyById = async (id: number | string) => {

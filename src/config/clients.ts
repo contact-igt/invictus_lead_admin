@@ -167,51 +167,6 @@ export const ClientRegistry: Record<string, ClientConfig> = {
     theme: { primaryColor: "#800020" },
     tables: [
 
-      // -- TABLE 1: LAW PRACTICE ----------------------------------------------
-      {
-        id: "practice",
-        title: "Law Practice Enrollments",
-        endpoint: "/dynamic/vlslaw_practice",
-        columns: [
-          { field: "name", header: "Name", type: "text", flex: 1.3, minWidth: 150, required: true },
-          { field: "mobile", header: "Mobile", type: "phone", flex: 1.1, minWidth: 130 },
-          { field: "email", header: "Email", type: "email", flex: 1.3, minWidth: 160 },
-          { field: "amount", header: "Amount (\u20B9)", type: "text", flex: 0.9, minWidth: 110 },
-          { field: "registered_date", header: "Registered On", type: "date", flex: 1.5, minWidth: 195, required: true },
-          { field: "programm_date", header: "Program Date", type: "date", flex: 1.3, minWidth: 150, required: true },
-          {
-            field: "payment_status",
-            header: "Payment",
-            type: "status_chip",
-            flex: 1.1,
-            minWidth: 130,
-            required: true,
-            options: ["paid", "attempted", "failed", "cancelled", "waitlist"],
-          },
-          {
-            field: "page_name",
-            header: "Program",
-            type: "select",
-            flex: 1.4,
-            minWidth: 200,
-            required: true,
-            options: ["decoding-of-practice", "decoding-of-law-practice"],
-          },
-          { field: "razorpay_order_id", header: "Order ID", type: "text", flex: 1.2, minWidth: 160 },
-          { field: "razorpay_payment_id", header: "Payment ID", type: "text", flex: 1.2, minWidth: 160 },
-          { field: "utm_source", header: "UTM Source", type: "text", flex: 1, minWidth: 120 },
-        ],
-        metrics: [
-          { key: "practice_total", label: "Total Enrollments", type: "count", color: "primary", icon: "mingcute:briefcase-line" },
-          { key: "practice_today", label: "Today's Enrollments", type: "today_count", filterField: "registered_date", color: "info", icon: "mingcute:calendar-2-line" },
-          { key: "practice_month", label: "This Month", type: "this_month_count", filterField: "registered_date", color: "secondary", icon: "mingcute:calendar-month-line" },
-          { key: "practice_paid", label: "Paid", type: "filter_count", filterField: "payment_status", filterValue: "paid", color: "success", icon: "mingcute:currency-rupee-line" },
-          { key: "practice_attempted", label: "Attempted", type: "filter_count", filterField: "payment_status", filterValue: "attempted", color: "warning", icon: "mingcute:time-line" },
-          { key: "practice_failed", label: "Failed", type: "filter_count", filterField: "payment_status", filterValue: "failed", color: "error", icon: "mingcute:close-circle-line" },
-          { key: "practice_waitlist", label: "Waitlist", type: "filter_count", filterField: "payment_status", filterValue: "waitlist", color: "info", icon: "mingcute:time-line" },
-        ],
-      },
-
       // -- TABLE 2: LAW ACADEMY -----------------------------------------------
       {
         id: "academy",
