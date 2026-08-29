@@ -7,6 +7,7 @@ import type {
   GeneralEnquiryStatus,
   CareersStatus,
   LocationOptionsResponse,
+  CareersFiltersResponse,
 } from 'types/enquiry';
 
 export const fetchGeneralEnquiries = async (
@@ -40,6 +41,16 @@ export const fetchCareersApplications = async (
 
 export const fetchCareersApplicationLocations = async (): Promise<LocationOptionsResponse> => {
   return await _axios('get', '/invictus-enquiries/careers/locations');
+};
+
+/**
+ * Dependent filter options for careers applications.
+ * Pass `state` to scope the returned city list to that state.
+ */
+export const fetchCareersApplicationFilters = async (
+  params: { state?: string } = {}
+): Promise<CareersFiltersResponse> => {
+  return await _axios('get', '/invictus-enquiries/careers/filters', undefined, 'application/json', params);
 };
 
 export const updateCareersApplicationStatusApi = async (

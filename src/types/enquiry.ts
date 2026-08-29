@@ -88,6 +88,24 @@ export interface LocationOptionsResponse {
   data: {
     cities: string[];
     states: string[];
+    roles?: string[];
+  };
+}
+
+export interface FilterOption {
+  name: string;
+  count: number;
+}
+
+export interface CareersFiltersResponse {
+  success: boolean;
+  data: {
+    /** The (normalized) state the city list is scoped to, or null for "All States". */
+    state: string | null;
+    states: FilterOption[];
+    cities: FilterOption[];
+    roles: FilterOption[];
+    statuses: FilterOption[];
   };
 }
 
