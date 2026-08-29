@@ -44,16 +44,30 @@ import {
   updateGeneralEnquiryStatusApi,
   deleteGeneralEnquiryApi,
   fetchCareersApplications,
-  fetchCareersApplicationLocations,
+  fetchCareersApplicationFilters,
   updateCareersApplicationStatusApi,
   deleteCareersApplicationApi,
 } from 'services/enquiry.service';
+import LocationFilter from 'components/common/LocationFilter';
 import type {
   GeneralEnquiry,
   CareersApplication,
   GeneralEnquiryStatus,
   CareersStatus,
 } from 'types/enquiry';
+
+// Known roles that should always be offered even before any application exists for them.
+const BASE_CAREERS_ROLES = [
+  'Graphic Designer',
+  'Video Editor',
+  'HR & Operations Executive',
+  'HR & Operations Intern',
+  'Telecalling Executive',
+];
+
+const mergeSorted = (prev: string[], incoming: string[]): string[] =>
+  Array.from(new Set([...prev, ...incoming.filter((v) => typeof v === 'string' && v.trim() !== '')]))
+    .sort((a, b) => a.localeCompare(b));
 
 const ensureArray = (val: any): string[] => {
   if (!val) return [];
@@ -94,8 +108,7 @@ export const EnquiriesPage: React.FC = () => {
   const [careersStateFilter, setCareersStateFilter] = useState<string>('');
   const [careersSortBy, setCareersSortBy] = useState<string>('createdAt');
   const [careersSortOrder, setCareersSortOrder] = useState<'ASC' | 'DESC'>('DESC');
-  const [careersCities, setCareersCities] = useState<string[]>([]);
-  const [careersStates, setCareersStates] = useState<string[]>([]);
+  const [careersRoles, setCareersRoles] = useState<string[]>([...BASE_CAREERS_ROLES]);
 
   // Common Search & Loading State
   const [search, setSearch] = useState<string>('');
@@ -108,22 +121,27 @@ export const EnquiriesPage: React.FC = () => {
   const [deleteCareersConfirm, setDeleteCareersConfirm] = useState<CareersApplication | null>(null);
   const [deleting, setDeleting] = useState<boolean>(false);
 
-  // Load Location Options
-  const loadCareersLocations = useCallback(async () => {
+  // Role options come from the dedicated filters endpoint (single source of truth).
+  const loadCareersFilterMeta = useCallback(async () => {
     try {
-      const res = await fetchCareersApplicationLocations();
+      const res = await fetchCareersApplicationFilters();
       if (res.success && res.data) {
-        setCareersCities(res.data.cities || []);
-        setCareersStates(res.data.states || []);
+        setCareersRoles((prev) => mergeSorted(prev, res.data.roles.map((r) => r.name)));
       }
     } catch (err) {
-      console.error('Failed to fetch careers locations', err);
+      console.error('Failed to fetch careers filter metadata', err);
     }
   }, []);
 
   useEffect(() => {
-    loadCareersLocations();
-  }, [loadCareersLocations]);
+    loadCareersFilterMeta();
+  }, [loadCareersFilterMeta]);
+
+  // Passed to <LocationFilter>; re-scopes the city list to the chosen state.
+  const fetchCareersLocationOptions = useCallback(async ({ state }: { state?: string }) => {
+    const res = await fetchCareersApplicationFilters(state ? { state } : {});
+    return { states: res.data.states, cities: res.data.cities };
+  }, []);
 
   // Load General Enquiries
   const loadGeneralEnquiries = useCallback(async () => {
@@ -166,15 +184,6 @@ export const EnquiriesPage: React.FC = () => {
       setCareersData(rows);
       setCareersTotal(res.total || 0);
 
-      // Dynamic auto-push new cities/states to filter set
-      const newCities = rows.map((r) => r.current_city).filter((c): c is string => typeof c === 'string' && c.trim() !== '');
-      const newStates = rows.map((r) => r.state).filter((s): s is string => typeof s === 'string' && s.trim() !== '');
-      if (newCities.length > 0) {
-        setCareersCities((prev) => Array.from(new Set([...prev, ...newCities])).sort((a, b) => a.localeCompare(b)));
-      }
-      if (newStates.length > 0) {
-        setCareersStates((prev) => Array.from(new Set([...prev, ...newStates])).sort((a, b) => a.localeCompare(b)));
-      }
     } catch (err) {
       console.error('Failed to load careers applications', err);
     } finally {
@@ -359,7 +368,7 @@ export const EnquiriesPage: React.FC = () => {
               <Typography variant="body2" sx={{ fontWeight: 600, mr: 1, color: '#64748B' }}>
                 Role:
               </Typography>
-              {['All', 'Graphic Designer', 'Video Editor', 'HR & Operations Executive', 'HR & Operations Intern', 'Telecalling Executive'].map((roleItem) => (
+              {['All', ...careersRoles].map((roleItem) => (
                 <Chip
                   key={roleItem}
                   label={roleItem}
@@ -424,65 +433,25 @@ export const EnquiriesPage: React.FC = () => {
                     sx={{ bgcolor: '#FFFFFF', minWidth: 200 }}
                   >
                     <MenuItem value="All">All Roles</MenuItem>
-                    <MenuItem value="Graphic Designer">Graphic Designer</MenuItem>
-                    <MenuItem value="Video Editor">Video Editor</MenuItem>
-                    <MenuItem value="HR & Operations Executive">HR & Operations Executive</MenuItem>
-                    <MenuItem value="HR & Operations Intern">HR & Operations Intern</MenuItem>
-                    <MenuItem value="Telecalling Executive">Telecalling Executive</MenuItem>
+                    {careersRoles.map((r) => (
+                      <MenuItem key={r} value={r}>
+                        {r}
+                      </MenuItem>
+                    ))}
                   </Select>
                 </Box>
               )}
 
             {activeTab === 'careers' && (
-              <>
-                {/* City Filter */}
-                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: '#475569' }}>
-                    City:
-                  </Typography>
-                  <Select
-                    size="small"
-                    value={careersCityFilter}
-                    onChange={(e) => {
-                      setCareersCityFilter(e.target.value);
-                      setCareersPage(1);
-                    }}
-                    displayEmpty
-                    sx={{ bgcolor: '#FFFFFF', minWidth: 150 }}
-                  >
-                    <MenuItem value="">All Cities</MenuItem>
-                    {careersCities.map((c) => (
-                      <MenuItem key={c} value={c}>
-                        {c}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </Box>
-
-                {/* State Filter */}
-                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: '#475569' }}>
-                    State:
-                  </Typography>
-                  <Select
-                    size="small"
-                    value={careersStateFilter}
-                    onChange={(e) => {
-                      setCareersStateFilter(e.target.value);
-                      setCareersPage(1);
-                    }}
-                    displayEmpty
-                    sx={{ bgcolor: '#FFFFFF', minWidth: 150 }}
-                  >
-                    <MenuItem value="">All States</MenuItem>
-                    {careersStates.map((s) => (
-                      <MenuItem key={s} value={s}>
-                        {s}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </Box>
-              </>
+              <LocationFilter
+                value={{ state: careersStateFilter, city: careersCityFilter }}
+                onChange={({ state, city }) => {
+                  setCareersStateFilter(state);
+                  setCareersCityFilter(city);
+                  setCareersPage(1);
+                }}
+                fetchOptions={fetchCareersLocationOptions}
+              />
             )}
 
             {/* Status Filter */}

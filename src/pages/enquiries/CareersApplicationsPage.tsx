@@ -29,12 +29,26 @@ import { Search, Eye, ExternalLink, FileText, Download, Trash2, AlertTriangle, A
 import { RichKPICard } from 'components/ui/RichKPICard';
 import {
   fetchCareersApplications,
-  fetchCareersApplicationLocations,
+  fetchCareersApplicationFilters,
   updateCareersApplicationStatusApi,
   exportCareersApplicationsCSVApi,
   deleteCareersApplicationApi,
 } from 'services/enquiry.service';
 import type { CareersApplication, CareersStatus } from 'types/enquiry';
+import LocationFilter from 'components/common/LocationFilter';
+
+// Known roles that should always be offered even before any application exists for them.
+const BASE_CAREERS_ROLES = [
+  'Graphic Designer',
+  'Video Editor',
+  'HR & Operations Executive',
+  'HR & Operations Intern',
+  'Telecalling Executive',
+];
+
+const mergeSorted = (prev: string[], incoming: string[]): string[] =>
+  Array.from(new Set([...prev, ...incoming.filter((v) => typeof v === 'string' && v.trim() !== '')]))
+    .sort((a, b) => a.localeCompare(b));
 
 const ensureArray = (val: any): string[] => {
   if (!val) return [];
@@ -65,8 +79,7 @@ export const CareersApplicationsPage: React.FC = () => {
   const [stateFilter, setStateFilter] = useState<string>('');
   const [sortBy, setSortBy] = useState<string>('createdAt');
   const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>('DESC');
-  const [cities, setCities] = useState<string[]>([]);
-  const [states, setStates] = useState<string[]>([]);
+  const [roles, setRoles] = useState<string[]>([...BASE_CAREERS_ROLES]);
 
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedCareer, setSelectedCareer] = useState<CareersApplication | null>(null);
@@ -83,21 +96,27 @@ export const CareersApplicationsPage: React.FC = () => {
     hiredCount: 0,
   });
 
-  const loadLocations = useCallback(async () => {
+  // Role options come from the dedicated filters endpoint (single source of truth).
+  const loadFilterMeta = useCallback(async () => {
     try {
-      const res = await fetchCareersApplicationLocations();
+      const res = await fetchCareersApplicationFilters();
       if (res.success && res.data) {
-        setCities(res.data.cities || []);
-        setStates(res.data.states || []);
+        setRoles((prev) => mergeSorted(prev, res.data.roles.map((r) => r.name)));
       }
     } catch (err) {
-      console.error('Failed to fetch careers locations', err);
+      console.error('Failed to fetch careers filter metadata', err);
     }
   }, []);
 
   useEffect(() => {
-    loadLocations();
-  }, [loadLocations]);
+    loadFilterMeta();
+  }, [loadFilterMeta]);
+
+  // Passed to <LocationFilter>; re-scopes the city list to the chosen state.
+  const fetchLocationOptions = useCallback(async ({ state }: { state?: string }) => {
+    const res = await fetchCareersApplicationFilters(state ? { state } : {});
+    return { states: res.data.states, cities: res.data.cities };
+  }, []);
 
   const loadData = useCallback(async (showLoading = true) => {
     if (showLoading) setLoading(true);
@@ -116,28 +135,6 @@ export const CareersApplicationsPage: React.FC = () => {
       const rows = res.data || [];
       setData(rows);
       setTotal(res.total || 0);
-
-      // Dynamic auto-push new cities/states to filter set
-      const extractedCities: string[] = [];
-      const extractedStates: string[] = [];
-      rows.forEach((r) => {
-        if (typeof r.current_city === 'string' && r.current_city.trim() !== '') {
-          const parts = r.current_city.split(',').map((s) => s.trim()).filter(Boolean);
-          if (parts.length > 0) extractedCities.push(parts[0]);
-          if (parts.length > 1 && (!r.state || r.state.trim() === '')) {
-            extractedStates.push(parts[1]);
-          }
-        }
-        if (typeof r.state === 'string' && r.state.trim() !== '') {
-          extractedStates.push(r.state.trim());
-        }
-      });
-      if (extractedCities.length > 0) {
-        setCities((prev) => Array.from(new Set([...prev, ...extractedCities])).sort((a, b) => a.localeCompare(b)));
-      }
-      if (extractedStates.length > 0) {
-        setStates((prev) => Array.from(new Set([...prev, ...extractedStates])).sort((a, b) => a.localeCompare(b)));
-      }
 
       // Compute overview metrics from total dataset
       const allRes = await fetchCareersApplications({ page: 1, limit: 100 });
@@ -202,6 +199,8 @@ export const CareersApplicationsPage: React.FC = () => {
         search,
         status: statusFilter,
         role: roleFilter === 'All' ? '' : roleFilter,
+        state: stateFilter,
+        city: cityFilter,
       });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -329,7 +328,7 @@ export const CareersApplicationsPage: React.FC = () => {
             <Typography variant="body2" sx={{ fontWeight: 600, mr: 1, color: isDark ? '#94A3B8' : '#64748B' }}>
               Role:
             </Typography>
-            {['All', 'Graphic Designer', 'Video Editor', 'HR & Operations Executive', 'HR & Operations Intern', 'Telecalling Executive'].map((roleItem) => {
+            {['All', ...roles].map((roleItem) => {
               const isSelected = roleFilter === roleItem;
               return (
                 <Chip
@@ -424,71 +423,24 @@ export const CareersApplicationsPage: React.FC = () => {
                   }}
                 >
                   <MenuItem value="All">All Roles</MenuItem>
-                  <MenuItem value="Graphic Designer">Graphic Designer</MenuItem>
-                  <MenuItem value="Video Editor">Video Editor</MenuItem>
-                  <MenuItem value="HR & Operations Executive">HR & Operations Executive</MenuItem>
-                  <MenuItem value="HR & Operations Intern">HR & Operations Intern</MenuItem>
-                  <MenuItem value="Telecalling Executive">Telecalling Executive</MenuItem>
-                </Select>
-              </Box>
-
-              <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                <Typography variant="body2" sx={{ fontWeight: 600, color: isDark ? '#CBD5E1' : '#475569' }}>
-                  City:
-                </Typography>
-                <Select
-                  size="small"
-                  value={cityFilter}
-                  onChange={(e) => {
-                    setCityFilter(e.target.value);
-                    setPage(1);
-                  }}
-                  displayEmpty
-                  sx={{
-                    bgcolor: isDark ? 'rgba(255, 255, 255, 0.06)' : '#FFFFFF',
-                    color: isDark ? '#F8FAFC' : '#0F172A',
-                    minWidth: 140,
-                    borderRadius: 1.5,
-                    '.MuiSvgIcon-root': { color: isDark ? '#94A3B8' : '#475569' },
-                  }}
-                >
-                  <MenuItem value="">All Cities</MenuItem>
-                  {cities.map((c) => (
-                    <MenuItem key={c} value={c}>
-                      {c}
+                  {roles.map((r) => (
+                    <MenuItem key={r} value={r}>
+                      {r}
                     </MenuItem>
                   ))}
                 </Select>
               </Box>
 
-              <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                <Typography variant="body2" sx={{ fontWeight: 600, color: isDark ? '#CBD5E1' : '#475569' }}>
-                  State:
-                </Typography>
-                <Select
-                  size="small"
-                  value={stateFilter}
-                  onChange={(e) => {
-                    setStateFilter(e.target.value);
-                    setPage(1);
-                  }}
-                  displayEmpty
-                  sx={{
-                    bgcolor: isDark ? 'rgba(255, 255, 255, 0.06)' : '#FFFFFF',
-                    color: isDark ? '#F8FAFC' : '#0F172A',
-                    minWidth: 140,
-                    borderRadius: 1.5,
-                    '.MuiSvgIcon-root': { color: isDark ? '#94A3B8' : '#475569' },
-                  }}
-                >
-                  <MenuItem value="">All States</MenuItem>
-                  {states.map((s) => (
-                    <MenuItem key={s} value={s}>
-                      {s}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </Box>
+              <LocationFilter
+                dark={isDark}
+                value={{ state: stateFilter, city: cityFilter }}
+                onChange={({ state, city }) => {
+                  setStateFilter(state);
+                  setCityFilter(city);
+                  setPage(1);
+                }}
+                fetchOptions={fetchLocationOptions}
+              />
 
               <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                 <Typography variant="body2" sx={{ fontWeight: 600, color: isDark ? '#CBD5E1' : '#475569' }}>
@@ -584,6 +536,19 @@ export const CareersApplicationsPage: React.FC = () => {
                   <TableCell sx={{ fontWeight: 700, color: isDark ? '#CBD5E1' : '#475569' }}>Portfolio / Links</TableCell>
                   <TableCell sx={{ fontWeight: 700, color: isDark ? '#CBD5E1' : '#475569' }}>Screening Flags</TableCell>
                   <TableCell sx={{ fontWeight: 700, color: isDark ? '#CBD5E1' : '#475569' }}>Status</TableCell>
+                  <TableCell
+                    sx={{ fontWeight: 700, color: isDark ? '#CBD5E1' : '#475569', cursor: 'pointer', userSelect: 'none' }}
+                    onClick={() => handleSortToggle('createdAt')}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      Applied On
+                      {sortBy === 'createdAt' ? (
+                        sortOrder === 'ASC' ? <ArrowUp style={{ width: 14, height: 14, color: '#2563EB' }} /> : <ArrowDown style={{ width: 14, height: 14, color: '#2563EB' }} />
+                      ) : (
+                        <ArrowUpDown style={{ width: 14, height: 14, color: '#94A3B8' }} />
+                      )}
+                    </Box>
+                  </TableCell>
                   <TableCell sx={{ fontWeight: 700, color: isDark ? '#CBD5E1' : '#475569' }} align="right">
                     Actions
                   </TableCell>
@@ -592,7 +557,7 @@ export const CareersApplicationsPage: React.FC = () => {
               <TableBody>
                 {data.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={9} align="center" sx={{ py: 6, color: isDark ? '#64748B' : '#94A3B8' }}>
+                    <TableCell colSpan={10} align="center" sx={{ py: 6, color: isDark ? '#64748B' : '#94A3B8' }}>
                       No career application records found.
                     </TableCell>
                   </TableRow>
@@ -732,6 +697,27 @@ export const CareersApplicationsPage: React.FC = () => {
                             <MenuItem value="Rejected">Rejected</MenuItem>
                             <MenuItem value="Hired">Hired</MenuItem>
                           </Select>
+                        </TableCell>
+                        <TableCell sx={{ color: isDark ? '#CBD5E1' : '#334155', whiteSpace: 'nowrap' }}>
+                          {row.createdAt ? (
+                            <>
+                              <Typography variant="body2" sx={{ fontWeight: 600, color: isDark ? '#F8FAFC' : '#0F172A' }}>
+                                {new Date(row.createdAt).toLocaleDateString('en-IN', {
+                                  day: '2-digit',
+                                  month: 'short',
+                                  year: 'numeric',
+                                })}
+                              </Typography>
+                              <Typography variant="caption" sx={{ color: isDark ? '#94A3B8' : '#64748B', display: 'block' }}>
+                                {new Date(row.createdAt).toLocaleTimeString('en-IN', {
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })}
+                              </Typography>
+                            </>
+                          ) : (
+                            <span style={{ color: isDark ? '#475569' : '#94A3B8' }}>—</span>
+                          )}
                         </TableCell>
                         <TableCell align="right">
                           <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
