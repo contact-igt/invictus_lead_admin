@@ -10,7 +10,6 @@ import { SnackbarProvider } from 'notistack';
 import { PersistGate } from 'redux-persist/integration/react';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import ScreenGuard from 'screenGuard';
 import ErrorBoundary from 'components/common/ErrorBoundary';
 
 const queryClient = new QueryClient();
@@ -27,9 +26,7 @@ const RootApp = () => {
               <SnackbarProvider maxSnack={3}>
                 <ColorModeProvider>
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <ScreenGuard>
-                      <RouterProvider router={router} />
-                    </ScreenGuard>
+                    <RouterProvider router={router} />
                   </LocalizationProvider>
                   {import.meta.env.MODE === 'development' && (
                     <ReactQueryDevtools initialIsOpen={false} />

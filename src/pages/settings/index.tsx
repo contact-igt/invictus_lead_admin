@@ -36,7 +36,7 @@ const Settings = () => {
   const passwordMismatch = newPassword.length > 0 && confirmPassword.length > 0 && newPassword !== confirmPassword;
 
   return (
-    <Stack direction="column" spacing={3} sx={{ p: { xs: 2, md: 3 }, maxWidth: 820, mx: 'auto' }}>
+    <Stack direction="column" spacing={3} sx={{ p: { xs: 2, md: 3 }, maxWidth: 820, width: '100%', mx: 'auto', boxSizing: 'border-box' }}>
       <Stack direction="row" alignItems="center" spacing={1.5}>
         <IconifyIcon icon="hugeicons:account-setting-02" sx={{ fontSize: 26, color: 'primary.main' }} />
         <Typography variant="h5" fontWeight={800}>
@@ -54,7 +54,7 @@ const Settings = () => {
           boxShadow: '0 8px 24px rgba(15,23,42,0.07)',
         }}
       >
-        <CardContent sx={{ p: 3 }}>
+        <CardContent sx={{ p: 3, overflow: 'hidden' }}>
           <Typography variant="subtitle1" fontWeight={700} mb={2}>
             Profile Information
           </Typography>
@@ -73,7 +73,7 @@ const Settings = () => {
               {firstLetter(user?.username)}
             </Avatar>
 
-            <Stack spacing={0.5}>
+            <Stack direction="column" spacing={0.5} sx={{ minWidth: 0 }}>
               <Typography variant="h6" fontWeight={700}>
                 {user?.username || '—'}
               </Typography>
@@ -136,7 +136,7 @@ const Settings = () => {
           boxShadow: '0 8px 24px rgba(15,23,42,0.07)',
         }}
       >
-        <CardContent sx={{ p: 3 }}>
+        <CardContent sx={{ p: 3, overflow: 'hidden' }}>
           <Typography variant="subtitle1" fontWeight={700} mb={2}>
             Change Password
           </Typography>

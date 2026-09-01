@@ -36,5 +36,18 @@ export default {
 
   // Dynamic client module route
   dynamicTable: `/${rootPaths.pageRoot}/d/:clientKey?/:tableId`,
+
+  // Client portal route family (currently Birthwave only)
+  clientPortalDashboard: `/${rootPaths.pageRoot}/d/:clientKey/portal/dashboard`,
+  clientPortalLeads: `/${rootPaths.pageRoot}/d/:clientKey/portal/leads`,
+  clientPortalAppointments: `/${rootPaths.pageRoot}/d/:clientKey/portal/appointments`,
+  clientPortalDoctors: `/${rootPaths.pageRoot}/d/:clientKey/portal/doctors`,
+  clientPortalCampaignSources: `/${rootPaths.pageRoot}/d/:clientKey/portal/campaign-sources`,
+  clientPortalFollowUps: `/${rootPaths.pageRoot}/d/:clientKey/portal/follow-ups`,
+  clientPortalReports: `/${rootPaths.pageRoot}/d/:clientKey/portal/reports`,
+  clientPortalSettings: `/${rootPaths.pageRoot}/d/:clientKey/portal/settings`,
 };
+
+export const buildClientPortalPath = (clientKey: string, page: string) =>
+  `/${rootPaths.pageRoot}/d/${clientKey}/portal/${page}`;
 

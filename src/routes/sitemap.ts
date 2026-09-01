@@ -1,4 +1,4 @@
-import paths from './paths';
+import paths, { buildClientPortalPath } from './paths';
 import { ClientRegistry, ClientConfig, TableConfig } from 'config/clients';
 
 export interface SubMenuItem {
@@ -76,6 +76,28 @@ const enquiriesSitemap: MenuItem = {
   ],
 };
 
+// Birthwave has a fully custom portal (not the generic ClientRegistry
+// dynamic-table experience), so it isn't produced by generateDynamicClientMenus
+// below — but it's still a real, config-driven module, not a one-off link.
+const birthwaveSitemap: MenuItem = {
+  id: 'birthwave',
+  subheader: 'Birthwave',
+  icon: 'hugeicons:database',
+  clientKey: 'birthwave',
+  active: true,
+  items: [
+    { name: 'Dashboard', pathName: buildClientPortalPath('birthwave', 'dashboard'), path: buildClientPortalPath('birthwave', 'dashboard') },
+    { name: 'Leads', pathName: buildClientPortalPath('birthwave', 'leads'), path: buildClientPortalPath('birthwave', 'leads') },
+    { name: 'Appointments', pathName: buildClientPortalPath('birthwave', 'appointments'), path: buildClientPortalPath('birthwave', 'appointments') },
+    { name: 'Calls', pathName: buildClientPortalPath('birthwave', 'calls'), path: buildClientPortalPath('birthwave', 'calls') },
+    { name: 'Doctors', pathName: buildClientPortalPath('birthwave', 'doctors'), path: buildClientPortalPath('birthwave', 'doctors') },
+    { name: 'Campaign Sources', pathName: buildClientPortalPath('birthwave', 'campaign-sources'), path: buildClientPortalPath('birthwave', 'campaign-sources') },
+    { name: 'Follow-ups', pathName: buildClientPortalPath('birthwave', 'follow-ups'), path: buildClientPortalPath('birthwave', 'follow-ups') },
+    { name: 'Reports', pathName: buildClientPortalPath('birthwave', 'reports'), path: buildClientPortalPath('birthwave', 'reports') },
+    { name: 'Settings', pathName: buildClientPortalPath('birthwave', 'settings'), path: buildClientPortalPath('birthwave', 'settings') },
+  ],
+};
+
 const generateDynamicClientMenus = (): MenuItem[] => {
   return Object.entries(ClientRegistry).map(([clientKey, config]: [string, ClientConfig]) => {
     const overviewItem: SubMenuItem = {
@@ -142,6 +164,7 @@ const sitemap: MenuItem[] = [
   ...baseSitemap,
   enquiriesSitemap,
   ...generateDynamicClientMenus(),
+  birthwaveSitemap,
   clientManagementSitemap,
   apiLogsSitemap,
   managementSitemap,

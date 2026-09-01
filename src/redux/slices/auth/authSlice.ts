@@ -7,6 +7,7 @@ export interface User {
   username: string;
   clientId: number | null;
   clientKey: string | null;
+  clientName?: string | null;
 }
 
 interface AuthState {

@@ -1,11 +1,14 @@
 ﻿import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { DataGrid, GridColDef, useGridApiRef, GridApi } from '@mui/x-data-grid';
-import { Chip } from '@mui/material';
+import { Chip, IconButton, Stack, Tooltip } from '@mui/material';
 import DataGridFooter from 'components/common/DataGridFooter';
 import ActionMenu from 'components/sections/ActionMenu';
+import IconifyIcon from 'components/base/IconifyIcon';
 import { ClientRecord } from 'components/hooks/useClientQuery';
 import dayjs from 'dayjs';
-import { resolveClientModuleKey } from 'utils/clientModuleResolver';
+import { resolveClientModuleKey, isDedicatedPortalModule } from 'utils/clientModuleResolver';
+import { buildClientPortalPath } from 'routes/paths';
 
 interface ClientTableProps {
   rows: ClientRecord[];
@@ -18,6 +21,7 @@ interface ClientTableProps {
 
 const ClientTable = ({ rows, searchText, isLoading, onEdit, onView, onDelete }: ClientTableProps) => {
   const apiRef = useGridApiRef<GridApi>();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (apiRef.current?.setQuickFilterValues) {
@@ -94,18 +98,44 @@ const ClientTable = ({ rows, searchText, isLoading, onEdit, onView, onDelete }: 
     {
       field: 'actions',
       headerName: 'Actions',
-      width: 100,
+      width: 175,
       sortable: false,
       filterable: false,
       align: 'center',
       headerAlign: 'center',
-      renderCell: (params) => (
-        <ActionMenu
-          onEdit={() => onEdit(params.row as ClientRecord)}
-          onView={() => onView(params.row as ClientRecord)}
-          onRemove={() => onDelete(params.row.id)}
-        />
-      ),
+      renderCell: (params) => {
+        const row = params.row as ClientRecord;
+        const moduleKey = resolveClientModuleKey(row.client_key);
+        return (
+          <Stack direction="row" spacing={0.5} alignItems="center">
+            {isDedicatedPortalModule(moduleKey) && row.client_key && (
+              <Tooltip title="Open client portal">
+                <IconButton
+                  size="small"
+                  onClick={() => navigate(buildClientPortalPath(row.client_key as string, 'dashboard'))}
+                >
+                  <IconifyIcon icon="mdi:open-in-new" width={18} height={18} />
+                </IconButton>
+              </Tooltip>
+            )}
+            {isDedicatedPortalModule(moduleKey) && row.client_key && (
+              <Tooltip title="Configure CRM">
+                <IconButton
+                  size="small"
+                  onClick={() => navigate(`${buildClientPortalPath(row.client_key as string, 'settings')}?tab=crm`)}
+                >
+                  <IconifyIcon icon="mdi:cog-outline" width={18} height={18} />
+                </IconButton>
+              </Tooltip>
+            )}
+            <ActionMenu
+              onEdit={() => onEdit(row)}
+              onView={() => onView(row)}
+              onRemove={() => onDelete(params.row.id)}
+            />
+          </Stack>
+        );
+      },
     },
   ];
 

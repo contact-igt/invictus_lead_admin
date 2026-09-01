@@ -5,6 +5,7 @@ import PageLoader from 'components/loader/PageLoader';
 
 const MainLayout = lazy(() => import('layouts/main-layout'));
 const AuthLayout = lazy(() => import('layouts/auth-layout'));
+const ClientPortalLayout = lazy(() => import('layouts/client-portal-layout'));
 const ProtectedRoute = lazy(async () => {
   const mod = await import('./security');
   return { default: mod.default };
@@ -14,6 +15,16 @@ const ErrorPage = lazy(() => import('components/common/ErrorPage'));
 const App = lazy(() => import('App'));
 const Dashboard = lazy(() => import('pages/dashboard'));
 const Signin = lazy(() => import('pages/authentication/Signin'));
+const BirthwaveDashboardPage = lazy(() => import('pages/birthwave/dashboard'));
+const BirthwaveLeadsPage = lazy(() => import('pages/birthwave/leads'));
+const BirthwaveLeadDetailPage = lazy(() => import('pages/birthwave/lead-detail'));
+const BirthwaveAppointmentsPage = lazy(() => import('pages/birthwave/appointments'));
+const BirthwaveDoctorsPage = lazy(() => import('pages/birthwave/doctors'));
+const BirthwaveCampaignSourcesPage = lazy(() => import('pages/birthwave/campaign-sources'));
+const BirthwaveFollowUpsPage = lazy(() => import('pages/birthwave/follow-ups'));
+const BirthwaveReportsPage = lazy(() => import('pages/birthwave/reports'));
+const BirthwaveSettingsPage = lazy(() => import('pages/birthwave/settings'));
+const BirthwaveCallsPage = lazy(() => import('pages/birthwave/calls'));
 const UserManagement = lazy(() => import('pages/management'));
 const ClientManagement = lazy(() => import('pages/client'));
 const ApiLogsPage = lazy(() => import('pages/api-logs'));
@@ -192,6 +203,35 @@ const router = createBrowserRouter(
               </MainLayout>
             </Suspense>
           ),
+        },
+        {
+          // Distinct top-level path (NOT rootPaths.pageRoot) so this never
+          // collides with the MainLayout-wrapped `pages` route tree above —
+          // the client portal intentionally never renders inside MainLayout.
+          path: `/${rootPaths.pageRoot}/d/:clientKey/portal`,
+          element: (
+            <Suspense fallback={<PageLoader />}>
+              <ClientPortalLayout>
+                <Suspense fallback={<PageLoader />}>
+                  <ProtectedRoute>
+                    <Outlet />
+                  </ProtectedRoute>
+                </Suspense>
+              </ClientPortalLayout>
+            </Suspense>
+          ),
+          children: [
+            { path: 'dashboard', element: <BirthwaveDashboardPage /> },
+            { path: 'leads', element: <BirthwaveLeadsPage /> },
+            { path: 'leads/:leadId', element: <BirthwaveLeadDetailPage /> },
+            { path: 'appointments', element: <BirthwaveAppointmentsPage /> },
+            { path: 'calls', element: <BirthwaveCallsPage /> },
+            { path: 'doctors', element: <BirthwaveDoctorsPage /> },
+            { path: 'campaign-sources', element: <BirthwaveCampaignSourcesPage /> },
+            { path: 'follow-ups', element: <BirthwaveFollowUpsPage /> },
+            { path: 'reports', element: <BirthwaveReportsPage /> },
+            { path: 'settings', element: <BirthwaveSettingsPage /> },
+          ],
         },
         {
           path: rootPaths.authRoot,
