@@ -3,6 +3,13 @@ import { extractClientModuleKey, normalizeClientKey } from './clientKey';
 
 export const INVICTUS_CLIENT_KEY = 'invictus';
 
+// Modules with a fully custom portal (own pages/layout) instead of the generic
+// ClientRegistry-driven dynamic-table experience.
+const DEDICATED_PORTAL_MODULES = new Set(['birthwave']);
+
+export const isDedicatedPortalModule = (moduleKey?: string | null): boolean =>
+    Boolean(moduleKey && DEDICATED_PORTAL_MODULES.has(moduleKey));
+
 export const isInvictusClientKey = (key?: string | null): boolean => {
     const normalized = normalizeClientKey(key);
     return normalized === INVICTUS_CLIENT_KEY || normalized.startsWith(`${INVICTUS_CLIENT_KEY}_`);
@@ -12,7 +19,9 @@ export const resolveClientModuleKey = (tenantClientKey?: string | null): string 
     // Invictus internal users have their own module key
     if (isInvictusClientKey(tenantClientKey)) return INVICTUS_CLIENT_KEY;
     const moduleKey = extractClientModuleKey(tenantClientKey);
-    return moduleKey && ClientRegistry[moduleKey] ? moduleKey : '';
+    if (!moduleKey) return '';
+    if (DEDICATED_PORTAL_MODULES.has(moduleKey)) return moduleKey;
+    return ClientRegistry[moduleKey] ? moduleKey : '';
 };
 
 export const getClientHomePath = (tenantClientKey?: string | null): string => {
@@ -34,6 +43,8 @@ export const getClientHomePath = (tenantClientKey?: string | null): string => {
         case 'pixeleye':
         case 'vls_law':
             return `/pages/d/${moduleKey}/overview`;
+        case 'birthwave':
+            return `/pages/d/${tenantClientKey ? normalizeClientKey(tenantClientKey) : moduleKey}/portal/dashboard`;
         default:
             return '/';
     }
