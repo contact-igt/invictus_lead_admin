@@ -1,5 +1,6 @@
-import paths from './paths';
+import paths, { buildClientPortalPath } from './paths';
 import { ClientRegistry, ClientConfig, TableConfig } from 'config/clients';
+import { WEBSITE_SOURCE_LABELS, WEBSITE_SOURCE_ORDER } from 'pages/birthwave/constants';
 
 export interface SubMenuItem {
   name: string;
@@ -73,6 +74,33 @@ const enquiriesSitemap: MenuItem = {
       pathName: paths.careersApplications,
       path: paths.careersApplications,
     },
+  ],
+};
+
+// Birthwave has a fully custom portal (not the generic dynamic-table experience).
+const birthwaveSitemap: MenuItem = {
+  id: 'birthwave',
+  subheader: 'Birthwave',
+  icon: 'hugeicons:database',
+  clientKey: 'birthwave',
+  active: true,
+  items: [
+    { name: 'Dashboard', pathName: buildClientPortalPath('birthwave', 'dashboard'), path: buildClientPortalPath('birthwave', 'dashboard') },
+    // "Leads" (the bare CRM leads list) — hidden per request; reach it from the
+    // Dashboard → "Recent Leads → View all" link if needed.
+    // { name: 'Leads', pathName: buildClientPortalPath('birthwave', 'leads'), path: buildClientPortalPath('birthwave', 'leads') },
+    ...WEBSITE_SOURCE_ORDER.map((key) => ({
+      name: WEBSITE_SOURCE_LABELS[key],
+      pathName: `${buildClientPortalPath('birthwave', 'leads')}?view=${key}`,
+      path: `${buildClientPortalPath('birthwave', 'leads')}?view=${key}`,
+    })),
+    { name: 'Appointments', pathName: buildClientPortalPath('birthwave', 'appointments'), path: buildClientPortalPath('birthwave', 'appointments') },
+    { name: 'Calls', pathName: buildClientPortalPath('birthwave', 'calls'), path: buildClientPortalPath('birthwave', 'calls') },
+    { name: 'Doctors', pathName: buildClientPortalPath('birthwave', 'doctors'), path: buildClientPortalPath('birthwave', 'doctors') },
+    { name: 'Campaign Sources', pathName: buildClientPortalPath('birthwave', 'campaign-sources'), path: buildClientPortalPath('birthwave', 'campaign-sources') },
+    { name: 'Follow-ups', pathName: buildClientPortalPath('birthwave', 'follow-ups'), path: buildClientPortalPath('birthwave', 'follow-ups') },
+    { name: 'Reports', pathName: buildClientPortalPath('birthwave', 'reports'), path: buildClientPortalPath('birthwave', 'reports') },
+    { name: 'Settings', pathName: buildClientPortalPath('birthwave', 'settings'), path: buildClientPortalPath('birthwave', 'settings') },
   ],
 };
 
@@ -152,6 +180,7 @@ const sitemap: MenuItem[] = [
   ...baseSitemap,
   enquiriesSitemap,
   ...generateDynamicClientMenus(),
+  birthwaveSitemap,
   clientManagementSitemap,
   apiLogsSitemap,
   managementSitemap,

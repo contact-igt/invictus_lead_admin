@@ -237,3 +237,40 @@ html:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb:hover {
 	color: #ffffff !important;
 }
 
+
+/* ═══════════════════════════════════════════════════════════════
+   Birthwave client portal — theme-aware surface tokens
+   Pages under /pages/d/:clientKey/portal use var(--bw-*) instead of
+   hardcoded hex so light/dark mode applies everywhere.
+   ═══════════════════════════════════════════════════════════════ */
+:root {
+	--bw-page: #F8FAFC;
+	--bw-surface: #FFFFFF;
+	--bw-surface-2: #F1F5F9;
+	--bw-border: #E5E7EB;
+	--bw-text: #0F172A;
+	--bw-text-muted: #64748B;
+	--bw-text-soft: #94A3B8;
+	--bw-tint-red: #FEF2F2;
+	--bw-tint-amber: #FFFBEB;
+	--bw-tint-green: #F0FDF4;
+	--bw-tint-blue: #EFF6FF;
+	--bw-tint-violet: #F5F3FF;
+	--bw-hover: rgba(15, 23, 42, 0.04);
+}
+
+html.dark {
+	--bw-page: #0A0F0D;
+	--bw-surface: #0D1410;
+	--bw-surface-2: #141C17;
+	--bw-border: rgba(255, 255, 255, 0.09);
+	--bw-text: #EAF7EE;
+	--bw-text-muted: #94A3B8;
+	--bw-text-soft: #64748B;
+	--bw-tint-red: rgba(239, 68, 68, 0.16);
+	--bw-tint-amber: rgba(245, 158, 11, 0.16);
+	--bw-tint-green: rgba(41, 175, 129, 0.16);
+	--bw-tint-blue: rgba(37, 99, 235, 0.18);
+	--bw-tint-violet: rgba(124, 58, 237, 0.18);
+	--bw-hover: rgba(255, 255, 255, 0.06);
+}
