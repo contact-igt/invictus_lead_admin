@@ -10,23 +10,22 @@ export interface PortalNavItem {
   segment: string;
   label: string;
   icon: string;
-  /** Query params appended to the segment's path (used by the source items). */
+  /** Query params appended to the segment's path (for a plain, childless item). */
   query?: Record<string, string>;
   children?: PortalNavChild[];
 }
 
+// "Leads" links to the CRM leads list; its sub-items are the website /
+// landing-page enquiry sources.
+const LEADS_CHILDREN: PortalNavChild[] = WEBSITE_SOURCE_ORDER.map((key) => ({
+  label: WEBSITE_SOURCE_LABELS[key],
+  query: { view: key },
+}));
+
 // Exact order per the approved Birthwave portal spec — do not reorder.
 export const PORTAL_NAV_ITEMS: PortalNavItem[] = [
   { segment: 'dashboard', label: 'Dashboard', icon: 'hugeicons:grid-view' },
-  // "Leads" (the bare CRM leads list) is hidden per request. The enquiry-source
-  // views below cover day-to-day use; the CRM list is still at /portal/leads.
-  // { segment: 'leads', label: 'Leads', icon: 'hugeicons:user-multiple' },
-  ...WEBSITE_SOURCE_ORDER.map((key) => ({
-    segment: 'leads',
-    label: WEBSITE_SOURCE_LABELS[key],
-    icon: 'hugeicons:user-multiple',
-    query: { view: key },
-  })),
+  { segment: 'leads', label: 'Leads', icon: 'hugeicons:user-multiple', children: LEADS_CHILDREN },
   { segment: 'appointments', label: 'Appointments', icon: 'hugeicons:calendar-03' },
   { segment: 'calls', label: 'Calls', icon: 'hugeicons:call-02' },
   { segment: 'doctors', label: 'Doctors', icon: 'solar:stethoscope-linear' },
