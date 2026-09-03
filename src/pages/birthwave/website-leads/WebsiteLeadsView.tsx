@@ -35,7 +35,14 @@ const TEXT_DARK = 'var(--bw-text)';
 const TEXT_MUTED = 'var(--bw-text-muted)';
 
 const fmtDate = (value: string) =>
-  new Date(value).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+  new Date(value).toLocaleString('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  });
 
 const cellSx = {
   py: 1.25,

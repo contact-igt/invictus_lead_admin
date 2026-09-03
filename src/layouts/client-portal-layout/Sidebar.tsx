@@ -98,14 +98,11 @@ const SidebarContent = ({ clientKey, onNavigate }: SidebarContentProps) => {
 
             return (
               <Box key={item.segment}>
-                {/* Parent navigates to the CRM list AND opens its sub-items. */}
+                {/* Parent only toggles its sub-items open/closed — it does not navigate. */}
                 <ButtonBase
-                  component={Link}
-                  to={href}
                   aria-expanded={groupOpen}
                   onClick={() => {
-                    onNavigate?.();
-                    setOpenGroups((prev) => ({ ...prev, [item.segment]: true }));
+                    setOpenGroups((prev) => ({ ...prev, [item.segment]: !groupOpen }));
                   }}
                   sx={{
                     width: '100%',
