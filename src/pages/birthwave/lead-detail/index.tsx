@@ -36,6 +36,7 @@ const EVENT_ICON: Record<BirthwaveLeadActivity['event_type'], string> = {
   appointment_created: 'hugeicons:calendar-03',
   custom_field_changed: 'hugeicons:pencil-edit-02',
   call_logged: 'hugeicons:call-02',
+  lead_source_activity: 'hugeicons:share-01',
 };
 
 
@@ -89,6 +90,22 @@ const LeadDetailPage = () => {
 
   const statusColor = lead ? LEAD_STATUS_COLORS[lead.status] || { bg: 'var(--bw-surface-2)', fg: TEXT_MUTED } : null;
 
+  // Repli/Instagram integration metadata — reuses the existing lead's
+  // integration_metadata JSON, no separate Repli lead architecture.
+  const meta = lead?.integration_metadata;
+  const asMetaString = (value: unknown) => (typeof value === 'string' && value ? value : null);
+  const isRepliLead = lead?.source_provider === 'REPLI';
+  const instagramUsername = asMetaString(meta?.instagram_username);
+  const campaign = asMetaString(meta?.campaign);
+  const repliStatus = asMetaString(meta?.repli_status);
+  const repliCreatedAt = asMetaString(meta?.repli_created_at);
+  const repliCompletedAt = asMetaString(meta?.repli_completed_at);
+  const collectedData =
+    meta?.collected_data && typeof meta.collected_data === 'object' && !Array.isArray(meta.collected_data)
+      ? (meta.collected_data as Record<string, unknown>)
+      : null;
+  const collectedEntries = collectedData ? Object.entries(collectedData) : [];
+
   return (
     <Box sx={{ p: { xs: 2, sm: 3, lg: 4 } }}>
       <Stack direction="row" alignItems="center" spacing={1} mb={2}>
@@ -106,11 +123,12 @@ const LeadDetailPage = () => {
       {isLoading || !lead ? (
         <Skeleton variant="rounded" height={200} sx={{ borderRadius: '14px' }} />
       ) : (
+        <>
         <Box sx={{ ...cardSx, mb: 2.5 }}>
           <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'center' }} spacing={2} mb={2}>
             <Box>
               <Typography sx={{ fontSize: '1.35rem', fontWeight: 800, color: TEXT_DARK }}>{lead.name}</Typography>
-              <Typography sx={{ fontSize: '0.85rem', color: TEXT_MUTED, mt: 0.5 }}>{lead.phone}{lead.email ? ` · ${lead.email}` : ''}</Typography>
+              <Typography sx={{ fontSize: '0.85rem', color: TEXT_MUTED, mt: 0.5 }}>{lead.phone || '—'}{lead.email ? ` · ${lead.email}` : ''}</Typography>
             </Box>
             <Stack direction="row" spacing={1.5} alignItems="center">
               {statusColor && (
@@ -136,6 +154,7 @@ const LeadDetailPage = () => {
             <Box>
               <InfoRow label="Service" value={lead.service || '—'} />
               <InfoRow label="Source" value={lead.source ? LEAD_SOURCE_LABELS[lead.source] || lead.source : '—'} />
+              {lead.source_provider && !isRepliLead && <InfoRow label="Provider" value={lead.source_provider} />}
               <InfoRow label="Assigned Doctor" value={lead.assignedDoctor?.name || 'Unassigned'} />
             </Box>
             <Box>
@@ -157,6 +176,42 @@ const LeadDetailPage = () => {
             </Box>
           )}
         </Box>
+
+        {isRepliLead && (
+          <Box sx={{ ...cardSx, mb: 2.5 }}>
+            <Typography sx={{ fontSize: '0.95rem', fontWeight: 700, color: TEXT_DARK, mb: 2 }}>Integration Details</Typography>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: { xs: 0, sm: 4 } }}>
+              <Box>
+                <InfoRow label="Source" value={lead.source ? LEAD_SOURCE_LABELS[lead.source] || lead.source : '—'} />
+                <InfoRow label="Provider" value="Repli" />
+                {campaign && <InfoRow label="Campaign" value={campaign} />}
+              </Box>
+              <Box>
+                <InfoRow label="Instagram Username" value={instagramUsername ? `@${instagramUsername}` : '—'} />
+                <InfoRow label="Repli Status" value={repliStatus || '—'} />
+                <InfoRow label="Repli Created At" value={repliCreatedAt ? formatDateTime(repliCreatedAt) : '—'} />
+                {repliCompletedAt && <InfoRow label="Repli Completed At" value={formatDateTime(repliCompletedAt)} />}
+              </Box>
+            </Box>
+          </Box>
+        )}
+
+        {collectedEntries.length > 0 && (
+          <Box sx={{ ...cardSx, mb: 2.5 }}>
+            <Typography sx={{ fontSize: '0.95rem', fontWeight: 700, color: TEXT_DARK, mb: 2 }}>Collected Details</Typography>
+            <Stack direction="column" spacing={1.75}>
+              {collectedEntries.map(([question, answer]) => (
+                <Box key={question} sx={{ minWidth: 0 }}>
+                  <Typography sx={{ fontSize: '0.78rem', color: TEXT_MUTED }}>{question}</Typography>
+                  <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: TEXT_DARK, wordBreak: 'break-word' }}>
+                    {answer === null || answer === undefined || answer === '' ? '—' : String(answer)}
+                  </Typography>
+                </Box>
+              ))}
+            </Stack>
+          </Box>
+        )}
+        </>
       )}
 
       <Box sx={cardSx}>

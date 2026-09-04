@@ -19,6 +19,7 @@ export const LEAD_STATUS_COLORS: Record<string, { bg: string; fg: string }> = {
 export const LEAD_SOURCE_LABELS: Record<string, string> = {
   google_ads: 'Google Ads',
   meta_ads: 'Meta Ads',
+  instagram: 'Instagram',
   website: 'Website',
   whatsapp: 'WhatsApp',
   walk_in: 'Walk-in',

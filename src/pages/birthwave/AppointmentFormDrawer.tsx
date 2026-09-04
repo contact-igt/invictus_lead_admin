@@ -107,7 +107,7 @@ const AppointmentFormDrawer = ({ clientKey, open, onClose, leads, doctors, appoi
               <InputLabel id="appt-lead-label">Lead</InputLabel>
               <Select labelId="appt-lead-label" name="lead_id" label="Lead" value={formik.values.lead_id} onChange={formik.handleChange}>
                 {leads.map((lead) => (
-                  <MenuItem key={lead.id} value={lead.id}>{lead.name} · {lead.phone}</MenuItem>
+                  <MenuItem key={lead.id} value={lead.id}>{lead.name}{lead.phone ? ` · ${lead.phone}` : ''}</MenuItem>
                 ))}
               </Select>
             </FormControl>

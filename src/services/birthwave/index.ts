@@ -15,7 +15,8 @@ export interface BirthwaveDoctor {
 export interface BirthwaveLead {
   id: number;
   name: string;
-  phone: string;
+  /** Nullable — a valid Repli Instagram lead can have no phone collected. */
+  phone: string | null;
   email: string | null;
   service: string | null;
   source: string | null;
@@ -26,6 +27,8 @@ export interface BirthwaveLead {
   notes: string | null;
   source_provider?: string | null;
   source_external_id?: string | null;
+  /** Provider integration payload (e.g. Repli/Instagram): campaign, answers, conversation id, … */
+  integration_metadata?: Record<string, unknown> | null;
   created_at: string;
   updated_at: string;
   custom_fields?: CrmCustomFieldValues;
@@ -42,7 +45,7 @@ export interface BirthwaveAppointment {
   scheduled_at: string;
   status: string;
   notes: string | null;
-  lead?: { id: number; name: string; phone: string } | null;
+  lead?: { id: number; name: string; phone: string | null } | null;
   doctor?: { id: number; name: string } | null;
 }
 
@@ -58,7 +61,8 @@ export interface BirthwaveLeadActivity {
     | 'follow_up_scheduled'
     | 'appointment_created'
     | 'custom_field_changed'
-    | 'call_logged';
+    | 'call_logged'
+    | 'lead_source_activity';
   title: string;
   description: string | null;
   previous_value: string | null;
