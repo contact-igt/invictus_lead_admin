@@ -7,6 +7,7 @@ import ButtonBase from '@mui/material/ButtonBase';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
 import IconifyIcon from 'components/base/IconifyIcon';
 import Image from 'components/base/Image';
 import useColorMode from 'hooks/useColorMode';
@@ -34,6 +35,13 @@ const Topbar = ({ isClosing, mobileOpen, setMobileOpen }: TopbarProps) => {
       setMobileOpen(!mobileOpen);
     }
   };
+
+  const pageTitle = location.pathname
+    .split('/')
+    .filter(Boolean)
+    .pop()
+    ?.replace(/[-_]/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase());
 
   return (
     <Stack
@@ -92,6 +100,20 @@ const Topbar = ({ isClosing, mobileOpen, setMobileOpen }: TopbarProps) => {
               ),
             }}
           />
+        )}
+
+        {location.pathname !== '/' && pageTitle && (
+          <Typography
+            variant="h5"
+            fontWeight={700}
+            sx={{
+              display: { xs: 'none', sm: 'block' },
+              fontSize: { sm: '1.5rem' },
+              color: mode === 'dark' ? '#EAF7EE' : 'text.primary',
+            }}
+          >
+            {pageTitle}
+          </Typography>
         )}
       </Stack>
 

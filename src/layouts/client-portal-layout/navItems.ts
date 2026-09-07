@@ -16,11 +16,17 @@ export interface PortalNavItem {
 }
 
 // "Leads" links to the CRM leads list; its sub-items are the website /
-// landing-page enquiry sources.
-const LEADS_CHILDREN: PortalNavChild[] = WEBSITE_SOURCE_ORDER.map((key) => ({
-  label: WEBSITE_SOURCE_LABELS[key],
-  query: { view: key },
-}));
+// landing-page enquiry sources, plus a fixed-filter "Instagram Leads" view
+// (source=instagram, source_provider=REPLI) over the SAME birthwave_leads
+// list — not a separate lead source/table.
+const LEADS_CHILDREN: PortalNavChild[] = [
+  { label: WEBSITE_SOURCE_LABELS[WEBSITE_SOURCE_ORDER[0]], query: { view: WEBSITE_SOURCE_ORDER[0] } },
+  { label: 'Instagram Leads', query: { view: 'instagram' } },
+  ...WEBSITE_SOURCE_ORDER.slice(1).map((key) => ({
+    label: WEBSITE_SOURCE_LABELS[key],
+    query: { view: key },
+  })),
+];
 
 // Exact order per the approved Birthwave portal spec — do not reorder.
 export const PORTAL_NAV_ITEMS: PortalNavItem[] = [
@@ -28,9 +34,11 @@ export const PORTAL_NAV_ITEMS: PortalNavItem[] = [
   { segment: 'leads', label: 'Leads', icon: 'hugeicons:user-multiple', children: LEADS_CHILDREN },
   { segment: 'appointments', label: 'Appointments', icon: 'hugeicons:calendar-03' },
   { segment: 'calls', label: 'Calls', icon: 'hugeicons:call-02' },
-  { segment: 'doctors', label: 'Doctors', icon: 'solar:stethoscope-linear' },
-  { segment: 'campaign-sources', label: 'Campaign Sources', icon: 'hugeicons:megaphone-02' },
+  // Doctors, Campaign Sources, Reports, Settings — hidden per request.
+  // Pages/routes are untouched; reach them directly by URL if needed.
+  // { segment: 'doctors', label: 'Doctors', icon: 'solar:stethoscope-linear' },
+  // { segment: 'campaign-sources', label: 'Campaign Sources', icon: 'hugeicons:megaphone-02' },
   { segment: 'follow-ups', label: 'Follow-ups', icon: 'solar:clock-circle-linear' },
-  { segment: 'reports', label: 'Reports', icon: 'hugeicons:chart-bar-line-01' },
-  { segment: 'settings', label: 'Settings', icon: 'hugeicons:settings-02' },
+  // { segment: 'reports', label: 'Reports', icon: 'hugeicons:chart-bar-line-01' },
+  // { segment: 'settings', label: 'Settings', icon: 'hugeicons:settings-02' },
 ];

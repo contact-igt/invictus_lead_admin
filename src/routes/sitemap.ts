@@ -89,18 +89,33 @@ const birthwaveSitemap: MenuItem = {
     // "Leads" (the bare CRM leads list) — hidden per request; reach it from the
     // Dashboard → "Recent Leads → View all" link if needed.
     // { name: 'Leads', pathName: buildClientPortalPath('birthwave', 'leads'), path: buildClientPortalPath('birthwave', 'leads') },
-    ...WEBSITE_SOURCE_ORDER.map((key) => ({
+    {
+      name: WEBSITE_SOURCE_LABELS[WEBSITE_SOURCE_ORDER[0]],
+      pathName: `${buildClientPortalPath('birthwave', 'leads')}?view=${WEBSITE_SOURCE_ORDER[0]}`,
+      path: `${buildClientPortalPath('birthwave', 'leads')}?view=${WEBSITE_SOURCE_ORDER[0]}`,
+    },
+    // Instagram Leads — fixed-filter view (source=instagram, source_provider=REPLI)
+    // over the SAME birthwave_leads list, not a separate lead source/table.
+    // Mirrors the equivalent entry in client-portal-layout/navItems.ts.
+    {
+      name: 'Instagram Leads',
+      pathName: `${buildClientPortalPath('birthwave', 'leads')}?view=instagram`,
+      path: `${buildClientPortalPath('birthwave', 'leads')}?view=instagram`,
+    },
+    ...WEBSITE_SOURCE_ORDER.slice(1).map((key) => ({
       name: WEBSITE_SOURCE_LABELS[key],
       pathName: `${buildClientPortalPath('birthwave', 'leads')}?view=${key}`,
       path: `${buildClientPortalPath('birthwave', 'leads')}?view=${key}`,
     })),
     { name: 'Appointments', pathName: buildClientPortalPath('birthwave', 'appointments'), path: buildClientPortalPath('birthwave', 'appointments') },
     { name: 'Calls', pathName: buildClientPortalPath('birthwave', 'calls'), path: buildClientPortalPath('birthwave', 'calls') },
-    { name: 'Doctors', pathName: buildClientPortalPath('birthwave', 'doctors'), path: buildClientPortalPath('birthwave', 'doctors') },
-    { name: 'Campaign Sources', pathName: buildClientPortalPath('birthwave', 'campaign-sources'), path: buildClientPortalPath('birthwave', 'campaign-sources') },
+    // Doctors, Campaign Sources, Reports, Settings — hidden per request.
+    // Pages/routes are untouched; reach them directly by URL if needed.
+    // { name: 'Doctors', pathName: buildClientPortalPath('birthwave', 'doctors'), path: buildClientPortalPath('birthwave', 'doctors') },
+    // { name: 'Campaign Sources', pathName: buildClientPortalPath('birthwave', 'campaign-sources'), path: buildClientPortalPath('birthwave', 'campaign-sources') },
     { name: 'Follow-ups', pathName: buildClientPortalPath('birthwave', 'follow-ups'), path: buildClientPortalPath('birthwave', 'follow-ups') },
-    { name: 'Reports', pathName: buildClientPortalPath('birthwave', 'reports'), path: buildClientPortalPath('birthwave', 'reports') },
-    { name: 'Settings', pathName: buildClientPortalPath('birthwave', 'settings'), path: buildClientPortalPath('birthwave', 'settings') },
+    // { name: 'Reports', pathName: buildClientPortalPath('birthwave', 'reports'), path: buildClientPortalPath('birthwave', 'reports') },
+    // { name: 'Settings', pathName: buildClientPortalPath('birthwave', 'settings'), path: buildClientPortalPath('birthwave', 'settings') },
   ],
 };
 
