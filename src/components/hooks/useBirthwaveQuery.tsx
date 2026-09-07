@@ -16,6 +16,24 @@ interface ErrorPayload {
   message?: string;
 }
 
+export const useSyncRepliLeadsMutation = () => {
+  const qc = useQueryClient();
+  const { enqueueSnackbar } = useSnackbar();
+  return useMutation(BirthwaveApis.syncRepliLeads, {
+    onSuccess: (result) => {
+      enqueueSnackbar(`Fetched ${result.fetched}: ${result.created} created, ${result.updated} updated, ${result.skipped} skipped, ${result.failed} failed.`, {
+        variant: result.failed || result.skipped ? 'warning' : 'success',
+      });
+      qc.invalidateQueries(['birthwave-leads']);
+      qc.invalidateQueries(['birthwave-lead-detail']);
+      qc.invalidateQueries(['birthwave-dashboard']);
+    },
+    onError: (error) => {
+      enqueueSnackbar(errorMessage(error, 'Unable to sync Repli leads'), { variant: 'error' });
+    },
+  });
+};
+
 const errorMessage = (error: unknown, fallback: string) =>
   (error as AxiosError<ErrorPayload>)?.response?.data?.message || fallback;
 

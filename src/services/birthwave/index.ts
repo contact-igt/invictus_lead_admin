@@ -138,6 +138,7 @@ export interface BirthwaveWebsiteSourceCount {
 }
 
 export const BirthwaveApis = {
+  syncRepliLeads: () => _axios('post', '/integrations/repli/birthwave/sync', {}),
   getDashboard: (clientKey: string | undefined, params: Record<string, unknown> = {}) =>
     _axios('get', '/birthwave/dashboard', undefined, undefined, withClientKey(params, clientKey)),
 

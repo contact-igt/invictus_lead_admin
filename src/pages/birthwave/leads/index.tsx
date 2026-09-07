@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Box, Button, Chip, MenuItem, Select, Stack, TextField, Typography } from '@mui/material';
+import { Alert, Box, Button, Chip, MenuItem, Pagination, Select, Stack, TextField, Typography } from '@mui/material';
 import { Icon } from '@iconify/react';
 import { useBirthwaveScope } from '../useBirthwaveScope';
-import { useBirthwaveDoctorsQuery, useBirthwaveLeadsQuery } from 'components/hooks/useBirthwaveQuery';
+import { useBirthwaveDoctorsQuery, useBirthwaveLeadsQuery, useSyncRepliLeadsMutation } from 'components/hooks/useBirthwaveQuery';
+import { useAuth } from 'redux/selectors/auth/authSelector';
 import { useCrmFieldsQuery } from 'components/hooks/useCrmQuery';
 import { BirthwaveLead } from 'services/birthwave';
 import { buildClientPortalPath } from 'routes/paths';
@@ -28,8 +29,16 @@ const LeadsPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [formOpen, setFormOpen] = useState(false);
   const [editingLead, setEditingLead] = useState<BirthwaveLead | null>(null);
+  const { user } = useAuth();
+  const sync = useSyncRepliLeadsMutation();
+  const canSync = ['super-admin', 'admin'].includes((user?.role || '').toLowerCase()) && activeClientKey === 'birthwave';
+  const page = Math.max(1, Number(searchParams.get('page')) || 1);
 
   const view = searchParams.get('view') || 'crm';
+  // Carry the active view onto the detail route so "Back to Leads" returns to
+  // this same filtered list (Instagram Leads / a website source) rather than
+  // the default "All Leads".
+  const detailQuerySuffix = view !== 'crm' ? `?view=${encodeURIComponent(view)}` : '';
   const isInstagramView = view === 'instagram';
   const isWebsiteView = view !== 'crm' && !isInstagramView;
 
@@ -43,6 +52,7 @@ const LeadsPage = () => {
 
   const updateParam = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams);
+    if (key !== 'page') params.delete('page');
     if (value) params.set(key, value);
     else params.delete(key);
     setSearchParams(params, { replace: true });
@@ -82,8 +92,9 @@ const LeadsPage = () => {
       custom_field_key: cfKey && cfValue !== '' ? cfKey : undefined,
       custom_field_value: cfKey && cfValue !== '' ? cfValue : undefined,
       limit: 50,
+      page,
     }),
-    [search, status, source, from, to, cfKey, cfValue, isInstagramView],
+    [search, status, source, from, to, cfKey, cfValue, isInstagramView, page],
   );
 
   const { data, isLoading } = useBirthwaveLeadsQuery(scopedClientKey, params, { enabled: hasScope && !isWebsiteView });
@@ -127,7 +138,11 @@ const LeadsPage = () => {
               : 'Search, filter, and manage every Birthwave lead'
         }
         action={
-          isWebsiteView || isInstagramView ? undefined : (
+          isInstagramView ? (canSync ? (
+            <Button variant="contained" disabled={sync.isLoading} onClick={() => sync.mutate()}>
+              {sync.isLoading ? 'Syncing...' : 'Sync now'}
+            </Button>
+          ) : undefined) : isWebsiteView ? undefined : (
             <Button
               variant="contained"
               startIcon={<Icon icon="mdi:plus" width={18} height={18} />}
@@ -142,6 +157,13 @@ const LeadsPage = () => {
           )
         }
       />
+
+      {isInstagramView && canSync && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          Sync now imports a batch of existing Repli leads. New lead events arrive through the webhook.
+          {sync.data?.paginationHint && ' Repli returned pagination information; this sync may not include every historical lead.'}
+        </Alert>
+      )}
 
       {isWebsiteView ? (
         <WebsiteLeadsView sourceKey={view as BirthwaveWebsiteSourceKey} />
@@ -242,14 +264,14 @@ const LeadsPage = () => {
                     <Box
                       component="tr"
                       key={lead.id}
-                      onClick={() => navigate(buildClientPortalPath(activeClientKey, `leads/${lead.id}`))}
+                      onClick={() => navigate(buildClientPortalPath(activeClientKey, `leads/${lead.id}${detailQuerySuffix}`))}
                       role="button"
                       tabIndex={0}
                       aria-label={`Open ${lead.name}`}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
                           e.preventDefault();
-                          navigate(buildClientPortalPath(activeClientKey, `leads/${lead.id}`));
+                          navigate(buildClientPortalPath(activeClientKey, `leads/${lead.id}${detailQuerySuffix}`));
                         }
                       }}
                       sx={{ cursor: 'pointer', '&:hover td': { bgcolor: 'var(--bw-hover)' }, '&:focus-visible': { outline: '2px solid #29AF81', outlineOffset: -2 } }}
@@ -279,7 +301,7 @@ const LeadsPage = () => {
                             size="small"
                             onClick={(e) => {
                               e.stopPropagation();
-                              navigate(buildClientPortalPath(activeClientKey, `leads/${lead.id}`));
+                              navigate(buildClientPortalPath(activeClientKey, `leads/${lead.id}${detailQuerySuffix}`));
                             }}
                             sx={{ textTransform: 'none', color: GREEN, fontWeight: 700, minWidth: 0 }}
                           >
@@ -298,6 +320,9 @@ const LeadsPage = () => {
           </Box>
         )}
       </Box>
+      {!isWebsiteView && (data?.pagination?.totalPages ?? 1) > 1 && (
+        <Pagination sx={{ mt: 2 }} page={page} count={data?.pagination.totalPages} onChange={(_, value) => updateParam('page', String(value))} />
+      )}
       </>
       )}
 

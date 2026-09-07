@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Box, Button, Chip, IconButton, Skeleton, Stack, Typography } from '@mui/material';
 import { Icon } from '@iconify/react';
 import { useBirthwaveScope } from '../useBirthwaveScope';
@@ -47,9 +47,21 @@ const formatDate = (value: string | null) =>
   value ? new Date(value).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
 
 const InfoRow = ({ label, value }: { label: string; value: string }) => (
-  <Stack direction="row" justifyContent="space-between" sx={{ py: 1.1, borderBottom: '1px solid', borderColor: CARD_BORDER }}>
-    <Typography sx={{ fontSize: '0.82rem', color: TEXT_MUTED }}>{label}</Typography>
-    <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: TEXT_DARK, textAlign: 'right' }}>{value}</Typography>
+  <Stack direction="row" justifyContent="space-between" spacing={2} sx={{ py: 1.1, borderBottom: '1px solid', borderColor: CARD_BORDER }}>
+    <Typography sx={{ fontSize: '0.82rem', color: TEXT_MUTED, flexShrink: 0 }}>{label}</Typography>
+    <Typography
+      sx={{
+        fontSize: '0.82rem',
+        fontWeight: 600,
+        color: TEXT_DARK,
+        textAlign: 'right',
+        wordBreak: 'break-word',
+        whiteSpace: 'pre-wrap',
+        minWidth: 0,
+      }}
+    >
+      {value}
+    </Typography>
   </Stack>
 );
 
@@ -57,7 +69,13 @@ const LeadDetailPage = () => {
   const { hasScope, scopedClientKey, activeClientKey } = useBirthwaveScope();
   const { leadId } = useParams<{ leadId: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [editOpen, setEditOpen] = useState(false);
+
+  // Return to whichever list the user came from (Instagram Leads / a website
+  // source), preserved via ?view= on the detail URL. Defaults to All Leads.
+  const originView = searchParams.get('view');
+  const backToLeadsPath = `leads${originView && originView !== 'crm' ? `?view=${encodeURIComponent(originView)}` : ''}`;
 
   const { data: lead, isLoading, isError } = useBirthwaveLeadDetailQuery(scopedClientKey, leadId, { enabled: hasScope });
   const { data: timeline = [], isLoading: isTimelineLoading } = useBirthwaveLeadTimelineQuery(scopedClientKey, leadId, { enabled: hasScope });
@@ -79,7 +97,7 @@ const LeadDetailPage = () => {
         <Typography sx={{ color: TEXT_MUTED }}>Lead not found.</Typography>
         <Button
           size="small"
-          onClick={() => navigate(buildClientPortalPath(activeClientKey, 'leads'))}
+          onClick={() => navigate(buildClientPortalPath(activeClientKey, backToLeadsPath))}
           sx={{ mt: 1, textTransform: 'none', color: GREEN }}
         >
           Back to Leads
@@ -92,19 +110,71 @@ const LeadDetailPage = () => {
 
   // Repli/Instagram integration metadata — reuses the existing lead's
   // integration_metadata JSON, no separate Repli lead architecture.
+  // Repli's payload shape varies by automation flow, so beyond the
+  // handful of well-known keys everything else is rendered dynamically
+  // rather than hardcoded, so new/renamed keys still show up.
   const meta = lead?.integration_metadata;
-  const asMetaString = (value: unknown) => (typeof value === 'string' && value ? value : null);
   const isRepliLead = lead?.source_provider === 'REPLI';
-  const instagramUsername = asMetaString(meta?.instagram_username);
-  const campaign = asMetaString(meta?.campaign);
-  const repliStatus = asMetaString(meta?.repli_status);
-  const repliCreatedAt = asMetaString(meta?.repli_created_at);
-  const repliCompletedAt = asMetaString(meta?.repli_completed_at);
+
+  const ISO_DATE_KEY_HINT = /(_at|_date|timestamp)$/i;
+  const humanizeKey = (key: string) =>
+    key
+      .replace(/^repli_/i, '')
+      .replace(/[_-]+/g, ' ')
+      .replace(/\b\w/g, (c) => c.toUpperCase())
+      .trim();
+  const formatMetaValue = (key: string, value: unknown): string => {
+    if (value === null || value === undefined || value === '') return '—';
+    if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+    if (typeof value === 'string' && ISO_DATE_KEY_HINT.test(key)) {
+      const parsed = new Date(value);
+      if (!Number.isNaN(parsed.getTime())) return formatDateTime(value);
+    }
+    if (typeof value === 'object') return JSON.stringify(value);
+    return String(value);
+  };
+
+  // Collected-data keys are the raw questionnaire questions and vary per flow,
+  // so they're rendered dynamically. Well-known intents get a short label;
+  // anything unrecognised falls back to the question text verbatim.
+  const friendlyQuestionLabel = (question: string): string => {
+    const q = question.toLowerCase();
+    if (/\bname\b/.test(q)) return 'Name';
+    if (/e-?mail/.test(q)) return 'Email';
+    if (/phone|mobile|whatsapp|contact number|\bnumber\b/.test(q)) return 'Phone';
+    if (/service|treatment|reason|help/.test(q)) return 'Service';
+    return question.trim();
+  };
+
   const collectedData =
     meta?.collected_data && typeof meta.collected_data === 'object' && !Array.isArray(meta.collected_data)
       ? (meta.collected_data as Record<string, unknown>)
       : null;
   const collectedEntries = collectedData ? Object.entries(collectedData) : [];
+
+  // Keys shown elsewhere (mandatory rows / collected details section) so they
+  // aren't duplicated in the dynamic metadata list below.
+  const KNOWN_META_KEYS = new Set([
+    'collected_data',
+    'source',
+    'source_provider',
+    'provider',
+    'instagram_username',
+    'answers',
+  ]);
+  // Raw/nested payloads (Repli's full webhook body, etc.) are unbounded and
+  // not meant for a label/value row — kept out of the detail view entirely.
+  const RAW_PAYLOAD_KEY_HINT = /(response|payload|raw|webhook)/i;
+  const dynamicMetaEntries = meta
+    ? Object.entries(meta).filter(([key, value]) => {
+        if (KNOWN_META_KEYS.has(key)) return false;
+        if (RAW_PAYLOAD_KEY_HINT.test(key)) return false;
+        if (value === null || value === undefined || value === '') return false;
+        return true;
+      })
+    : [];
+  const instagramUsername =
+    typeof meta?.instagram_username === 'string' && meta.instagram_username ? meta.instagram_username : null;
 
   return (
     <Box sx={{ p: { xs: 2, sm: 3, lg: 4 } }}>
@@ -112,7 +182,7 @@ const LeadDetailPage = () => {
         <IconButton
           size="small"
           aria-label="Back to Leads"
-          onClick={() => navigate(buildClientPortalPath(activeClientKey, 'leads'))}
+          onClick={() => navigate(buildClientPortalPath(activeClientKey, backToLeadsPath))}
           sx={{ border: '1px solid', borderColor: CARD_BORDER, borderRadius: '8px' }}
         >
           <Icon icon="hugeicons:arrow-left-01" width={18} height={18} />
@@ -184,15 +254,31 @@ const LeadDetailPage = () => {
               <Box>
                 <InfoRow label="Source" value={lead.source ? LEAD_SOURCE_LABELS[lead.source] || lead.source : '—'} />
                 <InfoRow label="Provider" value="Repli" />
-                {campaign && <InfoRow label="Campaign" value={campaign} />}
               </Box>
               <Box>
                 <InfoRow label="Instagram Username" value={instagramUsername ? `@${instagramUsername}` : '—'} />
-                <InfoRow label="Repli Status" value={repliStatus || '—'} />
-                <InfoRow label="Repli Created At" value={repliCreatedAt ? formatDateTime(repliCreatedAt) : '—'} />
-                {repliCompletedAt && <InfoRow label="Repli Completed At" value={formatDateTime(repliCompletedAt)} />}
               </Box>
             </Box>
+
+            {dynamicMetaEntries.length > 0 && (
+              <Box sx={{ mt: 1, pt: 2, borderTop: '1px solid', borderColor: CARD_BORDER, display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: { xs: 0, sm: 4 } }}>
+                <Box>
+                  {dynamicMetaEntries
+                    .filter((_, index) => index % 2 === 0)
+                    .map(([key, value]) => (
+                      <InfoRow key={key} label={humanizeKey(key)} value={formatMetaValue(key, value)} />
+                    ))}
+                </Box>
+                <Box>
+                  {dynamicMetaEntries
+                    .filter((_, index) => index % 2 === 1)
+                    .map(([key, value]) => (
+                      <InfoRow key={key} label={humanizeKey(key)} value={formatMetaValue(key, value)} />
+                    ))}
+                </Box>
+              </Box>
+            )}
+
           </Box>
         )}
 
@@ -202,7 +288,7 @@ const LeadDetailPage = () => {
             <Stack direction="column" spacing={1.75}>
               {collectedEntries.map(([question, answer]) => (
                 <Box key={question} sx={{ minWidth: 0 }}>
-                  <Typography sx={{ fontSize: '0.78rem', color: TEXT_MUTED }}>{question}</Typography>
+                  <Typography sx={{ fontSize: '0.78rem', color: TEXT_MUTED }}>{friendlyQuestionLabel(question)}</Typography>
                   <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: TEXT_DARK, wordBreak: 'break-word' }}>
                     {answer === null || answer === undefined || answer === '' ? '—' : String(answer)}
                   </Typography>
