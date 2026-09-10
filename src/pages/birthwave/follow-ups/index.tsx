@@ -46,7 +46,7 @@ const Group = ({ title, tone, leads }: GroupProps) => (
         >
           <Box sx={{ flexGrow: 1, minWidth: 0 }}>
             <Typography noWrap sx={{ fontSize: '0.85rem', fontWeight: 600, color: TEXT_DARK }}>{lead.name}</Typography>
-            <Typography noWrap sx={{ fontSize: '0.75rem', color: TEXT_MUTED }}>{lead.phone} · {lead.service || 'General enquiry'}</Typography>
+            <Typography noWrap sx={{ fontSize: '0.75rem', color: TEXT_MUTED }}>{lead.phone || '—'} · {lead.service || 'General enquiry'}</Typography>
           </Box>
           <Typography sx={{ fontSize: '0.78rem', fontWeight: 600, color: tone.fg }}>
             {lead.next_follow_up ? formatDate(lead.next_follow_up) : '—'}

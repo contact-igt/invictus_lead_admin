@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Box, Button, Chip, MenuItem, Select, Stack, TextField, Typography } from '@mui/material';
+import { Alert, Box, Button, Chip, MenuItem, Pagination, Select, Stack, TextField, Typography } from '@mui/material';
 import { Icon } from '@iconify/react';
 import { useBirthwaveScope } from '../useBirthwaveScope';
-import { useBirthwaveDoctorsQuery, useBirthwaveLeadsQuery } from 'components/hooks/useBirthwaveQuery';
+import { useBirthwaveDoctorsQuery, useBirthwaveLeadsQuery, useSyncRepliLeadsMutation } from 'components/hooks/useBirthwaveQuery';
+import { useAuth } from 'redux/selectors/auth/authSelector';
 import { useCrmFieldsQuery } from 'components/hooks/useCrmQuery';
 import { BirthwaveLead } from 'services/birthwave';
 import { buildClientPortalPath } from 'routes/paths';
@@ -28,9 +29,18 @@ const LeadsPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [formOpen, setFormOpen] = useState(false);
   const [editingLead, setEditingLead] = useState<BirthwaveLead | null>(null);
+  const { user } = useAuth();
+  const sync = useSyncRepliLeadsMutation();
+  const canSync = ['super-admin', 'admin'].includes((user?.role || '').toLowerCase()) && activeClientKey === 'birthwave';
+  const page = Math.max(1, Number(searchParams.get('page')) || 1);
 
   const view = searchParams.get('view') || 'crm';
-  const isWebsiteView = view !== 'crm';
+  // Carry the active view onto the detail route so "Back to Leads" returns to
+  // this same filtered list (Instagram Leads / a website source) rather than
+  // the default "All Leads".
+  const detailQuerySuffix = view !== 'crm' ? `?view=${encodeURIComponent(view)}` : '';
+  const isInstagramView = view === 'instagram';
+  const isWebsiteView = view !== 'crm' && !isInstagramView;
 
   const search = searchParams.get('search') || '';
   const status = searchParams.get('status') || '';
@@ -42,6 +52,7 @@ const LeadsPage = () => {
 
   const updateParam = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams);
+    if (key !== 'page') params.delete('page');
     if (value) params.set(key, value);
     else params.delete(key);
     setSearchParams(params, { replace: true });
@@ -66,18 +77,24 @@ const LeadsPage = () => {
   const filterableFields = customFields.filter((f) => f.filterable);
   const activeFilterField = customFields.find((f) => f.field_key === cfKey);
 
+  // Instagram Leads is a fixed server-side filter over the same
+  // birthwave_leads list endpoint — never a client-side subset of "All Leads"
+  // (that would break pagination/totals). The source/source_provider here
+  // are forced regardless of any stray `source` query param.
   const params = useMemo(
     () => ({
       search: search || undefined,
       status: status || undefined,
-      source: source || undefined,
+      source: isInstagramView ? 'instagram' : source || undefined,
+      source_provider: isInstagramView ? 'REPLI' : undefined,
       start_date: from || undefined,
       end_date: to || undefined,
       custom_field_key: cfKey && cfValue !== '' ? cfKey : undefined,
       custom_field_value: cfKey && cfValue !== '' ? cfValue : undefined,
       limit: 50,
+      page,
     }),
-    [search, status, source, from, to, cfKey, cfValue],
+    [search, status, source, from, to, cfKey, cfValue, isInstagramView, page],
   );
 
   const { data, isLoading } = useBirthwaveLeadsQuery(scopedClientKey, params, { enabled: hasScope && !isWebsiteView });
@@ -86,7 +103,8 @@ const LeadsPage = () => {
 
   const activeFilters = [
     status && { key: 'status', label: LEAD_STATUS_LABELS[status] || status },
-    source && { key: 'source', label: LEAD_SOURCE_LABELS[source] || source },
+    // Source is fixed (not a removable filter) on the Instagram Leads view.
+    !isInstagramView && source && { key: 'source', label: LEAD_SOURCE_LABELS[source] || source },
     from && to && { key: 'range', label: `${from} → ${to}` },
     cfKey && cfValue !== '' && activeFilterField && {
       key: 'custom',
@@ -105,14 +123,26 @@ const LeadsPage = () => {
   return (
     <Box sx={{ p: { xs: 2, sm: 3, lg: 4 } }}>
       <PortalPageHeader
-        title={isWebsiteView ? WEBSITE_SOURCE_LABELS[view] || 'Leads' : 'Leads'}
+        title={
+          isInstagramView
+            ? `Instagram Leads${data?.pagination?.total ? ` (${data.pagination.total})` : ''}`
+            : isWebsiteView
+              ? WEBSITE_SOURCE_LABELS[view] || 'Leads'
+              : 'Leads'
+        }
         subtitle={
-          isWebsiteView
-            ? 'Enquiries captured from this source'
-            : 'Search, filter, and manage every Birthwave lead'
+          isInstagramView
+            ? 'Leads captured from Birthwave Instagram through Repli'
+            : isWebsiteView
+              ? 'Enquiries captured from this source'
+              : 'Search, filter, and manage every Birthwave lead'
         }
         action={
-          isWebsiteView ? undefined : (
+          isInstagramView ? (canSync ? (
+            <Button variant="contained" disabled={sync.isLoading} onClick={() => sync.mutate()}>
+              {sync.isLoading ? 'Syncing...' : 'Sync now'}
+            </Button>
+          ) : undefined) : isWebsiteView ? undefined : (
             <Button
               variant="contained"
               startIcon={<Icon icon="mdi:plus" width={18} height={18} />}
@@ -127,6 +157,13 @@ const LeadsPage = () => {
           )
         }
       />
+
+      {isInstagramView && canSync && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          Sync now imports a batch of existing Repli leads. New lead events arrive through the webhook.
+          {sync.data?.paginationHint && ' Repli returned pagination information; this sync may not include every historical lead.'}
+        </Alert>
+      )}
 
       {isWebsiteView ? (
         <WebsiteLeadsView sourceKey={view as BirthwaveWebsiteSourceKey} />
@@ -146,12 +183,14 @@ const LeadsPage = () => {
             <MenuItem key={value} value={value}>{label}</MenuItem>
           ))}
         </Select>
-        <Select size="small" displayEmpty value={source} onChange={(e) => updateParam('source', e.target.value)} sx={{ minWidth: 150 }}>
-          <MenuItem value="">All Sources</MenuItem>
-          {Object.entries(LEAD_SOURCE_LABELS).map(([value, label]) => (
-            <MenuItem key={value} value={value}>{label}</MenuItem>
-          ))}
-        </Select>
+        {!isInstagramView && (
+          <Select size="small" displayEmpty value={source} onChange={(e) => updateParam('source', e.target.value)} sx={{ minWidth: 150 }}>
+            <MenuItem value="">All Sources</MenuItem>
+            {Object.entries(LEAD_SOURCE_LABELS).map(([value, label]) => (
+              <MenuItem key={value} value={value}>{label}</MenuItem>
+            ))}
+          </Select>
+        )}
         <CrmFieldFilterControl
           fields={filterableFields}
           fieldKey={cfKey}
@@ -182,7 +221,14 @@ const LeadsPage = () => {
           </Box>
         ) : leads.length === 0 ? (
           <Box sx={{ p: 4, textAlign: 'center' }}>
-            <Typography sx={{ color: TEXT_MUTED }}>No leads match these filters.</Typography>
+            <Typography sx={{ color: TEXT_MUTED, fontWeight: isInstagramView ? 700 : 400 }}>
+              {isInstagramView ? 'No Instagram leads found.' : 'No leads match these filters.'}
+            </Typography>
+            {isInstagramView && (
+              <Typography sx={{ color: TEXT_MUTED, fontSize: '0.8rem', mt: 0.5 }}>
+                New Birthwave Instagram leads captured through Repli will appear here automatically.
+              </Typography>
+            )}
           </Box>
         ) : (
           <Box sx={{ overflowX: 'auto' }}>
@@ -192,6 +238,7 @@ const LeadsPage = () => {
                   {[
                     'Name',
                     'Phone',
+                    ...(isInstagramView ? ['Instagram'] : []),
                     'Service',
                     'Source',
                     'Status',
@@ -209,24 +256,33 @@ const LeadsPage = () => {
               <Box component="tbody">
                 {leads.map((lead) => {
                   const statusColor = LEAD_STATUS_COLORS[lead.status] || { bg: 'var(--bw-surface-2)', fg: TEXT_MUTED };
+                  const instagramUsername =
+                    typeof lead.integration_metadata?.instagram_username === 'string'
+                      ? lead.integration_metadata.instagram_username
+                      : null;
                   return (
                     <Box
                       component="tr"
                       key={lead.id}
-                      onClick={() => navigate(buildClientPortalPath(activeClientKey, `leads/${lead.id}`))}
+                      onClick={() => navigate(buildClientPortalPath(activeClientKey, `leads/${lead.id}${detailQuerySuffix}`))}
                       role="button"
                       tabIndex={0}
                       aria-label={`Open ${lead.name}`}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
                           e.preventDefault();
-                          navigate(buildClientPortalPath(activeClientKey, `leads/${lead.id}`));
+                          navigate(buildClientPortalPath(activeClientKey, `leads/${lead.id}${detailQuerySuffix}`));
                         }
                       }}
                       sx={{ cursor: 'pointer', '&:hover td': { bgcolor: 'var(--bw-hover)' }, '&:focus-visible': { outline: '2px solid #29AF81', outlineOffset: -2 } }}
                     >
                       <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.82rem', fontWeight: 600, color: TEXT_DARK, whiteSpace: 'nowrap' }}>{lead.name}</Box>
-                      <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK, whiteSpace: 'nowrap' }}>{lead.phone}</Box>
+                      <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK, whiteSpace: 'nowrap' }}>{lead.phone || '—'}</Box>
+                      {isInstagramView && (
+                        <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK, whiteSpace: 'nowrap' }}>
+                          {instagramUsername ? `@${instagramUsername}` : '—'}
+                        </Box>
+                      )}
                       <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK, whiteSpace: 'nowrap' }}>{lead.service || '—'}</Box>
                       <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK, whiteSpace: 'nowrap' }}>{lead.source ? LEAD_SOURCE_LABELS[lead.source] || lead.source : '—'}</Box>
                       <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER }}>
@@ -240,17 +296,21 @@ const LeadsPage = () => {
                         </Box>
                       ))}
                       <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, whiteSpace: 'nowrap' }}>
-                        <Button
-                          size="small"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setEditingLead(lead);
-                            setFormOpen(true);
-                          }}
-                          sx={{ textTransform: 'none', color: GREEN, fontWeight: 700, minWidth: 0 }}
-                        >
-                          Edit
-                        </Button>
+                        <Stack direction="row" spacing={0.5}>
+                          <Button
+                            size="small"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(buildClientPortalPath(activeClientKey, `leads/${lead.id}${detailQuerySuffix}`));
+                            }}
+                            sx={{ textTransform: 'none', color: GREEN, fontWeight: 700, minWidth: 0 }}
+                          >
+                            View
+                          </Button>
+                          {/* Delete is not implemented yet for CRM leads (only website
+                              enquiries support it today) — add a matching confirm-dialog
+                              delete action here, next to View, when that's built. */}
+                        </Stack>
                       </Box>
                     </Box>
                   );
@@ -260,6 +320,9 @@ const LeadsPage = () => {
           </Box>
         )}
       </Box>
+      {!isWebsiteView && (data?.pagination?.totalPages ?? 1) > 1 && (
+        <Pagination sx={{ mt: 2 }} page={page} count={data?.pagination.totalPages} onChange={(_, value) => updateParam('page', String(value))} />
+      )}
       </>
       )}
 

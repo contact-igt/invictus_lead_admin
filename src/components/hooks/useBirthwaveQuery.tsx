@@ -16,6 +16,24 @@ interface ErrorPayload {
   message?: string;
 }
 
+export const useSyncRepliLeadsMutation = () => {
+  const qc = useQueryClient();
+  const { enqueueSnackbar } = useSnackbar();
+  return useMutation(BirthwaveApis.syncRepliLeads, {
+    onSuccess: (result) => {
+      enqueueSnackbar(`Fetched ${result.fetched}: ${result.created} created, ${result.updated} updated, ${result.skipped} skipped, ${result.failed} failed.`, {
+        variant: result.failed || result.skipped ? 'warning' : 'success',
+      });
+      qc.invalidateQueries(['birthwave-leads']);
+      qc.invalidateQueries(['birthwave-lead-detail']);
+      qc.invalidateQueries(['birthwave-dashboard']);
+    },
+    onError: (error) => {
+      enqueueSnackbar(errorMessage(error, 'Unable to sync Repli leads'), { variant: 'error' });
+    },
+  });
+};
+
 const errorMessage = (error: unknown, fallback: string) =>
   (error as AxiosError<ErrorPayload>)?.response?.data?.message || fallback;
 
@@ -46,7 +64,15 @@ export const useBirthwaveLeadsQuery = (
       const res = await BirthwaveApis.getLeads(clientKey, params);
       return res as { data: BirthwaveLead[]; pagination: { total: number; page: number; limit: number; totalPages: number } };
     },
-    { enabled: options.enabled ?? true, keepPreviousData: true },
+    {
+      enabled: options.enabled ?? true,
+      keepPreviousData: true,
+      // Externally-ingested leads (e.g. Repli/Instagram) land without a client
+      // action; a light poll surfaces them on an open Lead Admin tab. No
+      // Socket.IO exists for leads yet — this is the phase-one approach.
+      refetchInterval: 15000,
+      refetchOnWindowFocus: true,
+    },
   );
 
 export const useBirthwaveLeadDetailQuery = (

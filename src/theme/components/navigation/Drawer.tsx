@@ -23,7 +23,7 @@ const Drawer: Components<Omit<Theme, 'components'>>['MuiDrawer'] = {
     paper: {
       padding: 0,
       height: '100vh',
-      width: 240,
+      width: 252,
       border: 0,
       borderRadius: 0,
       backgroundColor: '#FFFFFF',

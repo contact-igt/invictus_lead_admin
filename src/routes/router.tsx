@@ -47,6 +47,7 @@ const VlsConsumerProtectionLawMasterClassPage = lazy(
   () => import('pages/vls/consumer-protection-law-master-class'),
 );
 const VlsTaxationLawPage = lazy(() => import('pages/vls/taxation-law'));
+const VlsBusinessLawPage = lazy(() => import('pages/vls/business-law'));
 const GeneralEnquiriesPage = lazy(() => import('pages/enquiries/GeneralEnquiriesPage'));
 const CareersApplicationsPage = lazy(() => import('pages/enquiries/CareersApplicationsPage'));
 
@@ -151,6 +152,10 @@ const router = createBrowserRouter(
             {
               path: paths.vlsTaxationLaw,
               element: <VlsTaxationLawPage />,
+            },
+            {
+              path: paths.vlsBusinessLaw,
+              element: <VlsBusinessLawPage />,
             },
             {
               path: paths.enquiries,

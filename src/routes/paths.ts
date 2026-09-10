@@ -35,6 +35,7 @@ export default {
   vlsLawPractice: `/${rootPaths.pageRoot}/d/:clientKey/vls/law-practice`,
   vlsConsumerProtectionLawMasterClass: `/${rootPaths.pageRoot}/d/:clientKey/vls/consumer-protection-law-master-class`,
   vlsTaxationLaw: `/${rootPaths.pageRoot}/d/:clientKey/vls/taxation-law`,
+  vlsBusinessLaw: `/${rootPaths.pageRoot}/d/:clientKey/vls/business-law`,
 
   // Dynamic client module route
   dynamicTable: `/${rootPaths.pageRoot}/d/:clientKey?/:tableId`,
