@@ -160,6 +160,11 @@ const generateDynamicClientMenus = (): MenuItem[] => {
         pathName: `/pages/d/${clientKey}/vls/taxation-law`,
         path: `/pages/d/${clientKey}/vls/taxation-law`,
       });
+      items.push({
+        name: 'Business Law (DRT & SARFAESI)',
+        pathName: `/pages/d/${clientKey}/vls/business-law`,
+        path: `/pages/d/${clientKey}/vls/business-law`,
+      });
     }
 
     if (clientKey === 'pixeleye') {
