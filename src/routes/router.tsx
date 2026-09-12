@@ -16,6 +16,8 @@ const App = lazy(() => import('App'));
 const Dashboard = lazy(() => import('pages/dashboard'));
 const Signin = lazy(() => import('pages/authentication/Signin'));
 const BirthwaveDashboardPage = lazy(() => import('pages/birthwave/dashboard'));
+const BirthwaveMyWorkPage = lazy(() => import('pages/birthwave/my-work'));
+const BirthwaveAttentionPage = lazy(() => import('pages/birthwave/attention'));
 const BirthwaveLeadsPage = lazy(() => import('pages/birthwave/leads'));
 const BirthwaveLeadDetailPage = lazy(() => import('pages/birthwave/lead-detail'));
 const BirthwaveAppointmentsPage = lazy(() => import('pages/birthwave/appointments'));
@@ -25,6 +27,9 @@ const BirthwaveFollowUpsPage = lazy(() => import('pages/birthwave/follow-ups'));
 const BirthwaveReportsPage = lazy(() => import('pages/birthwave/reports'));
 const BirthwaveSettingsPage = lazy(() => import('pages/birthwave/settings'));
 const BirthwaveCallsPage = lazy(() => import('pages/birthwave/calls'));
+const BirthwaveTeamsPage = lazy(() => import('pages/birthwave/teams'));
+const BirthwaveTeamMembersPage = lazy(() => import('pages/birthwave/team-members'));
+const BirthwaveAssignmentRulesPage = lazy(() => import('pages/birthwave/assignment-rules'));
 const UserManagement = lazy(() => import('pages/management'));
 const ClientManagement = lazy(() => import('pages/client'));
 const ApiLogsPage = lazy(() => import('pages/api-logs'));
@@ -237,10 +242,15 @@ const router = createBrowserRouter(
           ),
           children: [
             { path: 'dashboard', element: <BirthwaveDashboardPage /> },
+            { path: 'my-work', element: <BirthwaveMyWorkPage /> },
+            { path: 'attention', element: <BirthwaveAttentionPage /> },
             { path: 'leads', element: <BirthwaveLeadsPage /> },
             { path: 'leads/:leadId', element: <BirthwaveLeadDetailPage /> },
             { path: 'appointments', element: <BirthwaveAppointmentsPage /> },
             { path: 'calls', element: <BirthwaveCallsPage /> },
+            { path: 'teams', element: <BirthwaveTeamsPage /> },
+            { path: 'team-members', element: <BirthwaveTeamMembersPage /> },
+            { path: 'assignment-rules', element: <BirthwaveAssignmentRulesPage /> },
             { path: 'doctors', element: <BirthwaveDoctorsPage /> },
             { path: 'campaign-sources', element: <BirthwaveCampaignSourcesPage /> },
             { path: 'follow-ups', element: <BirthwaveFollowUpsPage /> },

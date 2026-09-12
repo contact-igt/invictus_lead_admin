@@ -1,26 +1,23 @@
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import {
+  Alert,
   Box,
   Button,
-  Divider,
-  Drawer,
   FormControl,
-  IconButton,
+  FormHelperText,
   InputLabel,
   MenuItem,
   Select,
-  Stack,
   TextField,
-  Typography,
 } from '@mui/material';
-import { Icon } from '@iconify/react';
 import { BirthwaveAppointment, BirthwaveDoctor, BirthwaveLead } from 'services/birthwave';
 import {
   useCreateBirthwaveAppointmentMutation,
   useUpdateBirthwaveAppointmentMutation,
 } from 'components/hooks/useBirthwaveQuery';
 import { APPOINTMENT_STATUS_LABELS } from './constants';
+import BirthwaveDrawerLayout, { BirthwaveFormGrid, BirthwaveFormGridItem } from './BirthwaveDrawerLayout';
 
 interface AppointmentFormDrawerProps {
   clientKey: string | undefined;
@@ -29,6 +26,12 @@ interface AppointmentFormDrawerProps {
   leads: BirthwaveLead[];
   doctors: BirthwaveDoctor[];
   appointment?: BirthwaveAppointment | null;
+  /**
+   * BW-UI-003: when the drawer is opened from a Lead's own detail page the Lead
+   * is already decided — it is pre-selected and locked so a telecaller cannot
+   * accidentally book the appointment against a different patient.
+   */
+  lockedLeadId?: number;
 }
 
 const validationSchema = Yup.object({
@@ -47,16 +50,16 @@ const toLocalInputValue = (value: string | null | undefined) => {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 };
 
-const AppointmentFormDrawer = ({ clientKey, open, onClose, leads, doctors, appointment }: AppointmentFormDrawerProps) => {
+const AppointmentFormDrawer = ({ clientKey, open, onClose, leads, doctors, appointment, lockedLeadId }: AppointmentFormDrawerProps) => {
   const isEdit = Boolean(appointment);
-  const { mutate: create, isLoading: isCreating } = useCreateBirthwaveAppointmentMutation(clientKey);
-  const { mutate: update, isLoading: isUpdating } = useUpdateBirthwaveAppointmentMutation(clientKey);
-  const isLoading = isCreating || isUpdating;
+  const createMutation = useCreateBirthwaveAppointmentMutation(clientKey);
+  const updateMutation = useUpdateBirthwaveAppointmentMutation(clientKey);
+  const isLoading = createMutation.isLoading || updateMutation.isLoading;
 
   const formik = useFormik({
     enableReinitialize: true,
     initialValues: {
-      lead_id: appointment?.lead_id ?? '',
+      lead_id: appointment?.lead_id ?? lockedLeadId ?? '',
       doctor_id: appointment?.doctor_id ?? '',
       service: appointment?.service ?? '',
       scheduled_at: toLocalInputValue(appointment?.scheduled_at),
@@ -73,93 +76,75 @@ const AppointmentFormDrawer = ({ clientKey, open, onClose, leads, doctors, appoi
         status: values.status || undefined,
         notes: values.notes.trim() || undefined,
       };
-
       const onSuccess = () => {
         resetForm();
         onClose();
       };
-
-      if (isEdit && appointment) {
-        update({ id: appointment.id, data: payload }, { onSuccess });
-      } else {
-        create(payload, { onSuccess });
-      }
+      if (isEdit && appointment) updateMutation.mutate({ id: appointment.id, data: payload }, { onSuccess });
+      else createMutation.mutate(payload, { onSuccess });
     },
   });
 
+  const mutationError = (createMutation.error || updateMutation.error) as { response?: { data?: { message?: string } } } | null;
+
   return (
-    <Drawer anchor="right" open={open} onClose={onClose} PaperProps={{ sx: { width: { xs: '100%', sm: 440 } } }}>
-      <Box component="form" onSubmit={formik.handleSubmit} noValidate sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-        <Box sx={{ px: 3, py: 2.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Box>
-            <Typography variant="h6" fontWeight={700}>{isEdit ? 'Edit Appointment' : 'New Appointment'}</Typography>
-            <Typography variant="body2" color="text.secondary" mt={0.5}>Schedule a Birthwave appointment</Typography>
-          </Box>
-          <IconButton onClick={onClose} size="small" aria-label="Close appointment drawer">
-            <Icon icon="mdi:close" width={22} height={22} />
-          </IconButton>
-        </Box>
-        <Divider />
+    <BirthwaveDrawerLayout
+      open={open}
+      onClose={onClose}
+      title={isEdit ? 'Edit Appointment' : 'New Appointment'}
+      subtitle="Schedule a Birthwave appointment"
+      width={460}
+      footer={<>
+        <Button variant="outlined" color="inherit" onClick={onClose} disabled={isLoading}>Cancel</Button>
+        <Button type="submit" form="birthwave-appointment-form" variant="contained" disabled={isLoading || !formik.isValid || (!formik.dirty && !isEdit)}>
+          {isLoading ? 'Saving...' : isEdit ? 'Save Changes' : 'Create Appointment'}
+        </Button>
+      </>}
+    >
+      <Box id="birthwave-appointment-form" component="form" onSubmit={formik.handleSubmit} noValidate>
+        {mutationError && <Alert severity="error" sx={{ mb: 2 }}>{mutationError.response?.data?.message || 'Unable to save this appointment.'}</Alert>}
+        <BirthwaveFormGrid>
+          <BirthwaveFormGridItem><FormControl fullWidth required disabled={Boolean(lockedLeadId)} error={formik.touched.lead_id && Boolean(formik.errors.lead_id)}>
+            <InputLabel id="appt-lead-label">Lead</InputLabel>
+            <Select labelId="appt-lead-label" name="lead_id" label="Lead" value={formik.values.lead_id} onChange={formik.handleChange}>
+              <MenuItem value=""><em>Select a Lead</em></MenuItem>
+              {leads.map((lead) => <MenuItem key={lead.id} value={lead.id}>{lead.name}{lead.phone ? ` · ${lead.phone}` : ''}</MenuItem>)}
+            </Select>
+            {lockedLeadId && <FormHelperText>Booking for this Lead.</FormHelperText>}
+            {formik.touched.lead_id && formik.errors.lead_id && <FormHelperText>{formik.errors.lead_id}</FormHelperText>}
+          </FormControl></BirthwaveFormGridItem>
 
-        <Box sx={{ flexGrow: 1, overflowY: 'auto', px: 3, py: 3 }}>
-          <Stack direction="column" spacing={2.25}>
-            <FormControl fullWidth error={formik.touched.lead_id && Boolean(formik.errors.lead_id)}>
-              <InputLabel id="appt-lead-label">Lead</InputLabel>
-              <Select labelId="appt-lead-label" name="lead_id" label="Lead" value={formik.values.lead_id} onChange={formik.handleChange}>
-                {leads.map((lead) => (
-                  <MenuItem key={lead.id} value={lead.id}>{lead.name}{lead.phone ? ` · ${lead.phone}` : ''}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+          <BirthwaveFormGridItem><FormControl fullWidth>
+            <InputLabel id="appt-doctor-label">Doctor</InputLabel>
+            <Select labelId="appt-doctor-label" name="doctor_id" label="Doctor" value={formik.values.doctor_id} onChange={formik.handleChange}>
+              <MenuItem value=""><em>Unassigned</em></MenuItem>
+              {doctors.map((doctor) => <MenuItem key={doctor.id} value={doctor.id}>{doctor.name}</MenuItem>)}
+            </Select>
+          </FormControl></BirthwaveFormGridItem>
 
-            <FormControl fullWidth>
-              <InputLabel id="appt-doctor-label">Doctor</InputLabel>
-              <Select labelId="appt-doctor-label" name="doctor_id" label="Doctor" value={formik.values.doctor_id} onChange={formik.handleChange}>
-                <MenuItem value="">
-                  <em>Unassigned</em>
-                </MenuItem>
-                {doctors.map((doctor) => (
-                  <MenuItem key={doctor.id} value={doctor.id}>{doctor.name}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-
-            <TextField fullWidth name="service" label="Service" value={formik.values.service} onChange={formik.handleChange} />
-
-            <TextField
-              fullWidth
-              type="datetime-local"
-              name="scheduled_at"
-              label="Scheduled At"
-              InputLabelProps={{ shrink: true }}
-              value={formik.values.scheduled_at}
-              onChange={formik.handleChange}
-              error={formik.touched.scheduled_at && Boolean(formik.errors.scheduled_at)}
-              helperText={formik.touched.scheduled_at && formik.errors.scheduled_at}
-            />
-
-            <FormControl fullWidth>
-              <InputLabel id="appt-status-label">Status</InputLabel>
-              <Select labelId="appt-status-label" name="status" label="Status" value={formik.values.status} onChange={formik.handleChange}>
-                {Object.entries(APPOINTMENT_STATUS_LABELS).map(([value, label]) => (
-                  <MenuItem key={value} value={value}>{label}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-
-            <TextField fullWidth multiline minRows={3} name="notes" label="Notes" value={formik.values.notes} onChange={formik.handleChange} />
-          </Stack>
-        </Box>
-
-        <Divider />
-        <Stack direction="row" spacing={1.5} justifyContent="flex-end" sx={{ px: 3, py: 2.25 }}>
-          <Button variant="outlined" color="inherit" onClick={onClose} disabled={isLoading}>Cancel</Button>
-          <Button type="submit" variant="contained" disabled={isLoading || !formik.isValid || (!formik.dirty && !isEdit)}>
-            {isLoading ? 'Saving...' : isEdit ? 'Save Changes' : 'Create Appointment'}
-          </Button>
-        </Stack>
+          <BirthwaveFormGridItem><TextField fullWidth name="service" label="Service" value={formik.values.service} onChange={formik.handleChange} /></BirthwaveFormGridItem>
+          <BirthwaveFormGridItem><FormControl fullWidth>
+            <InputLabel id="appt-status-label">Status</InputLabel>
+            <Select labelId="appt-status-label" name="status" label="Status" value={formik.values.status} onChange={formik.handleChange}>
+              {Object.entries(APPOINTMENT_STATUS_LABELS).map(([value, label]) => <MenuItem key={value} value={value}>{label}</MenuItem>)}
+            </Select>
+          </FormControl></BirthwaveFormGridItem>
+          <BirthwaveFormGridItem fullWidth><TextField
+            fullWidth
+            required
+            type="datetime-local"
+            name="scheduled_at"
+            label="Scheduled date and time"
+            InputLabelProps={{ shrink: true }}
+            value={formik.values.scheduled_at}
+            onChange={formik.handleChange}
+            error={formik.touched.scheduled_at && Boolean(formik.errors.scheduled_at)}
+            helperText={formik.touched.scheduled_at && formik.errors.scheduled_at}
+          /></BirthwaveFormGridItem>
+          <BirthwaveFormGridItem fullWidth><TextField fullWidth multiline minRows={3} name="notes" label="Notes" value={formik.values.notes} onChange={formik.handleChange} /></BirthwaveFormGridItem>
+        </BirthwaveFormGrid>
       </Box>
-    </Drawer>
+    </BirthwaveDrawerLayout>
   );
 };
 
