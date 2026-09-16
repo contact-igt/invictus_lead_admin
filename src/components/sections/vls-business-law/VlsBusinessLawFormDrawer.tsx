@@ -148,14 +148,31 @@ const VlsBusinessLawFormDrawer = ({
   );
 
   const viewItem = (label: string, value?: string | null, monospace = false) => (
-    <Box>
-      <Typography variant="caption" color="text.secondary" fontWeight={700}>
+    <Box
+      sx={{
+        minWidth: 0,
+        p: 1.5,
+        border: '1px solid',
+        borderColor: 'divider',
+        borderRadius: 1,
+        bgcolor: 'background.default',
+      }}
+    >
+      <Typography
+        variant="caption"
+        color="text.secondary"
+        fontWeight={700}
+        sx={{ display: 'block', mb: 0.5 }}
+      >
         {label}
       </Typography>
       <Typography
-        variant="body1"
-        mt={0.5}
-        sx={{ fontFamily: monospace ? 'monospace' : 'inherit', overflowWrap: 'anywhere' }}
+        variant="body2"
+        sx={{
+          fontFamily: monospace ? 'monospace' : 'inherit',
+          overflowWrap: 'anywhere',
+          wordBreak: 'break-word',
+        }}
       >
         {value || '-'}
       </Typography>
@@ -174,7 +191,7 @@ const VlsBusinessLawFormDrawer = ({
       open={open}
       onClose={closeDrawer}
       PaperProps={{
-        sx: { width: { xs: '100vw', sm: 620 }, maxWidth: '100vw', bgcolor: 'background.paper' },
+        sx: { width: { xs: '100vw', sm: 760 }, maxWidth: '100vw', bgcolor: 'background.paper' },
       }}
     >
       <Box
@@ -209,13 +226,24 @@ const VlsBusinessLawFormDrawer = ({
           {isView ? (
             <Stack spacing={3}>
               <Box
-                sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 3 }}
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: {
+                    xs: '1fr',
+                    sm: 'repeat(2, minmax(0, 1fr))',
+                    md: 'repeat(3, minmax(0, 1fr))',
+                  },
+                  gap: 2,
+                }}
               >
                 {viewItem('Name', registration?.name)}
                 {viewItem('Mobile', registration?.mobile)}
                 {viewItem('Email', registration?.email)}
                 {viewItem('Amount', formatVlsBusinessLawAmount(registration?.amount))}
-                {viewItem('Registered Date', formatVlsBusinessLawDate(registration?.registered_date))}
+                {viewItem(
+                  'Registered Date',
+                  formatVlsBusinessLawDate(registration?.registered_date),
+                )}
                 {viewItem('Programme Date', formatVlsBusinessLawDate(registration?.programm_date))}
                 {viewItem('Payment Status', registration?.payment_status)}
                 {viewItem('Captured', formatCaptured(registration?.captured))}
@@ -224,7 +252,15 @@ const VlsBusinessLawFormDrawer = ({
               </Box>
               <Divider />
               <Box
-                sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 3 }}
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: {
+                    xs: '1fr',
+                    sm: 'repeat(2, minmax(0, 1fr))',
+                    md: 'repeat(3, minmax(0, 1fr))',
+                  },
+                  gap: 2,
+                }}
               >
                 {viewItem('Razorpay Order ID', registration?.razorpay_order_id, true)}
                 {viewItem('Razorpay Payment ID', registration?.razorpay_payment_id, true)}
@@ -232,7 +268,15 @@ const VlsBusinessLawFormDrawer = ({
               </Box>
               <Divider />
               <Box
-                sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 3 }}
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: {
+                    xs: '1fr',
+                    sm: 'repeat(2, minmax(0, 1fr))',
+                    md: 'repeat(3, minmax(0, 1fr))',
+                  },
+                  gap: 2,
+                }}
               >
                 {viewItem('UTM Source', registration?.utm_source)}
                 {viewItem('UTM Medium', registration?.utm_medium)}
@@ -242,7 +286,15 @@ const VlsBusinessLawFormDrawer = ({
               </Box>
               <Divider />
               <Box
-                sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 3 }}
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: {
+                    xs: '1fr',
+                    sm: 'repeat(2, minmax(0, 1fr))',
+                    md: 'repeat(3, minmax(0, 1fr))',
+                  },
+                  gap: 2,
+                }}
               >
                 {viewItem('Created At', formatVlsBusinessLawDateTime(registration?.created_at))}
                 {viewItem('Updated At', formatVlsBusinessLawDateTime(registration?.updated_at))}

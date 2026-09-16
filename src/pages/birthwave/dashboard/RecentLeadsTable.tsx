@@ -12,12 +12,13 @@ interface RecentLeadsTableProps {
   loading?: boolean;
 }
 
-const formatFollowUp = (value: string | null) => {
-  if (!value) return '—';
-  return new Date(value).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
-};
 
-const COLUMNS = ['Name', 'Service', 'Source', 'Status', 'Assigned To', 'Next Follow-up', 'Action'];
+// BW-UI-004: "Next Follow-up" is gone from this table. It rendered
+// birthwave_leads.next_follow_up, a column only the manual Lead form ever writes
+// — the task engine schedules a FOLLOW_UP task and never touches it — so the
+// cell was empty on every recent lead. Live follow-ups are in the Follow-ups
+// right-rail panel (task-sourced), on the Follow-ups page, and on Lead Detail.
+const COLUMNS = ['Name', 'Service', 'Source', 'Status', 'Assigned To', 'Action'];
 
 const RecentLeadsTable = ({ clientKey, leads, loading }: RecentLeadsTableProps) => {
   const navigate = useNavigate();
@@ -120,9 +121,6 @@ const RecentLeadsTable = ({ clientKey, leads, loading }: RecentLeadsTableProps) 
                   </Box>
                   <Box component="td" sx={{ py: 1.15, pr: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK, whiteSpace: 'nowrap' }}>
                     {lead.assignedDoctor?.name || 'Unassigned'}
-                  </Box>
-                  <Box component="td" sx={{ py: 1.15, pr: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK, whiteSpace: 'nowrap' }}>
-                    {formatFollowUp(lead.next_follow_up)}
                   </Box>
                   <Box component="td" sx={{ py: 1.15, borderBottom: '1px solid', borderColor: CARD_BORDER }}>
                     <IconButton

@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Box, Chip, IconButton, Menu, MenuItem, Paper, Stack, Tooltip, Typography } from '@mui/material';
+import { Box, Chip, Menu, MenuItem, Paper, Typography } from '@mui/material';
 import { DataGrid, GridColDef, GridPaginationModel } from '@mui/x-data-grid';
-import IconifyIcon from 'components/base/IconifyIcon';
+import VlsRegistrationActionMenu from '../vls-common/VlsRegistrationActionMenu';
 import type { VlsConsumerProtectionLawMasterClassRegistration } from 'types/vlsConsumerProtectionLawMasterClass';
 import {
   formatCaptured,
@@ -45,12 +45,12 @@ const InlinePaymentStatusCell = ({
     status === 'paid'
       ? 'success'
       : status === 'attempted'
-      ? 'warning'
-      : status === 'waitlist'
-      ? 'info'
-      : status === 'failed' || status === 'cancelled'
-      ? 'error'
-      : 'default';
+        ? 'warning'
+        : status === 'waitlist'
+          ? 'info'
+          : status === 'failed' || status === 'cancelled'
+            ? 'error'
+            : 'default';
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation();
@@ -132,7 +132,14 @@ const VlsConsumerProtectionLawMasterClassTable = ({
   }));
 
   const columns: GridColDef<TableRow>[] = [
-    { field: 'serial_number', headerName: 'S.No', width: 72, sortable: false, align: 'center', headerAlign: 'center' },
+    {
+      field: 'serial_number',
+      headerName: 'S.No',
+      width: 72,
+      sortable: false,
+      align: 'center',
+      headerAlign: 'center',
+    },
     {
       field: 'name',
       headerName: 'Name',
@@ -246,7 +253,11 @@ const VlsConsumerProtectionLawMasterClassTable = ({
           label={formatCaptured(params.row.captured)}
           size="small"
           color={params.row.captured ? 'success' : 'default'}
-          variant={params.row.captured === null || params.row.captured === undefined ? 'outlined' : 'filled'}
+          variant={
+            params.row.captured === null || params.row.captured === undefined
+              ? 'outlined'
+              : 'filled'
+          }
         />
       ),
     },
@@ -293,23 +304,12 @@ const VlsConsumerProtectionLawMasterClassTable = ({
       align: 'center',
       headerAlign: 'center',
       renderCell: (params) => (
-        <Stack direction="row" spacing={0.25}>
-          <Tooltip title="View">
-            <IconButton size="small" onClick={() => onView(params.row)} aria-label="View registration">
-              <IconifyIcon icon="mdi:eye-outline" width={19} />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Edit">
-            <IconButton size="small" onClick={() => onEdit(params.row)} aria-label="Edit registration">
-              <IconifyIcon icon="mdi:pencil-outline" width={19} />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Delete">
-            <IconButton size="small" color="error" onClick={() => onDelete(params.row)} aria-label="Delete registration">
-              <IconifyIcon icon="mdi:trash-can-outline" width={19} />
-            </IconButton>
-          </Tooltip>
-        </Stack>
+        <VlsRegistrationActionMenu
+          registration={params.row}
+          onView={onView}
+          onEdit={onEdit}
+          onDelete={onDelete}
+        />
       ),
     },
   ];
@@ -340,9 +340,18 @@ const VlsConsumerProtectionLawMasterClassTable = ({
         }}
         slots={{
           noRowsOverlay: () => (
-            <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" height="100%" p={3}>
+            <Box
+              display="flex"
+              flexDirection="column"
+              alignItems="center"
+              justifyContent="center"
+              height="100%"
+              p={3}
+            >
               <Typography variant="subtitle1" color="text.secondary">
-                {hasFilters ? 'No registrations found matching your filters.' : 'No registrations available yet.'}
+                {hasFilters
+                  ? 'No registrations found matching your filters.'
+                  : 'No registrations available yet.'}
               </Typography>
             </Box>
           ),

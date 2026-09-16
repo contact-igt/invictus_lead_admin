@@ -13,6 +13,7 @@ import { clearAuthData } from 'redux/slices/auth/authSlice';
 import useColorMode from 'hooks/useColorMode';
 import paths, { buildClientPortalPath } from 'routes/paths';
 import { PORTAL_NAV_ITEMS, PortalNavChild, PortalNavItem } from './navItems';
+import { useBirthwaveTeamContextQuery } from 'components/hooks/useBirthwaveQuery';
 
 const LogoImg = '/assets/invictus-logo-light.png';
 const BORDER = 'var(--bw-border)';
@@ -33,6 +34,9 @@ const SidebarContent = ({ clientKey, onNavigate }: SidebarContentProps) => {
   const location = useLocation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { data: teamContext } = useBirthwaveTeamContextQuery(clientKey);
+  const isAdmin = Boolean(teamContext?.is_admin);
+  const canManageAttention = Boolean(isAdmin || teamContext?.memberships?.some((membership) => membership.operational_role === 'TEAM_MANAGER'));
 
   const handleLogout = () => {
     dispatch(clearAuthData());
@@ -40,13 +44,13 @@ const SidebarContent = ({ clientKey, onNavigate }: SidebarContentProps) => {
   };
 
   const childHref = (item: PortalNavItem, child: PortalNavChild) => {
-    const base = buildClientPortalPath(clientKey, item.segment);
+    const base = buildClientPortalPath(clientKey, child.segment || item.segment);
     const qs = new URLSearchParams(child.query || {}).toString();
     return qs ? `${base}?${qs}` : base;
   };
 
   const isChildActive = (item: PortalNavItem, child: PortalNavChild) => {
-    if (location.pathname !== buildClientPortalPath(clientKey, item.segment)) return false;
+    if (location.pathname !== buildClientPortalPath(clientKey, child.segment || item.segment)) return false;
     const current = new URLSearchParams(location.search).get('view') || '';
     const target = new URLSearchParams(child.query || {}).get('view') || '';
     return current === target;
@@ -61,7 +65,8 @@ const SidebarContent = ({ clientKey, onNavigate }: SidebarContentProps) => {
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const isGroupOpen = (item: PortalNavItem) =>
     openGroups[item.segment] ??
-    location.pathname === buildClientPortalPath(clientKey, item.segment);
+    (location.pathname === buildClientPortalPath(clientKey, item.segment) ||
+      Boolean(item.children?.some((child) => location.pathname === buildClientPortalPath(clientKey, child.segment || item.segment))));
 
   return (
     <Stack direction="column" height="100%" sx={{ bgcolor: 'var(--bw-surface)' }}>
@@ -86,8 +91,13 @@ const SidebarContent = ({ clientKey, onNavigate }: SidebarContentProps) => {
         spacing={0.5}
         sx={{ flexGrow: 1, px: 2, py: 2.5, overflowY: 'auto', '& a, & a:hover': { textDecoration: 'none' } }}
       >
-        {PORTAL_NAV_ITEMS.map((item) => {
-          const href = buildClientPortalPath(clientKey, item.segment);
+        {PORTAL_NAV_ITEMS.filter((item) => (!item.managerOnly || canManageAttention) && (!item.adminOnly || isAdmin)).map((item) => {
+          // BW-SVC-001: PortalNavItem.query is documented as "query params
+          // appended to the segment's path (for a plain, childless item)" but was
+          // never applied here, so a leaf item's query was silently dropped. The
+          // Services entry relies on it to open Settings on the right tab.
+          const leafQuery = new URLSearchParams(item.query || {}).toString();
+          const href = `${buildClientPortalPath(clientKey, item.segment)}${leafQuery ? `?${leafQuery}` : ''}`;
 
           if (item.children && item.children.length > 0) {
             const groupOpen = isGroupOpen(item);

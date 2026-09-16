@@ -115,10 +115,7 @@ const VlsConsumerProtectionLawMasterClassFormDrawer = ({
     </Grid>
   );
 
-  const renderDatePicker = (
-    name: 'registered_date' | 'programm_date',
-    label: string,
-  ) => {
+  const renderDatePicker = (name: 'registered_date' | 'programm_date', label: string) => {
     const rawValue = formik.values[name];
     const dayjsValue: Dayjs | null = rawValue ? dayjs(rawValue) : null;
 
@@ -147,13 +144,34 @@ const VlsConsumerProtectionLawMasterClassFormDrawer = ({
   };
 
   const renderViewItem = (label: string, value?: string | number | null) => (
-    <Grid item xs={12} sm={6}>
-      <Typography variant="caption" color="text.secondary" display="block">
-        {label}
-      </Typography>
-      <Typography variant="body2" fontWeight={500} color="text.primary">
-        {value === null || value === undefined || value === '' ? '-' : String(value)}
-      </Typography>
+    <Grid item xs={12} sm={6} md={4}>
+      <Box
+        sx={{
+          minWidth: 0,
+          p: 1.5,
+          border: '1px solid',
+          borderColor: 'divider',
+          borderRadius: 1,
+          bgcolor: 'background.default',
+        }}
+      >
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          fontWeight={700}
+          sx={{ display: 'block', mb: 0.5 }}
+        >
+          {label}
+        </Typography>
+        <Typography
+          variant="body2"
+          fontWeight={500}
+          color="text.primary"
+          sx={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }}
+        >
+          {value === null || value === undefined || value === '' ? '-' : String(value)}
+        </Typography>
+      </Box>
     </Grid>
   );
 
@@ -162,7 +180,7 @@ const VlsConsumerProtectionLawMasterClassFormDrawer = ({
       anchor="right"
       open={open}
       onClose={closeDrawer}
-      PaperProps={{ sx: { width: { xs: '100%', sm: 520 } } }}
+      PaperProps={{ sx: { width: { xs: '100vw', sm: 760 }, maxWidth: '100vw' } }}
     >
       <Box display="flex" flexDirection="column" height="100%">
         <Box p={2.5} display="flex" alignItems="center" justifyContent="space-between">
@@ -189,8 +207,14 @@ const VlsConsumerProtectionLawMasterClassFormDrawer = ({
                 {renderViewItem('City', registration.city)}
                 {renderViewItem('Profession', registration.profession)}
                 {renderViewItem('Amount', formatVlsConsumerProtectionAmount(registration.amount))}
-                {renderViewItem('Registered Date', formatVlsConsumerProtectionDate(registration.registered_date))}
-                {renderViewItem('Programme Date', formatVlsConsumerProtectionDate(registration.programm_date))}
+                {renderViewItem(
+                  'Registered Date',
+                  formatVlsConsumerProtectionDate(registration.registered_date),
+                )}
+                {renderViewItem(
+                  'Programme Date',
+                  formatVlsConsumerProtectionDate(registration.programm_date),
+                )}
                 {renderViewItem('Payment Status', registration.payment_status)}
                 {renderViewItem('Captured', formatCaptured(registration.captured))}
                 {renderViewItem('Page Name', registration.page_name)}
@@ -202,8 +226,14 @@ const VlsConsumerProtectionLawMasterClassFormDrawer = ({
                 {renderViewItem('UTM Campaign', registration.utm_campaign)}
                 {renderViewItem('UTM Term', registration.utm_term)}
                 {renderViewItem('UTM Content', registration.utm_content)}
-                {renderViewItem('Created At', formatVlsConsumerProtectionDateTime(registration.created_at))}
-                {renderViewItem('Updated At', formatVlsConsumerProtectionDateTime(registration.updated_at))}
+                {renderViewItem(
+                  'Created At',
+                  formatVlsConsumerProtectionDateTime(registration.created_at),
+                )}
+                {renderViewItem(
+                  'Updated At',
+                  formatVlsConsumerProtectionDateTime(registration.updated_at),
+                )}
               </Grid>
             </Stack>
           ) : (

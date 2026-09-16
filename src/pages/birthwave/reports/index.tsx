@@ -42,7 +42,13 @@ const ReportsPage = () => {
             <StatRow label="Appointments Booked" value={dashboard?.kpis.appointments_booked ?? 0} />
             <StatRow label="Confirmed Visits" value={dashboard?.kpis.confirmed_visits ?? 0} />
             <StatRow label="No-Shows" value={dashboard?.kpis.no_shows ?? 0} />
-            <StatRow label="Conversion Rate" value={`${dashboard?.kpis.conversion_rate ?? 0}%`} />
+            {/*
+              BW-UI-013: the Conversion Rate row is deliberately absent. The
+              frozen V1 architecture defers Conversion %, SLA, ROAS and Revenue
+              until those business definitions exist, and an appointment marked
+              completed means ATTENDED — never automatically CONVERTED — so a
+              percentage here would have implied a definition V1 has not agreed.
+            */}
           </Box>
 
           <Box sx={{ bgcolor: 'var(--bw-surface)', border: '1px solid', borderColor: CARD_BORDER, borderRadius: '14px', p: 3 }}>

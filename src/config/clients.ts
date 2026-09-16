@@ -98,13 +98,26 @@ export const ClientRegistry: Record<string, ClientConfig> = {
   },
   rio: {
     appName: "Rio", theme: { primaryColor: "#B45309" },
-    tables: [{ id: "rio", title: "Rio Leads", endpoint: "/rio", columns: [
-      { field: "name", header: "Name", type: "text", required: true },
-      { field: "mobile_number", header: "Mobile Number", type: "phone", required: true },
-      { field: "service", header: "Service", type: "select" },
-      { field: "branch", header: "Branch", type: "select" },
-      { field: "message", header: "Message", type: "textarea" },
-    ] }],
+    tables: [
+      { id: "rio", title: "Rio Leads", endpoint: "/rio", columns: [
+        { field: "name", header: "Name", type: "text", required: true },
+        { field: "mobile_number", header: "Mobile Number", type: "phone", required: true },
+        { field: "service", header: "Service", type: "select" },
+        { field: "branch", header: "Branch", type: "select" },
+        { field: "message", header: "Message", type: "textarea" },
+      ] },
+      { id: "vaccine-chart", title: "Vaccine Chart Leads", endpoint: "/rio-vaccine-chart", columns: [
+        { field: "registration_number", header: "Registration Number", type: "text", required: true, minWidth: 150, flex: 0.9 },
+        { field: "parent_name", header: "Parent Name", type: "text", required: true, minWidth: 160, flex: 1.1 },
+        { field: "child_name", header: "Child Name", type: "text", required: true, minWidth: 160, flex: 1.1 },
+        { field: "phone", header: "Phone", type: "phone", required: true, minWidth: 140, flex: 1 },
+        { field: "dob", header: "Child DOB", type: "date", required: true, minWidth: 140, flex: 1 },
+        { field: "gender", header: "Gender", type: "select", options: ["Male", "Female"], minWidth: 110, flex: 0.7 },
+        { field: "ip_address", header: "IP Address", type: "text", minWidth: 130, flex: 0.9 },
+        { field: "utm_source", header: "UTM Source", type: "text", minWidth: 130, flex: 0.9 },
+        { field: "created_at", header: "Submitted On", type: "date", minWidth: 170, flex: 1 },
+      ] },
+    ],
   },
   shanti_eye_tech: {
     appName: 'Shanti Eye Tech',

@@ -6,6 +6,7 @@ import { useBirthwaveScope } from '../useBirthwaveScope';
 import PortalPageHeader from '../PortalPageHeader';
 import CrmConfigurationPanel from './CrmConfigurationPanel';
 import IntegrationsPanel from './IntegrationsPanel';
+import ServicesManager from './ServicesManager';
 
 const CARD_BORDER = 'var(--bw-border)';
 const TEXT_DARK = 'var(--bw-text)';
@@ -22,7 +23,7 @@ const SettingsPage = () => {
   const { user } = useAuth();
   const { scopedClientKey } = useBirthwaveScope();
   const [searchParams] = useSearchParams();
-  const [tab, setTab] = useState(searchParams.get('tab') === 'crm' ? 1 : 0);
+  const [tab, setTab] = useState(searchParams.get('tab') === 'services' ? 1 : searchParams.get('tab') === 'crm' ? 2 : 0);
 
   return (
     <Box sx={{ p: { xs: 2, sm: 3, lg: 4 } }}>
@@ -36,6 +37,8 @@ const SettingsPage = () => {
         sx={{ mb: 2.5, borderBottom: '1px solid', borderColor: CARD_BORDER, '& .MuiTab-root': { textTransform: 'none', fontWeight: 700, fontSize: '0.85rem' } }}
       >
         <Tab label="Account" />
+        {/* BW-SVC-001: the service master lives here — Birthwave → Settings → Services. */}
+        <Tab label="Services" />
         <Tab label="CRM Configuration" />
         <Tab label="Integrations" />
       </Tabs>
@@ -52,11 +55,17 @@ const SettingsPage = () => {
 
       {tab === 1 && (
         <Box sx={{ bgcolor: 'var(--bw-surface)', border: '1px solid', borderColor: CARD_BORDER, borderRadius: '14px', p: { xs: 2, sm: 3 } }}>
-          <CrmConfigurationPanel clientKey={scopedClientKey} />
+          <ServicesManager clientKey={scopedClientKey} canManage={['super-admin', 'admin', 'client'].includes(String(user?.role || '').toLowerCase())} />
         </Box>
       )}
 
       {tab === 2 && (
+        <Box sx={{ bgcolor: 'var(--bw-surface)', border: '1px solid', borderColor: CARD_BORDER, borderRadius: '14px', p: { xs: 2, sm: 3 } }}>
+          <CrmConfigurationPanel clientKey={scopedClientKey} />
+        </Box>
+      )}
+
+      {tab === 3 && (
         <Box sx={{ bgcolor: 'var(--bw-surface)', border: '1px solid', borderColor: CARD_BORDER, borderRadius: '14px', p: { xs: 2, sm: 3 } }}>
           <IntegrationsPanel clientKey={scopedClientKey} />
         </Box>

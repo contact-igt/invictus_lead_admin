@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Box, Button, IconButton, MenuItem, Select, Stack, TextField, Typography } from '@mui/material';
+import { Alert, AlertTitle, Box, Button, IconButton, MenuItem, Select, Stack, TextField, Typography } from '@mui/material';
 import { Icon } from '@iconify/react';
 import { useCrmFieldsQuery, useCrmMappingsQuery, useSaveCrmMappingsMutation } from 'components/hooks/useCrmQuery';
 import { CrmProvider } from 'services/crm';
@@ -64,8 +64,21 @@ const FieldMappingPanel = ({ clientKey }: FieldMappingPanelProps) => {
 
   return (
     <Box>
+      {/*
+        BW-UI-012: the old copy claimed these mappings were "used by the
+        ingestion pipeline" — they are not. A repo grep for CrmFieldMapping
+        outside crm.service.js returns nothing; Repli ingestion normalises its
+        payload in normalizeRepliBirthwaveLead.js and never reads this table.
+        Saved rows persist, but they change no ingestion behaviour in V1.
+      */}
+      <Alert severity="info" sx={{ mb: 2 }}>
+        <AlertTitle sx={{ fontWeight: 700 }}>Saved for reference only — not yet applied to ingestion</AlertTitle>
+        Incoming leads are currently mapped by the provider integration itself. Mappings
+        defined here are stored against your account but are not used to transform
+        incoming payloads in V1.
+      </Alert>
       <Typography sx={{ fontSize: '0.85rem', color: TEXT_MUTED, mb: 2 }}>
-        Map each provider&apos;s payload field onto a standard or custom lead field. Used by the ingestion pipeline to turn incoming leads into Birthwave leads.
+        Record how each provider&apos;s payload field is intended to map onto a standard or custom lead field.
       </Typography>
 
       <Select size="small" value={provider} onChange={(e) => setProvider(e.target.value as CrmProvider)} sx={{ minWidth: 200, mb: 2 }}>

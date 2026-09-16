@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import {
+  Alert,
+  AlertTitle,
   Box,
   Button,
   Chip,
@@ -63,8 +65,22 @@ const IntegrationsPanel = ({ clientKey }: IntegrationsPanelProps) => {
 
   return (
     <Box>
+      {/*
+        BW-UI-012: nothing in the ingestion path reads crm_integrations — a repo
+        grep for CrmIntegration across modules/integrations/ returns no hits.
+        The live Repli connection is configured entirely from backend
+        environment variables (REPLI_BIRTHWAVE_*), so saving anything here
+        changes no ingestion behaviour. Presenting "Connected" and an API-key
+        field without this notice implied a working control panel.
+      */}
+      <Alert severity="info" sx={{ mb: 2 }}>
+        <AlertTitle sx={{ fontWeight: 700 }}>Stored for reference only — not yet applied to ingestion</AlertTitle>
+        Live lead ingestion is configured on the server, not here. Values saved on this
+        page are recorded against your account but do not enable, disable or
+        reconfigure any live integration in V1.
+      </Alert>
       <Typography sx={{ fontSize: '0.85rem', color: TEXT_MUTED, mb: 2 }}>
-        Connect lead sources to Birthwave. Status reflects the real connection state — a provider only shows Connected after it has actually processed an event.
+        Reference record of the lead sources intended for this account.
       </Typography>
 
       {isLoading ? (

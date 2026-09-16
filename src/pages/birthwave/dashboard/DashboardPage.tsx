@@ -9,8 +9,6 @@ import { cardSx, GREEN, TEXT_DARK, TEXT_MUTED } from './ui';
 import { buildClientPortalPath } from 'routes/paths';
 import {
   DateRangePreset,
-  percentChange,
-  resolveComparisonRange,
   resolvePresetRange,
 } from '../dateRangePresets';
 import DateRangeControl from '../DateRangeControl';
@@ -96,7 +94,7 @@ const DashboardPage = () => {
   const [addLeadOpen, setAddLeadOpen] = useState(false);
   const [source, setSource] = useState('');
 
-  const preset = (searchParams.get('range') as DateRangePreset) || '30d';
+  const preset = (searchParams.get('range') as DateRangePreset) || 'today';
   const customFrom = searchParams.get('from') || '';
   const customTo = searchParams.get('to') || '';
 
@@ -131,11 +129,6 @@ const DashboardPage = () => {
     return resolvePresetRange(preset);
   }, [preset, customFrom, customTo]);
 
-  const comparisonRange = useMemo(
-    () => (resolvedRange ? resolveComparisonRange(resolvedRange) : null),
-    [resolvedRange],
-  );
-
   const dashboardParams = useMemo(
     () => ({
       ...(resolvedRange ? { start_date: resolvedRange.startDate, end_date: resolvedRange.endDate } : {}),
@@ -144,16 +137,8 @@ const DashboardPage = () => {
     [resolvedRange, source],
   );
 
-  const comparisonParams = useMemo(
-    () => (comparisonRange ? { start_date: comparisonRange.startDate, end_date: comparisonRange.endDate, ...(source ? { source } : {}) } : {}),
-    [comparisonRange, source],
-  );
-
   const { data: dashboard, isLoading } = useBirthwaveDashboardQuery(scopedClientKey, dashboardParams, {
     enabled: hasScope,
-  });
-  const { data: comparison } = useBirthwaveDashboardQuery(scopedClientKey, comparisonParams, {
-    enabled: hasScope && Boolean(comparisonRange),
   });
   const { data: doctors = [] } = useBirthwaveDoctorsQuery(scopedClientKey, { active: true }, { enabled: hasScope });
 
@@ -176,15 +161,11 @@ const DashboardPage = () => {
   };
 
   const kpis = dashboard?.kpis;
-  const cmp = comparison?.kpis;
+  const operational = dashboard?.operational;
+  const op = operational?.kpis || {};
   const kpiCards: KpiConfig[] = [
-    { id: 'total', label: 'Total Leads', value: kpis?.total_leads ?? 0, icon: 'solar:users-group-two-rounded-linear', color: GREEN, trend: cmp ? percentChange(kpis?.total_leads ?? 0, cmp.total_leads) : null, onClick: () => goToLeads() },
-    { id: 'new-today', label: 'New Leads Today', value: kpis?.new_leads_today ?? 0, icon: 'solar:user-plus-rounded-linear', color: '#2563EB', trend: null, onClick: () => goToLeads({ status: 'new_lead' }) },
-    { id: 'appts', label: 'Appointments Booked', value: kpis?.appointments_booked ?? 0, icon: 'solar:calendar-mark-linear', color: '#F59E0B', trend: cmp ? percentChange(kpis?.appointments_booked ?? 0, cmp.appointments_booked) : null, onClick: () => goToAppointments() },
-    { id: 'confirmed', label: 'Confirmed Visits', value: kpis?.confirmed_visits ?? 0, icon: 'solar:check-circle-linear', color: '#16A34A', trend: cmp ? percentChange(kpis?.confirmed_visits ?? 0, cmp.confirmed_visits) : null, onClick: () => goToAppointments({ status: 'confirmed' }) },
-    { id: 'no-shows', label: 'No-Shows', value: kpis?.no_shows ?? 0, icon: 'solar:close-circle-linear', color: '#EF4444', trend: cmp ? percentChange(kpis?.no_shows ?? 0, cmp.no_shows) : null, onClick: () => goToAppointments({ status: 'no_show' }) },
-    { id: 'conversion', label: 'Conversion Rate', value: `${kpis?.conversion_rate ?? 0}%`, icon: 'solar:graph-up-linear', color: '#7C3AED', trend: cmp ? percentChange(kpis?.conversion_rate ?? 0, cmp.conversion_rate) : null, onClick: () => goToLeads({ status: 'converted' }) },
-  ];
+    ['new_leads', 'New Leads', 'solar:user-plus-rounded-linear', '#2563EB'], ['assigned_leads', 'Assigned Leads', 'hugeicons:user-check-02', GREEN], ['unassigned_leads', 'Unassigned Leads', 'hugeicons:user-question-02', '#EF4444'], ['tasks_due_today', 'Tasks Due Today', 'hugeicons:task-02', '#F59E0B'], ['tasks_completed_today', 'Tasks Completed Today', 'solar:check-circle-linear', '#16A34A'], ['overdue_tasks', 'Overdue Tasks', 'solar:alarm-linear', '#EF4444'], ['follow_ups_due', 'Follow-ups Due', 'solar:clock-circle-linear', '#7C3AED'], ['appointments_today', 'Appointments Today', 'solar:calendar-mark-linear', '#0EA5E9'], ['appointments_completed_attended', 'Completed / Attended', 'solar:check-circle-linear', '#16A34A'], ['no_shows', 'No Shows', 'solar:close-circle-linear', '#EF4444'], ['open_attention', 'Open Needs Attention', 'hugeicons:alert-02', '#DC2626'], ['lost_leads', 'Lost Leads', 'solar:archive-down-minimalistic-linear', '#64748B'], ['invalid_leads', 'Invalid Leads', 'solar:danger-triangle-linear', '#64748B'],
+  ].map(([id, label, icon, color]) => ({ id, label, value: op[id] ?? 0, icon, color, trend: null }));
 
   return (
     <Box sx={{ p: { xs: 2, sm: 3, lg: 4 } }}>
@@ -250,6 +231,12 @@ const DashboardPage = () => {
           <KpiCard key={kpi.id} {...kpi} />
         ))}
       </Stack>
+
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr 1fr' }, gap: 2.5, mb: 2.5 }}>
+        <Box sx={{ ...cardSx, p: 2.25 }}><Typography sx={{ fontWeight: 800, color: TEXT_DARK, mb: 1.5 }}>Lead Sources</Typography>{(operational?.lead_sources || []).slice(0, 8).map((row) => <Stack key={row.source} direction="row" justifyContent="space-between" sx={{ py: 0.55 }}><Typography variant="body2" color="text.secondary">{row.source}</Typography><Typography variant="body2" fontWeight={800}>{row.count}</Typography></Stack>)}{!operational?.lead_sources?.length && <Typography variant="body2" color="text.secondary">No leads in this range.</Typography>}</Box>
+        <Box sx={{ ...cardSx, p: 2.25 }}><Typography sx={{ fontWeight: 800, color: TEXT_DARK, mb: 1.5 }}>Services</Typography>{(operational?.service_breakdown || []).slice(0, 8).map((row) => <Stack key={row.service} direction="row" justifyContent="space-between" sx={{ py: 0.55 }}><Typography variant="body2" color="text.secondary">{row.service}</Typography><Typography variant="body2" fontWeight={800}>{row.count}</Typography></Stack>)}{!operational?.service_breakdown?.length && <Typography variant="body2" color="text.secondary">No services in this range.</Typography>}</Box>
+        <Box sx={{ ...cardSx, p: 2.25 }}><Typography sx={{ fontWeight: 800, color: TEXT_DARK, mb: 1.5 }}>Appointments Today</Typography>{Object.entries(operational?.appointment_summary || {}).map(([key, value]) => <Stack key={key} direction="row" justifyContent="space-between" sx={{ py: 0.55 }}><Typography variant="body2" color="text.secondary">{key.replace(/_/g, ' ')}</Typography><Typography variant="body2" fontWeight={800}>{value}</Typography></Stack>)}</Box>
+      </Box>
 
       {/* Analytics row */}
       <Box

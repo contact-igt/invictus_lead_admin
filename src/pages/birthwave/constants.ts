@@ -2,14 +2,30 @@ export const LEAD_STATUS_ORDER = ['new_lead', 'contacted', 'consultation_booked'
 
 export const LEAD_STATUS_LABELS: Record<string, string> = {
   new_lead: 'New Lead',
+  assigned: 'Assigned',
   contacted: 'Contacted',
   consultation_booked: 'Consultation Booked',
   visited: 'Visited',
   converted: 'Converted',
 };
 
+export const LEAD_STAGE_LABELS: Record<string, string> = {
+  NEW: 'New',
+  ASSIGNED: 'Assigned',
+  CONTACTING: 'Contacting',
+  CONTACTED: 'Contacted',
+  QUALIFIED: 'Qualified',
+  INTERESTED: 'Interested',
+  APPOINTMENT_SCHEDULED: 'Appointment Scheduled',
+  ATTENDED: 'Attended',
+  CONVERTED: 'Converted',
+  LOST: 'Lost',
+  INVALID: 'Invalid',
+};
+
 export const LEAD_STATUS_COLORS: Record<string, { bg: string; fg: string }> = {
   new_lead: { bg: 'var(--bw-tint-blue)', fg: '#2563EB' },
+  assigned: { bg: 'var(--bw-tint-green)', fg: '#15803D' },
   contacted: { bg: 'var(--bw-tint-amber)', fg: '#F59E0B' },
   consultation_booked: { bg: 'var(--bw-tint-green)', fg: '#16A34A' },
   visited: { bg: 'var(--bw-tint-violet)', fg: '#7C3AED' },

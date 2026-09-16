@@ -42,7 +42,12 @@ export default {
 
   // Client portal route family (currently Birthwave only)
   clientPortalDashboard: `/${rootPaths.pageRoot}/d/:clientKey/portal/dashboard`,
+  clientPortalMyWork: `/${rootPaths.pageRoot}/d/:clientKey/portal/my-work`,
+  clientPortalAttention: `/${rootPaths.pageRoot}/d/:clientKey/portal/attention`,
   clientPortalLeads: `/${rootPaths.pageRoot}/d/:clientKey/portal/leads`,
+  clientPortalTeams: `/${rootPaths.pageRoot}/d/:clientKey/portal/teams`,
+  clientPortalTeamMembers: `/${rootPaths.pageRoot}/d/:clientKey/portal/team-members`,
+  clientPortalAssignmentRules: `/${rootPaths.pageRoot}/d/:clientKey/portal/assignment-rules`,
   clientPortalAppointments: `/${rootPaths.pageRoot}/d/:clientKey/portal/appointments`,
   clientPortalDoctors: `/${rootPaths.pageRoot}/d/:clientKey/portal/doctors`,
   clientPortalCampaignSources: `/${rootPaths.pageRoot}/d/:clientKey/portal/campaign-sources`,
