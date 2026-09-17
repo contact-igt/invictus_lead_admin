@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
-import { Paper, Stack, Drawer, Box, Button, TextField } from '@mui/material';
+import { Paper, Stack, Drawer, Box, Button, TextField, MenuItem, Select, InputLabel, FormControl } from '@mui/material';
 import { useSnackbar } from 'notistack';
 import { saveAs } from 'file-saver';
 import PageTitle from 'components/common/PageTitle';
@@ -67,6 +67,7 @@ const DynamicSection = ({ config, clientKey }: DynamicSectionProps) => {
   const { enqueueSnackbar } = useSnackbar();
   const { user } = useAuth();
   const [searchText, setSearchText] = useState('');
+  const [columnFilters, setColumnFilters] = useState<Record<string, string>>({});
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isViewOnly, setIsViewOnly] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<any | null>(null);
@@ -90,18 +91,64 @@ const DynamicSection = ({ config, clientKey }: DynamicSectionProps) => {
     { staleTime: 5 * 60 * 1000 }
   );
 
+  const filterableColumns = useMemo(
+    () => config.columns.filter((column) => column.filterable),
+    [config.columns],
+  );
+
+  // Dropdown choices per filterable field: the column's own fixed `options`
+  // when present (e.g. a status_chip), otherwise every distinct value
+  // actually seen in the loaded data (e.g. a free-text course name) — so a
+  // new course shows up as a filter choice automatically, no config change.
+  const filterOptionsByField = useMemo(() => {
+    const records = data?.data || [];
+    const result: Record<string, string[]> = {};
+
+    filterableColumns.forEach((column) => {
+      if (column.options?.length) {
+        result[column.field] = column.options;
+        return;
+      }
+      const distinct = new Set<string>();
+      records.forEach((record: any) => {
+        const value = record?.[column.field];
+        if (value !== null && value !== undefined && String(value).trim() !== '') {
+          distinct.add(String(value));
+        }
+      });
+      result[column.field] = Array.from(distinct).sort((a, b) => a.localeCompare(b));
+    });
+
+    return result;
+  }, [data?.data, filterableColumns]);
+
+  const humanizeOptionLabel = (value: string) =>
+    value
+      .replace(/[_-]+/g, ' ')
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+
   const visibleRecords = useMemo(() => {
     const records = data?.data || [];
     const normalizedSearch = searchText.trim().toLowerCase();
     const sourceRecords = isPixelEyeLeads ? sortByLatestActivity(records) : records;
-    if (!normalizedSearch) return sourceRecords;
 
-    return sourceRecords.filter((record: any) =>
-      config.columns.some((column) =>
+    const activeColumnFilters = Object.entries(columnFilters).filter(([, value]) => value);
+
+    return sourceRecords.filter((record: any) => {
+      if (activeColumnFilters.length > 0) {
+        const matchesAllFilters = activeColumnFilters.every(
+          ([field, value]) => String(record?.[field] ?? '') === value,
+        );
+        if (!matchesAllFilters) return false;
+      }
+
+      if (!normalizedSearch) return true;
+
+      return config.columns.some((column) =>
         String(record?.[column.field] ?? '').toLowerCase().includes(normalizedSearch),
-      ),
-    );
-  }, [config.columns, data?.data, isPixelEyeLeads, searchText]);
+      );
+    });
+  }, [columnFilters, config.columns, data?.data, isPixelEyeLeads, searchText]);
 
   const tableRecords = useMemo(() => {
     if (!isPixelEyeLeads) return visibleRecords;
@@ -283,6 +330,36 @@ const DynamicSection = ({ config, clientKey }: DynamicSectionProps) => {
         handleInputChange={(e: any) => setSearchText(e.target.value)}
         openModal={() => handleOpenDrawer(null)}
       />
+
+      {filterableColumns.length > 0 && (
+        <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', alignItems: 'center' }}>
+          {filterableColumns.map((column) => (
+            <FormControl key={column.field} size="small" sx={{ minWidth: 180 }}>
+              <InputLabel id={`filter-${column.field}-label`}>{column.header}</InputLabel>
+              <Select
+                labelId={`filter-${column.field}-label`}
+                label={column.header}
+                value={columnFilters[column.field] || ''}
+                onChange={(event) =>
+                  setColumnFilters((prev) => ({ ...prev, [column.field]: event.target.value }))
+                }
+              >
+                <MenuItem value="">{`All ${column.header}`}</MenuItem>
+                {(filterOptionsByField[column.field] || []).map((option) => (
+                  <MenuItem key={option} value={option}>
+                    {humanizeOptionLabel(option)}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          ))}
+          {Object.values(columnFilters).some(Boolean) && (
+            <Button size="small" onClick={() => setColumnFilters({})} sx={{ textTransform: 'none' }}>
+              Clear filters
+            </Button>
+          )}
+        </Box>
+      )}
 
       <Paper
         elevation={0}

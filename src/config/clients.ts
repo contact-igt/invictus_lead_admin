@@ -8,6 +8,11 @@ export interface ColumnConfig {
   flex?: number;
   minWidth?: number;
   required?: boolean;
+  // Shows a dropdown filter above the table for this column. Uses `options`
+  // as the fixed choice list when present (e.g. a status_chip); otherwise
+  // the choices are derived from the distinct values actually in the data
+  // (e.g. free-text columns like a course name).
+  filterable?: boolean;
 }
 export interface DashboardMetricConfig {
   key: string;
@@ -402,6 +407,59 @@ export const ClientRegistry: Record<string, ClientConfig> = {
           { key: "vls_ai_advocate_attempted", label: "Attempted", type: "filter_count", filterField: "payment_status", filterValue: "attempted", color: "warning", icon: "mingcute:time-line" },
           { key: "vls_ai_advocate_failed", label: "Failed", type: "filter_count", filterField: "payment_status", filterValue: "failed", color: "error", icon: "mingcute:close-circle-line" },
           { key: "vls_ai_advocate_waitlist", label: "Waitlist", type: "filter_count", filterField: "payment_status", filterValue: "waitlist", color: "warning", icon: "mingcute:user-wait-line" },
+        ],
+      },
+
+      // -- TABLE 8: WEBSITE ENQUIRIES (vls-frontend /contact page) -----------
+      {
+        id: "vls-contact",
+        title: "Website Enquiries",
+        endpoint: "/vls-contact",
+        columns: [
+          { field: "name", header: "Name", type: "text", flex: 1.3, minWidth: 150, required: true },
+          { field: "mobile", header: "Mobile", type: "phone", flex: 1.1, minWidth: 130 },
+          { field: "email", header: "Email", type: "email", flex: 1.3, minWidth: 160 },
+          { field: "message", header: "Message", type: "textarea", flex: 2, minWidth: 220 },
+          { field: "ip_address", header: "IP Address", type: "text", flex: 1, minWidth: 120 },
+          { field: "utm_source", header: "UTM Source", type: "text", flex: 1, minWidth: 120 },
+        ],
+        metrics: [
+          { key: "vls_contact_total", label: "Total Enquiries", type: "count", color: "primary", icon: "mingcute:mail-line" },
+          { key: "vls_contact_today", label: "Today's Enquiries", type: "today_count", filterField: "created_at", color: "info", icon: "mingcute:calendar-2-line" },
+          { key: "vls_contact_month", label: "This Month", type: "this_month_count", filterField: "created_at", color: "secondary", icon: "mingcute:calendar-month-line" },
+        ],
+      },
+
+      // -- TABLE 9: COURSE DETAILS (Enroll Now / Download Syllabus, all courses) --
+      {
+        id: "vls-course-details",
+        title: "Course Details",
+        endpoint: "/vls-course-details",
+        columns: [
+          { field: "name", header: "Name", type: "text", flex: 1.3, minWidth: 150, required: true },
+          { field: "mobile", header: "Mobile", type: "phone", flex: 1.1, minWidth: 130 },
+          { field: "email", header: "Email", type: "email", flex: 1.3, minWidth: 160 },
+          { field: "course", header: "Course", type: "text", flex: 1.4, minWidth: 180, required: true, filterable: true },
+          {
+            field: "submission_type",
+            header: "Submission Type",
+            type: "status_chip",
+            flex: 1.2,
+            minWidth: 160,
+            required: true,
+            options: ["register_now", "download_syllabus"],
+            filterable: true,
+          },
+          { field: "call_time", header: "Call Time", type: "text", flex: 1.1, minWidth: 150 },
+          { field: "class_mode", header: "Class Mode", type: "text", flex: 1, minWidth: 130 },
+          { field: "ip_address", header: "IP Address", type: "text", flex: 1, minWidth: 120 },
+          { field: "utm_source", header: "UTM Source", type: "text", flex: 1, minWidth: 120 },
+        ],
+        metrics: [
+          { key: "vls_course_total", label: "Total Submissions", type: "count", color: "primary", icon: "mingcute:book-6-line" },
+          { key: "vls_course_register", label: "Register Now", type: "filter_count", filterField: "submission_type", filterValue: "register_now", color: "success", icon: "mingcute:user-add-2-line" },
+          { key: "vls_course_syllabus", label: "Download Syllabus", type: "filter_count", filterField: "submission_type", filterValue: "download_syllabus", color: "info", icon: "mingcute:file-download-line" },
+          { key: "vls_course_today", label: "Today's Submissions", type: "today_count", filterField: "created_at", color: "secondary", icon: "mingcute:calendar-2-line" },
         ],
       },
     ]
