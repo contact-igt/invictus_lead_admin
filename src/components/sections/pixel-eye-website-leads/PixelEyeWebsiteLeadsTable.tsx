@@ -97,6 +97,23 @@ const PixelEyeWebsiteLeadsTable = ({
         ),
     },
     {
+      field: 'source_key',
+      headerName: 'Landing Page',
+      minWidth: 140,
+      flex: 0.9,
+      renderCell: (params) =>
+        params.row.source_key ? (
+          <Chip
+            label={String(params.row.source_key).replace(/^./, (c: string) => c.toUpperCase())}
+            size="small"
+            color="primary"
+            variant="outlined"
+          />
+        ) : (
+          '-'
+        ),
+    },
+    {
       field: 'ip_address',
       headerName: 'IP Address',
       minWidth: 145,

@@ -15,6 +15,7 @@ export interface PixelEyeWebsiteLead {
   service: PixelEyeWebsiteLeadService | null;
   ip_address: string | null;
   utm_source: string | null;
+  source_key?: string | null;
   created_at: string;
   updated_at: string;
 }

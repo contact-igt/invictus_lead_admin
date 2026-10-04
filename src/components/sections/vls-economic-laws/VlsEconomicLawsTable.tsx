@@ -1,0 +1,395 @@
+import { useState } from 'react';
+import { Box, Chip, Menu, MenuItem, Paper, Typography } from '@mui/material';
+import { DataGrid, GridColDef, GridPaginationModel } from '@mui/x-data-grid';
+import IconifyIcon from 'components/base/IconifyIcon';
+import VlsRegistrationActionMenu from '../vls-common/VlsRegistrationActionMenu';
+import type { VlsEconomicLawsRegistration } from 'types/vlsEconomicLaws';
+import {
+  formatCaptured,
+  formatVlsEconomicLawsAmount,
+  formatVlsEconomicLawsDate,
+  formatVlsEconomicLawsDateTime,
+  VLS_ECONOMIC_LAWS_PAYMENT_STATUS_OPTIONS,
+} from './vlsEconomicLawsUtils';
+
+interface VlsEconomicLawsTableProps {
+  rows: VlsEconomicLawsRegistration[];
+  page: number;
+  limit: number;
+  total: number;
+  isLoading: boolean;
+  hasFilters: boolean;
+  onPaginationChange: (page: number, limit: number) => void;
+  onView: (registration: VlsEconomicLawsRegistration) => void;
+  onEdit: (registration: VlsEconomicLawsRegistration) => void;
+  onDelete: (registration: VlsEconomicLawsRegistration) => void;
+  onStatusChange?: (id: number, paymentStatus: string) => void;
+}
+
+interface TableRow extends VlsEconomicLawsRegistration {
+  serial_number: number;
+}
+
+const InlinePaymentStatusCell = ({
+  status,
+  rowId,
+  onStatusChange,
+}: {
+  status: string | null | undefined;
+  rowId: number;
+  onStatusChange?: (id: number, paymentStatus: string) => void;
+}) => {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+  const displayStatus = status || '-';
+  const color =
+    status === 'paid'
+      ? 'success'
+      : status === 'attempted'
+        ? 'warning'
+        : status === 'waitlist'
+          ? 'info'
+          : status === 'failed' || status === 'cancelled'
+            ? 'error'
+            : 'default';
+
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    event.stopPropagation();
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = (event?: React.MouseEvent) => {
+    if (event) event.stopPropagation();
+    setAnchorEl(null);
+  };
+
+  const handleSelectOption = (event: React.MouseEvent, option: string) => {
+    event.stopPropagation();
+    setAnchorEl(null);
+    if (option !== status && onStatusChange) {
+      onStatusChange(rowId, option);
+    }
+  };
+
+  return (
+    <>
+      <Chip
+        label={displayStatus}
+        size="small"
+        color={color}
+        variant="outlined"
+        onClick={handleClick}
+        sx={{
+          cursor: 'pointer',
+          fontWeight: 600,
+          fontSize: '0.75rem',
+          '&:hover': { opacity: 0.85, boxShadow: 1 },
+        }}
+      />
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={() => handleClose()}
+        onClick={(e) => e.stopPropagation()}
+        slotProps={{
+          paper: {
+            sx: {
+              minWidth: 140,
+            },
+          },
+        }}
+      >
+        {VLS_ECONOMIC_LAWS_PAYMENT_STATUS_OPTIONS.map((option) => (
+          <MenuItem
+            key={option}
+            selected={option === status}
+            onClick={(e) => handleSelectOption(e, option)}
+            sx={{ fontSize: '0.85rem', textTransform: 'capitalize' }}
+          >
+            {option}
+          </MenuItem>
+        ))}
+      </Menu>
+    </>
+  );
+};
+
+const VlsEconomicLawsTable = ({
+  rows,
+  page,
+  limit,
+  total,
+  isLoading,
+  hasFilters,
+  onPaginationChange,
+  onView,
+  onEdit,
+  onDelete,
+  onStatusChange,
+}: VlsEconomicLawsTableProps) => {
+  const tableRows: TableRow[] = rows.map((row, index) => ({
+    ...row,
+    serial_number: (page - 1) * limit + index + 1,
+  }));
+
+  const columns: GridColDef<TableRow>[] = [
+    {
+      field: 'serial_number',
+      headerName: 'S.No',
+      width: 72,
+      sortable: false,
+      align: 'center',
+      headerAlign: 'center',
+    },
+    {
+      field: 'name',
+      headerName: 'Name',
+      minWidth: 180,
+      flex: 1.2,
+      renderCell: (params) => (
+        <Typography variant="body2" fontWeight={650} noWrap title={params.row.name}>
+          {params.row.name || '-'}
+        </Typography>
+      ),
+    },
+    {
+      field: 'mobile',
+      headerName: 'Mobile',
+      minWidth: 135,
+      flex: 0.85,
+      renderCell: (params) => (
+        <Typography variant="body2" sx={{ fontVariantNumeric: 'tabular-nums' }}>
+          {params.row.mobile || '-'}
+        </Typography>
+      ),
+    },
+    {
+      field: 'email',
+      headerName: 'Email',
+      minWidth: 190,
+      flex: 1.2,
+      renderCell: (params) => (
+        <Typography variant="body2" noWrap title={params.row.email || ''}>
+          {params.row.email || '-'}
+        </Typography>
+      ),
+    },
+    {
+      field: 'amount',
+      headerName: 'Amount',
+      minWidth: 120,
+      flex: 0.75,
+      align: 'right',
+      headerAlign: 'right',
+      renderCell: (params) => (
+        <Typography variant="body2" fontWeight={650}>
+          {formatVlsEconomicLawsAmount(params.row.amount)}
+        </Typography>
+      ),
+    },
+    {
+      field: 'registered_date',
+      headerName: 'Registered Date',
+      minWidth: 195,
+      flex: 1.5,
+      renderCell: (params) => (
+        <Typography variant="body2" color="text.secondary">
+          {formatVlsEconomicLawsDate(params.row.registered_date)}
+        </Typography>
+      ),
+    },
+    {
+      field: 'programm_date',
+      headerName: 'Programme Date',
+      minWidth: 150,
+      flex: 1.1,
+      renderCell: (params) => (
+        <Typography variant="body2" color="text.secondary">
+          {formatVlsEconomicLawsDate(params.row.programm_date)}
+        </Typography>
+      ),
+    },
+    {
+      field: 'payment_status',
+      headerName: 'Payment Status',
+      minWidth: 145,
+      flex: 0.9,
+      renderCell: (params) => (
+        <InlinePaymentStatusCell
+          status={params.row.payment_status}
+          rowId={params.row.id}
+          onStatusChange={onStatusChange}
+        />
+      ),
+    },
+    {
+      field: 'captured',
+      headerName: 'Captured',
+      minWidth: 115,
+      flex: 0.65,
+      renderCell: (params) => (
+        <Chip
+          label={formatCaptured(params.row.captured)}
+          size="small"
+          color={params.row.captured ? 'success' : 'default'}
+          variant={
+            params.row.captured === null || params.row.captured === undefined
+              ? 'outlined'
+              : 'filled'
+          }
+        />
+      ),
+    },
+    {
+      field: 'razorpay_order_id',
+      headerName: 'Razorpay Order ID',
+      minWidth: 175,
+      flex: 1,
+      renderCell: (params) => (
+        <Typography
+          variant="body2"
+          noWrap
+          title={params.row.razorpay_order_id || ''}
+          sx={{ fontFamily: 'monospace', fontSize: '0.78rem' }}
+        >
+          {params.row.razorpay_order_id || '-'}
+        </Typography>
+      ),
+    },
+    {
+      field: 'page_name',
+      headerName: 'Page Name',
+      minWidth: 160,
+      flex: 1,
+      renderCell: (params) => (
+        <Typography variant="body2" noWrap title={params.row.page_name || ''}>
+          {params.row.page_name || '-'}
+        </Typography>
+      ),
+    },
+    {
+      field: 'utm_source',
+      headerName: 'UTM Source',
+      minWidth: 130,
+      flex: 0.8,
+      renderCell: (params) =>
+        params.row.utm_source ? (
+          <Chip label={params.row.utm_source} size="small" color="info" variant="outlined" />
+        ) : (
+          '-'
+        ),
+    },
+    {
+      field: 'utm_medium',
+      headerName: 'UTM Medium',
+      minWidth: 130,
+      flex: 0.8,
+      renderCell: (params) => (
+        <Typography variant="body2" noWrap title={params.row.utm_medium || ''}>
+          {params.row.utm_medium || '-'}
+        </Typography>
+      ),
+    },
+    {
+      field: 'utm_campaign',
+      headerName: 'UTM Campaign',
+      minWidth: 150,
+      flex: 0.9,
+      renderCell: (params) => (
+        <Typography variant="body2" noWrap title={params.row.utm_campaign || ''}>
+          {params.row.utm_campaign || '-'}
+        </Typography>
+      ),
+    },
+    {
+      field: 'created_at',
+      headerName: 'Created At',
+      minWidth: 185,
+      flex: 1,
+      renderCell: (params) => (
+        <Typography variant="body2" color="text.secondary">
+          {formatVlsEconomicLawsDateTime(params.row.created_at)}
+        </Typography>
+      ),
+    },
+    {
+      field: 'actions',
+      headerName: 'Actions',
+      width: 132,
+      sortable: false,
+      filterable: false,
+      align: 'center',
+      headerAlign: 'center',
+      renderCell: (params) => (
+        <VlsRegistrationActionMenu
+          registration={params.row}
+          onView={onView}
+          onEdit={onEdit}
+          onDelete={onDelete}
+        />
+      ),
+    },
+  ];
+
+  const handlePaginationChange = (model: GridPaginationModel) => {
+    onPaginationChange(model.page + 1, model.pageSize);
+  };
+
+  if (!isLoading && rows.length === 0) {
+    return (
+      <Paper
+        variant="outlined"
+        sx={{ width: '100%', minWidth: 0, py: 8, px: 3, textAlign: 'center', borderRadius: 3 }}
+      >
+        <IconifyIcon icon="hugeicons:inbox" width={34} color="text.secondary" />
+        <Typography variant="h6" mt={1.5}>
+          {hasFilters
+            ? 'No registrations match the selected filters.'
+            : 'No Economic Laws & Practice registrations yet'}
+        </Typography>
+        {!hasFilters && (
+          <Typography variant="body2" color="text.secondary" mt={0.5}>
+            Add the first registration to get started.
+          </Typography>
+        )}
+      </Paper>
+    );
+  }
+
+  return (
+    <Box sx={{ width: '100%', maxWidth: '100%', minWidth: 0, overflowX: 'auto' }}>
+      <DataGrid
+        autoHeight
+        rows={tableRows}
+        columns={columns}
+        loading={isLoading}
+        rowCount={total}
+        paginationMode="server"
+        paginationModel={{ page: page - 1, pageSize: limit }}
+        onPaginationModelChange={handlePaginationChange}
+        pageSizeOptions={[10, 20, 50, 100]}
+        disableColumnMenu
+        disableRowSelectionOnClick
+        rowHeight={62}
+        sx={{
+          width: '100%',
+          minWidth: 2400,
+          border: 0,
+          minHeight: 360,
+          '& .MuiDataGrid-columnHeaders': { bgcolor: 'action.hover' },
+          '& .MuiDataGrid-columnHeaderTitle': { fontWeight: 700 },
+          '& .MuiDataGrid-cell': { display: 'flex', alignItems: 'center' },
+          '& .MuiDataGrid-cell:focus, & .MuiDataGrid-columnHeader:focus': { outline: 'none' },
+          '& .MuiDataGrid-main, & .MuiDataGrid-virtualScroller': {
+            overflowX: 'hidden',
+          },
+          '& .MuiDataGrid-scrollbar--horizontal': {
+            display: 'none',
+          },
+        }}
+      />
+    </Box>
+  );
+};
+
+export default VlsEconomicLawsTable;

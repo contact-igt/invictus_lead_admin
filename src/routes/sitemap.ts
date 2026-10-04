@@ -170,6 +170,11 @@ const generateDynamicClientMenus = (): MenuItem[] => {
         pathName: `/pages/d/${clientKey}/vls/business-law`,
         path: `/pages/d/${clientKey}/vls/business-law`,
       });
+      items.push({
+        name: 'Economic Laws & Practice',
+        pathName: `/pages/d/${clientKey}/vls/economic-laws`,
+        path: `/pages/d/${clientKey}/vls/economic-laws`,
+      });
     }
 
     if (clientKey === 'pixeleye') {
