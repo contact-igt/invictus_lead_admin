@@ -1,4 +1,4 @@
-import { WEBSITE_SOURCE_LABELS, WEBSITE_SOURCE_ORDER } from 'pages/birthwave/constants';
+import { CLINIC_VIEW_KEY, WEBSITE_SOURCE_LABELS, WEBSITE_SOURCE_ORDER } from 'pages/birthwave/constants';
 
 export interface PortalNavChild {
   label: string;
@@ -34,6 +34,7 @@ const LEADS_CHILDREN: PortalNavChild[] = [
   { label: 'All Leads' },
   { label: WEBSITE_SOURCE_LABELS[WEBSITE_SOURCE_ORDER[0]], query: { view: WEBSITE_SOURCE_ORDER[0] } },
   { label: 'Instagram Leads', query: { view: 'instagram' } },
+  { label: 'Clinic registrations', query: { view: CLINIC_VIEW_KEY } },
   ...WEBSITE_SOURCE_ORDER.slice(1).map((key) => ({
     label: WEBSITE_SOURCE_LABELS[key],
     query: { view: key },

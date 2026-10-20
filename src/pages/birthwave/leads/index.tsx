@@ -14,7 +14,7 @@ import { useAuth } from 'redux/selectors/auth/authSelector';
 import { useCrmFieldsQuery } from 'components/hooks/useCrmQuery';
 import { BirthwaveLead } from 'services/birthwave';
 import { buildClientPortalPath } from 'routes/paths';
-import { LEAD_SOURCE_LABELS, LEAD_STATUS_COLORS, LEAD_STATUS_LABELS, WEBSITE_SOURCE_LABELS } from '../constants';
+import { CLINIC_PROVIDER, CLINIC_VIEW_KEY, LEAD_SOURCE_LABELS, LEAD_STATUS_COLORS, LEAD_STATUS_LABELS, WEBSITE_SOURCE_LABELS } from '../constants';
 import PortalPageHeader from '../PortalPageHeader';
 import LeadFormDrawer from '../LeadFormDrawer';
 import CrmFieldFilterControl from '../crm/CrmFieldFilterControl';
@@ -43,6 +43,7 @@ const LeadsPage = () => {
   // the default "All Leads".
   const detailQuerySuffix = view !== 'crm' ? `?view=${encodeURIComponent(view)}` : '';
   const isInstagramView = view === 'instagram';
+  const isClinicView = view === CLINIC_VIEW_KEY;
   const isWebsiteView = view !== 'crm' && !isInstagramView;
 
   const search = searchParams.get('search') || '';
@@ -102,9 +103,9 @@ const LeadsPage = () => {
     () => ({
       search: search || undefined,
       status: status || undefined,
-      source: isInstagramView ? 'instagram' : isWebsiteView ? 'website' : source || undefined,
+      source: isInstagramView ? 'instagram' : isClinicView ? CLINIC_VIEW_KEY : isWebsiteView ? 'website' : source || undefined,
       service_id: serviceId || undefined,
-      source_provider: isInstagramView ? 'REPLI' : isWebsiteView ? view : undefined,
+      source_provider: isInstagramView ? 'REPLI' : isClinicView ? CLINIC_PROVIDER : isWebsiteView ? view : undefined,
       start_date: from || undefined,
       end_date: to || undefined,
       custom_field_key: cfKey && cfValue !== '' ? cfKey : undefined,
@@ -115,7 +116,7 @@ const LeadsPage = () => {
       limit: 50,
       page,
     }),
-    [search, status, source, serviceId, from, to, cfKey, cfValue, teamId, ownerId, assignmentStatus, isInstagramView, isWebsiteView, view, page],
+    [search, status, source, serviceId, from, to, cfKey, cfValue, teamId, ownerId, assignmentStatus, isInstagramView, isClinicView, isWebsiteView, view, page],
   );
 
   const { data, isLoading } = useBirthwaveLeadsQuery(scopedClientKey, params, { enabled: hasScope });
@@ -188,14 +189,18 @@ const LeadsPage = () => {
         title={
           isInstagramView
             ? `Instagram Leads${data?.pagination?.total ? ` (${data.pagination.total})` : ''}`
-            : isWebsiteView
+            : isClinicView
+              ? `Clinic registrations${data?.pagination?.total ? ` (${data.pagination.total})` : ''}`
+              : isWebsiteView
               ? `${WEBSITE_SOURCE_LABELS[view] || 'Leads'}${data?.pagination?.total ? ` (${data.pagination.total})` : ''}`
               : 'Leads'
         }
         subtitle={
           isInstagramView
             ? 'Leads captured from Birthwave Instagram through Repli'
-            : isWebsiteView
+            : isClinicView
+              ? 'Patients who checked in through the clinic registration form'
+              : isWebsiteView
               ? 'CRM leads captured from this website source'
               : 'Search, filter, and manage every Birthwave lead'
         }

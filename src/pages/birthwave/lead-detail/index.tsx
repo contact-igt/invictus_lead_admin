@@ -23,7 +23,7 @@ import {
 } from 'components/hooks/useBirthwaveQuery';
 import { BirthwaveAppointment, BirthwaveDoctor, BirthwaveLead, BirthwaveLeadActivity, BirthwaveTask } from 'services/birthwave';
 import { useCrmFieldsQuery } from 'components/hooks/useCrmQuery';
-import { APPOINTMENT_STATUS_COLORS, APPOINTMENT_STATUS_LABELS, LEAD_SOURCE_LABELS, LEAD_STAGE_LABELS, LEAD_STATUS_COLORS, LEAD_STATUS_LABELS } from '../constants';
+import { APPOINTMENT_STATUS_COLORS, APPOINTMENT_STATUS_LABELS, CLINIC_CONCERN_LABELS, CLINIC_HEARD_FROM_LABELS, LEAD_SOURCE_LABELS, LEAD_STAGE_LABELS, LEAD_STATUS_COLORS, LEAD_STATUS_LABELS } from '../constants';
 import { buildClientPortalPath } from 'routes/paths';
 import AppointmentFormDrawer from '../AppointmentFormDrawer';
 import LeadFormDrawer from '../LeadFormDrawer';
@@ -432,6 +432,9 @@ const LeadDetailPage = () => {
   // rather than hardcoded, so new/renamed keys still show up.
   const meta = lead?.integration_metadata;
   const isRepliLead = lead?.source_provider === 'REPLI';
+  const clinic = (meta?.clinic_registration ?? null) as Record<string, any> | null;
+  const clinicList = (values: unknown, labels: Record<string, string>) =>
+    Array.isArray(values) && values.length ? values.map((v) => labels[String(v)] || String(v)).join(', ') : '—';
 
   const ISO_DATE_KEY_HINT = /(_at|_date|timestamp)$/i;
   const humanizeKey = (key: string) =>
@@ -559,6 +562,28 @@ const LeadDetailPage = () => {
             <InfoRow label="Contact Phone" value={lead.contact?.normalized_phone || lead.phone || '—'} />
             <InfoRow label="Contact Email" value={lead.contact?.normalized_email || lead.email || '—'} />
           </Box>
+
+          {clinic && (
+            <Box sx={{ mt: 1, pt: 2, borderTop: '1px solid', borderColor: CARD_BORDER }}>
+              <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: TEXT_DARK, mb: 0.5 }}>Clinic registration</Typography>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: { xs: 0, sm: 4 } }}>
+                <Box>
+                  <InfoRow label="Reference" value={String(clinic.reference || '—')} />
+                  <InfoRow label="Date of birth" value={clinic.date_of_birth ? formatDate(clinic.date_of_birth) : '—'} />
+                  <InfoRow label="Gender" value={clinic.gender ? String(clinic.gender).replace(/^./, (c: string) => c.toUpperCase()) : '—'} />
+                  <InfoRow label="Alternate phone" value={String(clinic.alternate_phone || '—')} />
+                  <InfoRow label="Address" value={[clinic.address?.line1, clinic.address?.line2, clinic.address?.city, clinic.address?.state, clinic.address?.pin].filter(Boolean).join(', ') || '—'} />
+                </Box>
+                <Box>
+                  <InfoRow label="Here for" value={clinicList(clinic.concerns, CLINIC_CONCERN_LABELS)} />
+                  <InfoRow label="Heard about us via" value={clinicList(clinic.heard_about_us, CLINIC_HEARD_FROM_LABELS) + (clinic.heard_about_us_other ? ` (${clinic.heard_about_us_other})` : '')} />
+                  <InfoRow label="Registered" value={clinic.registered_at ? formatDateTime(clinic.registered_at) : '—'} />
+                  <InfoRow label="Consent given" value={clinic.consent ? 'Yes' : 'No'} />
+                  {clinic.guardian_review_required && <InfoRow label="Guardian review" value="Required" />}
+                </Box>
+              </Box>
+            </Box>
+          )}
 
           {detailVisibleFields.length > 0 && (
             <Box sx={{ mt: 1, pt: 2, borderTop: '1px solid', borderColor: CARD_BORDER, display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: { xs: 0, sm: 4 } }}>

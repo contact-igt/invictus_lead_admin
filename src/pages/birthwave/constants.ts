@@ -39,6 +39,7 @@ export const LEAD_SOURCE_LABELS: Record<string, string> = {
   website: 'Website',
   whatsapp: 'WhatsApp',
   walk_in: 'Walk-in',
+  clinic_registration: 'Clinic registrations',
   referral: 'Referral',
   other: 'Other',
 };
@@ -89,4 +90,31 @@ export const APPOINTMENT_STATUS_COLORS: Record<string, { bg: string; fg: string 
   completed: { bg: 'var(--bw-tint-green)', fg: '#29AF81' },
   no_show: { bg: 'var(--bw-tint-red)', fg: '#EF4444' },
   cancelled: { bg: 'var(--bw-surface-2)', fg: 'var(--bw-text-muted)' },
+};
+
+// Clinic check-in registrations arrive as CRM leads (source "clinic_registration",
+// source_provider "CLINIC_REGISTRATION"); the Leads list shows them as a view.
+export const CLINIC_VIEW_KEY = 'clinic_registration';
+export const CLINIC_PROVIDER = 'CLINIC_REGISTRATION';
+
+export const CLINIC_CONCERN_LABELS: Record<string, string> = {
+  pregnancy: 'Pregnancy',
+  fertility: 'Fertility',
+  gynaecology: 'Gynaecology',
+  paediatrics: 'Paediatrics',
+  vbac: 'VBAC',
+  vaginismus: 'Vaginismus',
+  not_sure: 'Not sure yet',
+};
+
+export const CLINIC_HEARD_FROM_LABELS: Record<string, string> = {
+  doctor: 'Doctor',
+  google_maps: 'Google Maps',
+  google_search: 'Google Search',
+  friends_family: 'Friends / Family',
+  chatgpt: 'ChatGPT',
+  instagram: 'Instagram',
+  facebook: 'Facebook',
+  youtube: 'YouTube',
+  other: 'Other',
 };

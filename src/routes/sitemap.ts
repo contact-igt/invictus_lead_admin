@@ -1,6 +1,6 @@
 import paths, { buildClientPortalPath } from './paths';
 import { ClientRegistry, ClientConfig, TableConfig } from 'config/clients';
-import { WEBSITE_SOURCE_LABELS, WEBSITE_SOURCE_ORDER } from 'pages/birthwave/constants';
+import { CLINIC_VIEW_KEY, WEBSITE_SOURCE_LABELS, WEBSITE_SOURCE_ORDER } from 'pages/birthwave/constants';
 
 export interface SubMenuItem {
   name: string;
@@ -103,6 +103,11 @@ const birthwaveSitemap: MenuItem = {
       name: 'Instagram Leads',
       pathName: `${buildClientPortalPath('birthwave', 'leads')}?view=instagram`,
       path: `${buildClientPortalPath('birthwave', 'leads')}?view=instagram`,
+    },
+    {
+      name: 'Clinic registrations',
+      pathName: `${buildClientPortalPath('birthwave', 'leads')}?view=${CLINIC_VIEW_KEY}`,
+      path: `${buildClientPortalPath('birthwave', 'leads')}?view=${CLINIC_VIEW_KEY}`,
     },
     ...WEBSITE_SOURCE_ORDER.slice(1).map((key) => ({
       name: WEBSITE_SOURCE_LABELS[key],
