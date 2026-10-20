@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { Box, Typography } from '@mui/material';
 import IconifyIcon from 'components/base/IconifyIcon';
 import Button from './Button';
@@ -6,7 +6,9 @@ import Button from './Button';
 export interface EmptyStateProps {
   icon?: string;
   title: string;
-  description: string;
+  description?: string;
+  /** Pre-built action element (e.g. a Button). Rendered after the labelled actions. */
+  action?: ReactNode;
   actionLabel?: string;
   onAction?: () => void;
   secondaryActionLabel?: string;
@@ -17,6 +19,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   icon = 'solar:folder-error-linear',
   title,
   description,
+  action,
   actionLabel,
   onAction,
   secondaryActionLabel,
@@ -71,6 +74,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       </Typography>
 
       {/* Description (14px Body) */}
+      {description && (
       <Typography
         sx={{
           fontSize: '0.875rem', // 14px Spec
@@ -83,6 +87,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       >
         {description}
       </Typography>
+      )}
 
       {/* Action triggers */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap', justifyContent: 'center' }}>
@@ -96,6 +101,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
             {secondaryActionLabel}
           </Button>
         )}
+        {action}
       </Box>
     </Box>
   );

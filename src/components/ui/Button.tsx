@@ -1,12 +1,15 @@
 import React from 'react';
 import { Button as MuiButton, ButtonProps as MuiButtonProps } from '@mui/material';
 
-export interface EnterpriseButtonProps extends Omit<MuiButtonProps, 'variant'> {
+export interface EnterpriseButtonProps extends Omit<MuiButtonProps, 'variant' | 'size'> {
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'outline' | 'text';
+  /** 'sm' is an alias of MUI 'small' (36px). Default is the 48px spec height. */
+  size?: 'sm' | 'small' | 'medium' | 'large';
 }
 
 export const Button = React.forwardRef<HTMLButtonElement, EnterpriseButtonProps>(
-  ({ variant = 'primary', children, sx, ...props }, ref) => {
+  ({ variant = 'primary', size, children, sx, ...props }, ref) => {
+    const compact = size === 'sm' || size === 'small';
     let buttonVariantProps: MuiButtonProps = { variant: 'contained', color: 'primary' };
     let customStyles = {};
 
@@ -66,18 +69,18 @@ export const Button = React.forwardRef<HTMLButtonElement, EnterpriseButtonProps>
     return (
       <MuiButton
         ref={ref}
-        size="large" // 48px Height Spec
+        size={compact ? 'small' : size === 'medium' ? 'medium' : 'large'} // 48px Height Spec unless compact
         disableElevation
         {...buttonVariantProps}
         {...props}
         sx={{
-          height: 48,
+          height: compact ? 36 : 48,
           borderRadius: '12px', // 12px Button Spec
           fontFamily: '"Geist", sans-serif',
           fontWeight: 600,
           textTransform: 'none',
           boxShadow: 'none !important',
-          px: 3,
+          px: compact ? 2 : 3,
           ...customStyles,
           ...sx,
         }}
