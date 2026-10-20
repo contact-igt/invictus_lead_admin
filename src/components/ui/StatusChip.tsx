@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box } from '@mui/material';
+import useTokens from 'hooks/useTokens';
 
 export type EnterpriseStatus =
   | 'Healthy'
@@ -11,11 +12,32 @@ export type EnterpriseStatus =
   | 'Needs Review'
   | 'Cancelled';
 
-interface StatusChipProps {
-  status: EnterpriseStatus;
+/** Semantic tone, resolved through theme tokens. 'accent' is the brand emerald. */
+export type Tone = 'success' | 'warning' | 'danger' | 'info' | 'neutral' | 'accent';
+
+interface StatusChipBaseProps {
   size?: 'sm' | 'md';
-  showDot?: boolean;
 }
+
+/** Legacy API: a fixed enterprise status name. */
+interface StatusChipByStatusProps extends StatusChipBaseProps {
+  status: EnterpriseStatus;
+  showDot?: boolean;
+  label?: never;
+  tone?: never;
+  dot?: never;
+}
+
+/** Token API: free label with a semantic tone. */
+interface StatusChipByToneProps extends StatusChipBaseProps {
+  label: string;
+  tone?: Tone;
+  dot?: boolean;
+  status?: never;
+  showDot?: never;
+}
+
+type StatusChipProps = StatusChipByStatusProps | StatusChipByToneProps;
 
 const STATUS_MAP: Record<
   EnterpriseStatus,
@@ -71,13 +93,29 @@ const STATUS_MAP: Record<
   },
 };
 
-export const StatusChip: React.FC<StatusChipProps> = ({
-  status,
-  size = 'md',
-  showDot = true,
-}) => {
-  const config = STATUS_MAP[status] || STATUS_MAP.Draft;
+export const StatusChip: React.FC<StatusChipProps> = (props) => {
+  const t = useTokens();
+  const { size = 'md' } = props;
   const isSmall = size === 'sm';
+
+  let config: { bg: string; color: string; border: string; dot: string };
+  let text: string;
+  let showDot: boolean;
+
+  if (props.label !== undefined) {
+    const tone = props.tone ?? 'neutral';
+    const palette =
+      tone === 'accent'
+        ? { fg: t.accentText, bg: t.accentSoft, border: t.accentSoftBorder }
+        : t[tone];
+    config = { bg: palette.bg, color: palette.fg, border: palette.border, dot: palette.fg };
+    text = props.label;
+    showDot = props.dot ?? true;
+  } else {
+    config = STATUS_MAP[props.status] || STATUS_MAP.Draft;
+    text = props.status;
+    showDot = props.showDot ?? true;
+  }
 
   return (
     <Box
@@ -116,7 +154,7 @@ export const StatusChip: React.FC<StatusChipProps> = ({
           letterSpacing: '0.01em',
         }}
       >
-        {status}
+        {text}
       </Box>
     </Box>
   );

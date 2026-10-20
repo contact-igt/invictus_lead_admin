@@ -14,3 +14,5 @@ export * from './AICard';
 export * from './LeadCard';
 export * from './AppointmentCard';
 export * from './CampaignCard';
+export { default as Text } from './Text';
+export type { TextProps } from './Text';
