@@ -44,6 +44,9 @@ const BASE_CAREERS_ROLES = [
   'HR & Operations Executive',
   'HR & Operations Intern',
   'Telecalling Executive',
+  'Business Development Executive',
+  'Social Media & Operations Manager',
+  'Google Ads Expert',
 ];
 
 const mergeSorted = (prev: string[], incoming: string[]): string[] =>

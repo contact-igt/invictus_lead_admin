@@ -40,6 +40,11 @@ export interface ClientConfig {
 
 import { MAIN_STATUS_OPTIONS, getDayDropdownStatuses } from 'components/sections/pixel-eye/pixelEyeStatuses';
 export const ClientRegistry: Record<string, ClientConfig> = {
+  namokar: {
+    appName: 'Namokar Eye & Oculoplasty Centre',
+    theme: { primaryColor: '#B54708' },
+    tables: [],
+  },
   pixeleye: {
     appName: "PixelEye",
     theme: { primaryColor: "#1F6B40" },

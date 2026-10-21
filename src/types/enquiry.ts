@@ -7,7 +7,10 @@ export type CareersRole =
   | 'Video Editor'
   | 'HR & Operations Executive'
   | 'HR & Operations Intern'
-  | 'Telecalling Executive';
+  | 'Telecalling Executive'
+  | 'Business Development Executive'
+  | 'Social Media & Operations Manager'
+  | 'Google Ads Expert';
 
 export type ExperienceLevel =
   | 'under_6_months'

@@ -21,6 +21,7 @@ export default {
   pixelEyeScopedLeadDetail: `/${rootPaths.pageRoot}/d/:clientKey/pixel-eye/leads/:leadId`,
   pixelEyeWebsiteLeads: `pixel-eye/website-leads`,
   pixelEyeScopedWebsiteLeads: `/${rootPaths.pageRoot}/d/:clientKey/pixel-eye/website-leads`,
+  namokarWebsiteLeads: `/${rootPaths.pageRoot}/d/:clientKey/namokar/website-leads`,
   notificationTracker: `/${rootPaths.pageRoot}/d/:clientKey/notification-tracker`,
   notificationDetails: `/${rootPaths.pageRoot}/d/:clientKey/notification/:notificationId`,
   aaravEyeCare: (clientKey: string) =>
