@@ -143,7 +143,7 @@ const generateDynamicClientMenus = (): MenuItem[] => {
       path: `/pages/d/${clientKey}/${table.id}`,
     }));
 
-    const isDedicatedLeadModule = ['aarav_eye_care', 'antardrashti_netralaya', 'rio', 'shanti_eye_tech', 'phoenix_fitness'].includes(clientKey);
+    const isDedicatedLeadModule = ['aarav_eye_care', 'antardrashti_netralaya', 'rio', 'shanti_eye_tech', 'phoenix_fitness', 'namokar'].includes(clientKey);
     const items: SubMenuItem[] = isDedicatedLeadModule ? tableItems : [overviewItem];
     if (!isDedicatedLeadModule) {
       items.push(...tableItems);
@@ -197,6 +197,14 @@ const generateDynamicClientMenus = (): MenuItem[] => {
         name: 'Website Leads',
         pathName: `/pages/d/${clientKey}/pixel-eye/website-leads`,
         path: `/pages/d/${clientKey}/pixel-eye/website-leads`,
+      });
+    }
+
+    if (clientKey === 'namokar') {
+      items.push({
+        name: 'Website Leads',
+        pathName: `/pages/d/${clientKey}/namokar/website-leads`,
+        path: `/pages/d/${clientKey}/namokar/website-leads`,
       });
     }
 

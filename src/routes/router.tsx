@@ -38,6 +38,7 @@ const PixelEyePage = lazy(() => import('pages/pixel-eye'));
 const PixelEyeLeadDetailPage = lazy(() => import('pages/pixel-eye/lead-detail'));
 const PixelEyeFollowUpsPage = lazy(() => import('pages/pixel-eye/follow-ups'));
 const PixelEyeWebsiteLeadsPage = lazy(() => import('pages/pixel-eye/website-leads'));
+const NamokarWebsiteLeadsPage = lazy(() => import('pages/namokar/website-leads'));
 const NotificationTrackerPage = lazy(() => import('pages/notifications/NotificationTracker'));
 const NotificationDetailsPage = lazy(() => import('pages/notifications/NotificationDetails'));
 const SettingsPage = lazy(() => import('pages/settings'));
@@ -114,6 +115,10 @@ const router = createBrowserRouter(
             {
               path: paths.pixelEyeScopedWebsiteLeads,
               element: <PixelEyeWebsiteLeadsPage />,
+            },
+            {
+              path: paths.namokarWebsiteLeads,
+              element: <NamokarWebsiteLeadsPage />,
             },
             {
               path: paths.notificationTracker,
