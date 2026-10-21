@@ -25,7 +25,9 @@ const NamokarWebsiteLeadsPage = () => {
       queryClient.invalidateQueries(['namokarWebsiteLeads', activeClientKey]);
       enqueueSnackbar('Delivery retried.', { variant: 'success' });
     },
-    onError: () => enqueueSnackbar('Unable to retry delivery.', { variant: 'error' }),
+    onError: () => {
+      enqueueSnackbar('Unable to retry delivery.', { variant: 'error' });
+    },
   });
   const leads = useMemo(() => {
     const searchText = search.trim().toLowerCase();
