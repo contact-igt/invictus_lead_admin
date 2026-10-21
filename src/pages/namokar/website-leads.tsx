@@ -9,6 +9,14 @@ import type { NamokarWebsiteLead } from 'types/namokarWebsiteLead';
 
 const statusColor = (status: string): 'success' | 'warning' | 'error' | 'default' => status === 'synced' ? 'success' : status === 'failed' ? 'error' : status === 'pending' ? 'warning' : 'default';
 const formatDate = (value: string) => new Intl.DateTimeFormat('en-IN', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
+const getErrorMessage = (error: unknown) => {
+  const message = (error as { response?: { status?: number; data?: { message?: unknown } }; message?: unknown })?.response?.data?.message;
+  if (typeof message === 'string' && message.trim()) return message;
+  const status = (error as { response?: { status?: number } })?.response?.status;
+  if (status === 404) return 'The Namokar API is not deployed on the backend yet.';
+  if (status === 401) return 'Your session has expired. Please sign in again.';
+  return 'Unable to load Namokar website leads.';
+};
 
 const NamokarWebsiteLeadsPage = () => {
   const { clientKey } = useParams<{ clientKey: string }>();
@@ -38,21 +46,25 @@ const NamokarWebsiteLeadsPage = () => {
   if (!hasScope) return <Alert severity="warning">Namokar Website Leads is available only in the Namokar client workspace.</Alert>;
 
   return (
-    <Stack spacing={2.5} p={3.5} width="100%">
-      <Box><Typography variant="h4" fontWeight={700}>Namokar Website Leads</Typography><Typography color="text.secondary" mt={0.5}>Contact and home-popup enquiries submitted through the Namokar website.</Typography></Box>
-      <TextField size="small" label="Search leads" placeholder="Name, phone, treatment, form" value={search} onChange={(event) => setSearch(event.target.value)} sx={{ maxWidth: 380 }} />
-      <TableContainer sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
+    <Box sx={{ width: '100%', minWidth: 0, p: { xs: 2, md: 3.5 } }}>
+      <Stack direction="column" spacing={2.5} sx={{ width: '100%', minWidth: 0 }}>
+        <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} justifyContent="space-between" alignItems={{ xs: 'stretch', md: 'flex-end' }}>
+          <Box sx={{ minWidth: 0 }}><Typography variant="h4" fontWeight={700}>Namokar Website Leads</Typography><Typography color="text.secondary" mt={0.5}>Contact and home-popup enquiries submitted through the Namokar website.</Typography></Box>
+          <TextField size="small" label="Search leads" placeholder="Name, phone, treatment, form" value={search} onChange={(event) => setSearch(event.target.value)} sx={{ width: { xs: '100%', md: 320 }, flexShrink: 0 }} />
+        </Stack>
+      <TableContainer sx={{ width: '100%', maxWidth: '100%', overflowX: 'auto', border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
         <Table size="small" sx={{ minWidth: 1100 }}>
           <TableHead><TableRow>{['Name', 'Mobile', 'Treatment', 'Message', 'Form', 'PulseOS', 'Google Sheet', 'Submitted', ''].map((label, index) => <TableCell key={`${label}-${index}`} sx={{ fontWeight: 700 }}>{label}</TableCell>)}</TableRow></TableHead>
           <TableBody>
             {query.isLoading && <TableRow><TableCell colSpan={9} align="center"><CircularProgress size={24} /></TableCell></TableRow>}
-            {query.isError && <TableRow><TableCell colSpan={9}><Alert severity="error">Unable to load Namokar website leads.</Alert></TableCell></TableRow>}
+            {query.isError && <TableRow><TableCell colSpan={9}><Alert severity="error" action={<Button color="inherit" size="small" onClick={() => query.refetch()}>Retry</Button>}>{getErrorMessage(query.error)}</Alert></TableCell></TableRow>}
             {!query.isLoading && !query.isError && leads.length === 0 && <TableRow><TableCell colSpan={9} align="center">No website leads found.</TableCell></TableRow>}
             {leads.map((lead) => <TableRow key={lead.id} hover><TableCell>{lead.name}</TableCell><TableCell>{lead.phone}</TableCell><TableCell>{lead.service}</TableCell><TableCell sx={{ maxWidth: 260 }}>{lead.message || '—'}</TableCell><TableCell>{lead.form_id}</TableCell><TableCell><Chip size="small" label={lead.pulseos_status} color={statusColor(lead.pulseos_status)} /></TableCell><TableCell><Chip size="small" label={lead.sheet_sync_status} color={statusColor(lead.sheet_sync_status)} /></TableCell><TableCell>{formatDate(lead.created_at)}</TableCell><TableCell>{(lead.pulseos_status !== 'synced' || lead.sheet_sync_status !== 'synced') && <Button size="small" disabled={retry.isLoading} onClick={() => retry.mutate(lead.id)}>Retry</Button>}</TableCell></TableRow>)}
           </TableBody>
         </Table>
       </TableContainer>
-    </Stack>
+      </Stack>
+    </Box>
   );
 };
 
