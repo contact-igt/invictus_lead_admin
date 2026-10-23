@@ -35,6 +35,15 @@ interface PixelEyeWebsiteLeadTableRow extends PixelEyeWebsiteLead {
   serial_number: number;
 }
 
+const formatLandingPage = (sourceKey?: string | null) => {
+  if (!sourceKey) return '-';
+  if (sourceKey === 'pixel_eye_hospital') return 'Pixel Eye Hospital';
+  return sourceKey
+    .split('_')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+};
+
 const PixelEyeWebsiteLeadsTable = ({
   rows,
   page,
@@ -85,13 +94,25 @@ const PixelEyeWebsiteLeadsTable = ({
       ),
     },
     {
+      field: 'service',
+      headerName: 'Service',
+      minWidth: 140,
+      flex: 0.9,
+      renderCell: (params) =>
+        params.row.service ? (
+          <Chip label={params.row.service} size="small" variant="outlined" />
+        ) : (
+          '-'
+        ),
+    },
+    {
       field: 'symptom_or_condition',
       headerName: 'Symptom / Condition',
-      minWidth: 140,
-      flex: 1.2,
+      minWidth: 220,
+      flex: 1.25,
       renderCell: (params) =>
-        (params.row.symptom_or_condition || params.row.service) ? (
-          <Chip label={params.row.symptom_or_condition || params.row.service} size="small" variant="outlined" />
+        params.row.symptom_or_condition ? (
+          <Chip label={params.row.symptom_or_condition} size="small" color="secondary" variant="outlined" />
         ) : (
           '-'
         ),
@@ -122,7 +143,7 @@ const PixelEyeWebsiteLeadsTable = ({
       renderCell: (params) =>
         params.row.source_key ? (
           <Chip
-            label={String(params.row.source_key).replace(/^./, (c: string) => c.toUpperCase())}
+            label={formatLandingPage(params.row.source_key)}
             size="small"
             color="primary"
             variant="outlined"

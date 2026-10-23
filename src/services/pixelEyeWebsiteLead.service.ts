@@ -22,6 +22,9 @@ const cleanListParams = (params: PixelEyeWebsiteLeadListParams): PixelEyeWebsite
   if (params.search?.trim()) cleaned.search = params.search.trim();
   if (params.service?.trim()) cleaned.service = params.service.trim();
   if (params.utm_source?.trim()) cleaned.utm_source = params.utm_source.trim();
+  if (params.lead_source) cleaned.lead_source = params.lead_source;
+  if (params.symptom_or_condition?.trim()) cleaned.symptom_or_condition = params.symptom_or_condition.trim();
+  if (params.hospital_location?.trim()) cleaned.hospital_location = params.hospital_location.trim();
   if (params.start_date) cleaned.start_date = params.start_date;
   if (params.end_date) cleaned.end_date = params.end_date;
 
@@ -34,6 +37,9 @@ const cleanExportParams = (params: PixelEyeWebsiteLeadExportParams): PixelEyeWeb
   if (params.search?.trim()) cleaned.search = params.search.trim();
   if (params.service?.trim()) cleaned.service = params.service.trim();
   if (params.utm_source?.trim()) cleaned.utm_source = params.utm_source.trim();
+  if (params.lead_source) cleaned.lead_source = params.lead_source;
+  if (params.symptom_or_condition?.trim()) cleaned.symptom_or_condition = params.symptom_or_condition.trim();
+  if (params.hospital_location?.trim()) cleaned.hospital_location = params.hospital_location.trim();
   if (params.start_date) cleaned.start_date = params.start_date;
   if (params.end_date) cleaned.end_date = params.end_date;
 

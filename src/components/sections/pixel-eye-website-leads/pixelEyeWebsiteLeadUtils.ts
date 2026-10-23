@@ -19,6 +19,24 @@ export const PIXEL_EYE_WEBSITE_LEAD_SERVICES = [
   'Pediatric',
 ] as const;
 
+export const PIXEL_EYE_APPOINTMENT_SYMPTOMS = [
+  'Eye redness or irritation',
+  'Dry, burning, or gritty eyes',
+  'Blurred or reduced vision',
+  'Eye pain or headache around the eyes',
+  'Watering, discharge, or itching',
+  'Floaters, flashes, or spots in vision',
+  'Difficulty seeing at night or glare from lights',
+  'Squint or eyes not aligned',
+  "Child's eye or vision concern",
+  'Eyelid swelling, drooping, or lump',
+  'Glasses or contact lens power concern',
+  'Routine eye check-up',
+  'Other eye concern',
+] as const;
+
+export const PIXEL_EYE_APPOINTMENT_LOCATIONS = ['Sanath Nagar', 'Kukatpally'] as const;
+
 export type PixelEyeWebsiteLeadService = (typeof PIXEL_EYE_WEBSITE_LEAD_SERVICES)[number];
 
 export const formatPixelEyeWebsiteLeadDateTime = (value?: string | null): string => {
@@ -51,6 +69,9 @@ export const hasPixelEyeWebsiteLeadFilters = (params: PixelEyeWebsiteLeadListPar
     params.search ||
       params.service ||
       params.utm_source ||
+      params.lead_source ||
+      params.symptom_or_condition ||
+      params.hospital_location ||
       params.start_date ||
       params.end_date,
   );

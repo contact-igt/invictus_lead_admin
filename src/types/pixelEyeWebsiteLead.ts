@@ -72,6 +72,9 @@ export interface PixelEyeWebsiteLeadListParams {
   utm_source?: string;
   start_date?: string;
   end_date?: string;
+  lead_source?: 'appointment' | 'landing_page' | '';
+  symptom_or_condition?: string;
+  hospital_location?: string;
   _client_key?: string;
 }
 
@@ -94,6 +97,8 @@ export interface PixelEyeWebsiteLeadSummary {
   this_month_leads: number;
   top_service: PixelEyeWebsiteLeadService | null;
   top_service_count: number;
+  top_symptom_or_condition: string | null;
+  top_symptom_or_condition_count: number;
 }
 
 export interface PixelEyeWebsiteLeadSummaryResponse {
