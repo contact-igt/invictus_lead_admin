@@ -87,7 +87,14 @@ const PixelEyeWebsiteLeadViewDrawer = ({ open, lead, onClose }: PixelEyeWebsiteL
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 3 }}>
               <FieldRow label="Name" value={lead?.name} />
               <FieldRow label="Mobile Number" value={lead?.mobile_number} />
-              <FieldRow label="Service" value={lead?.service} />
+              <FieldRow label="Email" value={lead?.email} />
+              <FieldRow label="Symptom / Condition" value={lead?.symptom_or_condition || lead?.service} />
+              <FieldRow label="Hospital Location" value={lead?.hospital_location} />
+              <FieldRow label="Appointment Date" value={lead?.appointment_date} />
+              <FieldRow label="Appointment Time" value={lead?.appointment_time_slot} />
+              <FieldRow label="Symptom Details" value={lead?.symptom_details} />
+              <FieldRow label="WhatsApp Updates" value={lead?.whatsapp_updates_opt_in === null || lead?.whatsapp_updates_opt_in === undefined ? null : lead.whatsapp_updates_opt_in ? 'Yes' : 'No'} />
+              <FieldRow label="Contact Consent" value={lead?.marketing_contact_consent === null || lead?.marketing_contact_consent === undefined ? null : lead.marketing_contact_consent ? 'Yes' : 'No'} />
               <FieldRow label="IP Address" value={lead?.ip_address} />
               <FieldRow label="UTM Source" value={lead?.utm_source} />
             </Box>

@@ -85,16 +85,34 @@ const PixelEyeWebsiteLeadsTable = ({
       ),
     },
     {
-      field: 'service',
-      headerName: 'Service',
+      field: 'symptom_or_condition',
+      headerName: 'Symptom / Condition',
       minWidth: 140,
-      flex: 0.9,
+      flex: 1.2,
       renderCell: (params) =>
-        params.row.service ? (
-          <Chip label={params.row.service} size="small" variant="outlined" />
+        (params.row.symptom_or_condition || params.row.service) ? (
+          <Chip label={params.row.symptom_or_condition || params.row.service} size="small" variant="outlined" />
         ) : (
           '-'
         ),
+    },
+    {
+      field: 'hospital_location',
+      headerName: 'Hospital',
+      minWidth: 130,
+      flex: 0.9,
+      renderCell: (params) => params.row.hospital_location || '-',
+    },
+    {
+      field: 'appointment_date',
+      headerName: 'Appointment',
+      minWidth: 170,
+      flex: 1,
+      renderCell: (params) => (
+        <Typography variant="body2" noWrap title={[params.row.appointment_date, params.row.appointment_time_slot].filter(Boolean).join(' · ')}>
+          {[params.row.appointment_date, params.row.appointment_time_slot].filter(Boolean).join(' · ') || '-'}
+        </Typography>
+      ),
     },
     {
       field: 'source_key',
