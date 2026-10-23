@@ -36,6 +36,8 @@ import PixelEyeWebsiteLeadViewDrawer from './PixelEyeWebsiteLeadViewDrawer';
 import PixelEyeWebsiteLeadsTable from './PixelEyeWebsiteLeadsTable';
 import {
   PIXEL_EYE_WEBSITE_LEAD_SERVICES,
+  PIXEL_EYE_APPOINTMENT_LOCATIONS,
+  PIXEL_EYE_APPOINTMENT_SYMPTOMS,
   cleanPixelEyeWebsiteLeadPayload,
   extractDownloadFilename,
   getPixelEyeWebsiteLeadExportErrorMessage,
@@ -120,6 +122,8 @@ const EMPTY_SUMMARY: PixelEyeWebsiteLeadSummary = {
   this_month_leads: 0,
   top_service: null,
   top_service_count: 0,
+  top_symptom_or_condition: null,
+  top_symptom_or_condition_count: 0,
 };
 
 const PixelEyeWebsiteLeadsSection = () => {
@@ -133,7 +137,8 @@ const PixelEyeWebsiteLeadsSection = () => {
   const [searchInput, setSearchInput] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [service, setService] = useState<PixelEyeWebsiteLeadService | ''>('');
-  const [utmSource, setUtmSource] = useState('');
+  const [symptom, setSymptom] = useState('');
+  const [hospitalLocation, setHospitalLocation] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -155,11 +160,12 @@ const PixelEyeWebsiteLeadsSection = () => {
       limit,
       search: debouncedSearch || undefined,
       service: service || undefined,
-      utm_source: utmSource.trim() || undefined,
+      symptom_or_condition: symptom || undefined,
+      hospital_location: hospitalLocation || undefined,
       start_date: startDate || undefined,
       end_date: endDate || undefined,
     }),
-    [debouncedSearch, endDate, limit, page, service, startDate, utmSource],
+    [debouncedSearch, endDate, hospitalLocation, limit, page, service, startDate, symptom],
   );
 
   const leadsQuery = usePixelEyeWebsiteLeads(clientKey, params, isPixelEyeModule);
@@ -235,7 +241,8 @@ const PixelEyeWebsiteLeadsSection = () => {
     setSearchInput('');
     setDebouncedSearch('');
     setService('');
-    setUtmSource('');
+    setSymptom('');
+    setHospitalLocation('');
     setStartDate('');
     setEndDate('');
     setPage(1);
@@ -266,7 +273,8 @@ const PixelEyeWebsiteLeadsSection = () => {
     const exportParams = {
       search: debouncedSearch || undefined,
       service: service || undefined,
-      utm_source: utmSource.trim() || undefined,
+      symptom_or_condition: symptom || undefined,
+      hospital_location: hospitalLocation || undefined,
       start_date: startDate || undefined,
       end_date: endDate || undefined,
     };
@@ -365,6 +373,13 @@ const PixelEyeWebsiteLeadsSection = () => {
           helperText={summary.top_service ? `${summary.top_service_count} leads` : 'No service selected yet'}
           loading={summaryLoading}
         />
+        <SummaryCard
+          label="Top Symptom / Condition"
+          value={summary.top_symptom_or_condition || '-'}
+          icon="mdi:eye-outline"
+          helperText={summary.top_symptom_or_condition ? `${summary.top_symptom_or_condition_count} appointments` : 'No appointment symptoms yet'}
+          loading={summaryLoading}
+        />
       </Box>
 
       {summaryUnavailable ? (
@@ -430,16 +445,35 @@ const PixelEyeWebsiteLeadsSection = () => {
             ))}
           </PixelEyeField>
           <PixelEyeField
-            label="UTM Source"
-            placeholder="Filter by UTM source"
-            value={utmSource}
+            select
+            label="Symptom / Condition"
+            value={symptom}
             onChange={(event) => {
-              setUtmSource(event.target.value);
+              setSymptom(event.target.value);
               setPage(1);
             }}
             size="small"
-            sx={{ minWidth: { xs: '100%', sm: 220 }, flex: '1 1 220px' }}
-          />
+            sx={{ minWidth: { xs: '100%', sm: 240 }, flex: '1 1 240px' }}
+            SelectProps={{ displayEmpty: true }}
+          >
+            <MenuItem value=""><em>All symptoms</em></MenuItem>
+            {PIXEL_EYE_APPOINTMENT_SYMPTOMS.map((option) => <MenuItem key={option} value={option}>{option}</MenuItem>)}
+          </PixelEyeField>
+          <PixelEyeField
+            select
+            label="Hospital"
+            value={hospitalLocation}
+            onChange={(event) => {
+              setHospitalLocation(event.target.value);
+              setPage(1);
+            }}
+            size="small"
+            sx={{ minWidth: { xs: '100%', sm: 180 }, flex: '1 1 180px' }}
+            SelectProps={{ displayEmpty: true }}
+          >
+            <MenuItem value=""><em>All hospitals</em></MenuItem>
+            {PIXEL_EYE_APPOINTMENT_LOCATIONS.map((option) => <MenuItem key={option} value={option}>{option}</MenuItem>)}
+          </PixelEyeField>
           <PixelEyeDatePicker
             label="Start Date"
             value={startDate}
