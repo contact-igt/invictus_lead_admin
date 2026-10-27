@@ -25,8 +25,8 @@ export default function NamokarOculoplastyLeadsPage() {
   const [notes, setNotes] = useState('');
   const leadsQuery = useQuery(['namokarOculoplastyLeads', client, search, status, sync, page], () => getNamokarOculoplastyLeads({ search, lead_status: status, sheet_sync_status: sync, page, limit: 25 }, scopedClient), { enabled: client === 'namokar', keepPreviousData: true });
   const refresh = () => queryClient.invalidateQueries('namokarOculoplastyLeads');
-  const update = useMutation(({ id, data }: { id: number; data: { lead_status?: string; notes?: string } }) => updateNamokarOculoplastyLead(id, data, scopedClient), { onSuccess: () => { refresh(); enqueueSnackbar('Lead updated.', { variant: 'success' }); }, onError: () => enqueueSnackbar('Unable to update lead.', { variant: 'error' }) });
-  const retry = useMutation((id: number) => retryNamokarOculoplastySheetSync(id, scopedClient), { onSuccess: () => { refresh(); enqueueSnackbar('Google Sheet sync retried.', { variant: 'success' }); }, onError: () => enqueueSnackbar('Unable to retry Google Sheet sync.', { variant: 'error' }) });
+  const update = useMutation(({ id, data }: { id: number; data: { lead_status?: string; notes?: string } }) => updateNamokarOculoplastyLead(id, data, scopedClient), { onSuccess: () => { refresh(); enqueueSnackbar('Lead updated.', { variant: 'success' }); }, onError: () => { enqueueSnackbar('Unable to update lead.', { variant: 'error' }); } });
+  const retry = useMutation((id: number) => retryNamokarOculoplastySheetSync(id, scopedClient), { onSuccess: () => { refresh(); enqueueSnackbar('Google Sheet sync retried.', { variant: 'success' }); }, onError: () => { enqueueSnackbar('Unable to retry Google Sheet sync.', { variant: 'error' }); } });
   if (client !== 'namokar') return <Alert severity="warning">Oculoplasty Leads is available only in the Namokar workspace.</Alert>;
   const leads: Lead[] = leadsQuery.data?.data || [];
   const pagination = leadsQuery.data?.pagination;
