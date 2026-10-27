@@ -206,6 +206,11 @@ const generateDynamicClientMenus = (): MenuItem[] => {
         pathName: `/pages/d/${clientKey}/namokar/website-leads`,
         path: `/pages/d/${clientKey}/namokar/website-leads`,
       });
+      items.push({
+        name: 'Oculoplasty Leads',
+        pathName: `/pages/d/${clientKey}/namokar/oculoplasty-leads`,
+        path: `/pages/d/${clientKey}/namokar/oculoplasty-leads`,
+      });
     }
 
     return {
