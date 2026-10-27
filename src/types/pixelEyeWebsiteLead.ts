@@ -16,6 +16,26 @@ export interface PixelEyeWebsiteLead {
   ip_address: string | null;
   utm_source: string | null;
   source_key?: string | null;
+  form_name?: string | null;
+  lead_type?: string | null;
+  lead_status?: string | null;
+  email?: string | null;
+  country_calling_code?: string | null;
+  mobile_e164?: string | null;
+  hospital_location?: string | null;
+  appointment_date?: string | null;
+  appointment_time_slot?: string | null;
+  symptom_or_condition?: string | null;
+  symptom_details?: string | null;
+  terms_accepted?: boolean | null;
+  whatsapp_updates_opt_in?: boolean | null;
+  marketing_contact_consent?: boolean | null;
+  source_page_url?: string | null;
+  referrer_url?: string | null;
+  utm_medium?: string | null;
+  utm_campaign?: string | null;
+  utm_term?: string | null;
+  utm_content?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -52,6 +72,9 @@ export interface PixelEyeWebsiteLeadListParams {
   utm_source?: string;
   start_date?: string;
   end_date?: string;
+  lead_source?: 'appointment' | 'landing_page' | '';
+  symptom_or_condition?: string;
+  hospital_location?: string;
   _client_key?: string;
 }
 
@@ -74,6 +97,8 @@ export interface PixelEyeWebsiteLeadSummary {
   this_month_leads: number;
   top_service: PixelEyeWebsiteLeadService | null;
   top_service_count: number;
+  top_symptom_or_condition: string | null;
+  top_symptom_or_condition_count: number;
 }
 
 export interface PixelEyeWebsiteLeadSummaryResponse {

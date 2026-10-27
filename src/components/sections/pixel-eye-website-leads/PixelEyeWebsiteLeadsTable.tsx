@@ -35,6 +35,15 @@ interface PixelEyeWebsiteLeadTableRow extends PixelEyeWebsiteLead {
   serial_number: number;
 }
 
+const formatLandingPage = (sourceKey?: string | null) => {
+  if (!sourceKey) return '-';
+  if (sourceKey === 'pixel_eye_hospital') return 'Pixel Eye Hospital';
+  return sourceKey
+    .split('_')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+};
+
 const PixelEyeWebsiteLeadsTable = ({
   rows,
   page,
@@ -97,6 +106,36 @@ const PixelEyeWebsiteLeadsTable = ({
         ),
     },
     {
+      field: 'symptom_or_condition',
+      headerName: 'Symptom / Condition',
+      minWidth: 220,
+      flex: 1.25,
+      renderCell: (params) =>
+        params.row.symptom_or_condition ? (
+          <Chip label={params.row.symptom_or_condition} size="small" color="secondary" variant="outlined" />
+        ) : (
+          '-'
+        ),
+    },
+    {
+      field: 'hospital_location',
+      headerName: 'Hospital',
+      minWidth: 130,
+      flex: 0.9,
+      renderCell: (params) => params.row.hospital_location || '-',
+    },
+    {
+      field: 'appointment_date',
+      headerName: 'Appointment',
+      minWidth: 170,
+      flex: 1,
+      renderCell: (params) => (
+        <Typography variant="body2" noWrap title={[params.row.appointment_date, params.row.appointment_time_slot].filter(Boolean).join(' · ')}>
+          {[params.row.appointment_date, params.row.appointment_time_slot].filter(Boolean).join(' · ') || '-'}
+        </Typography>
+      ),
+    },
+    {
       field: 'source_key',
       headerName: 'Landing Page',
       minWidth: 140,
@@ -104,7 +143,7 @@ const PixelEyeWebsiteLeadsTable = ({
       renderCell: (params) =>
         params.row.source_key ? (
           <Chip
-            label={String(params.row.source_key).replace(/^./, (c: string) => c.toUpperCase())}
+            label={formatLandingPage(params.row.source_key)}
             size="small"
             color="primary"
             variant="outlined"
