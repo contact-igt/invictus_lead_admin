@@ -14,11 +14,24 @@ import { useAuth } from 'redux/selectors/auth/authSelector';
 import { useCrmFieldsQuery } from 'components/hooks/useCrmQuery';
 import { BirthwaveLead } from 'services/birthwave';
 import { buildClientPortalPath } from 'routes/paths';
-import { CLINIC_PROVIDER, CLINIC_VIEW_KEY, LEAD_SOURCE_LABELS, LEAD_STATUS_COLORS, LEAD_STATUS_LABELS, WEBSITE_SOURCE_LABELS } from '../constants';
+import {
+  CLINIC_CONCERN_LABELS, CLINIC_HEARD_FROM_LABELS, CLINIC_PROVIDER, CLINIC_VIEW_KEY,
+  LEAD_SOURCE_LABELS, LEAD_STATUS_COLORS, LEAD_STATUS_LABELS, WEBSITE_SOURCE_LABELS,
+} from '../constants';
 import PortalPageHeader from '../PortalPageHeader';
 import LeadFormDrawer from '../LeadFormDrawer';
 import CrmFieldFilterControl from '../crm/CrmFieldFilterControl';
 import { formatCrmFieldValue } from '../crm/formatCrmFieldValue';
+import DateRangeControl from '../DateRangeControl';
+import { DateRangePreset, PRESET_LABELS, resolvePresetRange } from '../dateRangePresets';
+
+// Clinic check-in registrations collect these as checkboxes, so each value is
+// a JSON array — joined for display rather than a single label.
+const clinicListValue = (values: unknown, labels: Record<string, string>) =>
+  Array.isArray(values) && values.length ? values.map((v) => labels[String(v)] || String(v)).join(', ') : '—';
+
+const formatClinicDate = (value?: string | null) =>
+  value ? new Date(value).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
 
 const CARD_BORDER = 'var(--bw-border)';
 const TEXT_DARK = 'var(--bw-text)';
@@ -50,13 +63,20 @@ const LeadsPage = () => {
   const status = searchParams.get('status') || '';
   const source = searchParams.get('source') || '';
   const serviceId = searchParams.get('service_id') || '';
-  const from = searchParams.get('from') || '';
-  const to = searchParams.get('to') || '';
+  const rangePreset = (searchParams.get('range') as DateRangePreset) || 'all';
+  const customFrom = searchParams.get('from') || '';
+  const customTo = searchParams.get('to') || '';
   const cfKey = searchParams.get('cf_key') || '';
   const cfValue = searchParams.get('cf_value') || '';
   const teamId = searchParams.get('team_id') || '';
   const ownerId = searchParams.get('owner_id') || '';
   const assignmentStatus = searchParams.get('assignment_status') || '';
+  const heardFrom = searchParams.get('heard_from') || '';
+
+  const dateRange = useMemo(
+    () => (rangePreset === 'custom' ? (customFrom && customTo ? { startDate: customFrom, endDate: customTo } : null) : resolvePresetRange(rangePreset)),
+    [rangePreset, customFrom, customTo],
+  );
 
   const updateParam = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams);
@@ -69,8 +89,29 @@ const LeadsPage = () => {
   const clearFilter = (key: string) => updateParam(key, '');
   const clearRangeFilter = () => {
     const params = new URLSearchParams(searchParams);
+    params.delete('page');
+    params.delete('range');
     params.delete('from');
     params.delete('to');
+    setSearchParams(params, { replace: true });
+  };
+  const handleRangePresetChange = (next: DateRangePreset) => {
+    const params = new URLSearchParams(searchParams);
+    params.delete('page');
+    if (next === 'all') params.delete('range');
+    else params.set('range', next);
+    if (next !== 'custom') {
+      params.delete('from');
+      params.delete('to');
+    }
+    setSearchParams(params, { replace: true });
+  };
+  const handleCustomDateChange = (key: 'from' | 'to', value: string) => {
+    const params = new URLSearchParams(searchParams);
+    params.delete('page');
+    params.set('range', 'custom');
+    if (value) params.set(key, value);
+    else params.delete(key);
     setSearchParams(params, { replace: true });
   };
   const clearCustomFieldFilter = () => {
@@ -106,8 +147,9 @@ const LeadsPage = () => {
       source: isInstagramView ? 'instagram' : isClinicView ? CLINIC_VIEW_KEY : isWebsiteView ? 'website' : source || undefined,
       service_id: serviceId || undefined,
       source_provider: isInstagramView ? 'REPLI' : isClinicView ? CLINIC_PROVIDER : isWebsiteView ? view : undefined,
-      start_date: from || undefined,
-      end_date: to || undefined,
+      start_date: dateRange?.startDate || undefined,
+      end_date: dateRange?.endDate || undefined,
+      heard_from: isClinicView ? heardFrom || undefined : undefined,
       custom_field_key: cfKey && cfValue !== '' ? cfKey : undefined,
       custom_field_value: cfKey && cfValue !== '' ? cfValue : undefined,
       team_id: teamId || undefined,
@@ -116,7 +158,7 @@ const LeadsPage = () => {
       limit: 50,
       page,
     }),
-    [search, status, source, serviceId, from, to, cfKey, cfValue, teamId, ownerId, assignmentStatus, isInstagramView, isClinicView, isWebsiteView, view, page],
+    [search, status, source, serviceId, dateRange, heardFrom, cfKey, cfValue, teamId, ownerId, assignmentStatus, isInstagramView, isClinicView, isWebsiteView, view, page],
   );
 
   const { data, isLoading } = useBirthwaveLeadsQuery(scopedClientKey, params, { enabled: hasScope });
@@ -165,7 +207,11 @@ const LeadsPage = () => {
     status && { key: 'status', label: LEAD_STATUS_LABELS[status] || status },
     // Source is fixed (not a removable filter) on the Instagram Leads view.
     !isInstagramView && source && { key: 'source', label: LEAD_SOURCE_LABELS[source] || source },
-    from && to && { key: 'range', label: `${from} → ${to}` },
+    dateRange && {
+      key: 'range',
+      label: rangePreset === 'custom' ? `${dateRange.startDate} → ${dateRange.endDate}` : PRESET_LABELS[rangePreset],
+    },
+    isClinicView && heardFrom && { key: 'heard_from', label: `Heard about us: ${CLINIC_HEARD_FROM_LABELS[heardFrom] || heardFrom}` },
     cfKey && cfValue !== '' && activeFilterField && {
       key: 'custom',
       label: `${activeFilterField.label}: ${formatCrmFieldValue(activeFilterField, activeFilterField.field_type === 'boolean' ? cfValue === 'true' : cfValue)}`,
@@ -266,6 +312,23 @@ const LeadsPage = () => {
             ))}
           </Select>
         )}
+        {isClinicView && (
+          <Select size="small" displayEmpty value={heardFrom} onChange={(e) => updateParam('heard_from', e.target.value)} sx={{ minWidth: 190 }}>
+            <MenuItem value="">All "Heard about us"</MenuItem>
+            {Object.entries(CLINIC_HEARD_FROM_LABELS).map(([value, label]) => (
+              <MenuItem key={value} value={value}>{label}</MenuItem>
+            ))}
+          </Select>
+        )}
+        <DateRangeControl
+          preset={rangePreset}
+          onPresetChange={handleRangePresetChange}
+          customFrom={customFrom}
+          customTo={customTo}
+          onCustomFromChange={(value) => handleCustomDateChange('from', value)}
+          onCustomToChange={(value) => handleCustomDateChange('to', value)}
+          showAllOption
+        />
         <CrmFieldFilterControl
           fields={filterableFields}
           fieldKey={cfKey}
@@ -342,7 +405,7 @@ const LeadsPage = () => {
           </Box>
         ) : (
           <Box sx={{ overflowX: 'auto' }}>
-            <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse', minWidth: 1120 }}>
+            <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse', minWidth: isClinicView ? 1360 : 1120 }}>
               <Box component="thead">
                 <Box component="tr">
                   {canBulkAssign && (
@@ -360,8 +423,9 @@ const LeadsPage = () => {
                     'Name',
                     'Phone',
                     ...(isInstagramView ? ['Instagram'] : []),
-                    'Service',
+                    isClinicView ? 'Here for' : 'Service',
                     'Source',
+                    ...(isClinicView ? ['Heard about us', 'Registered on'] : []),
                     'Status',
                     'Team',
                     'Owner',
@@ -390,6 +454,16 @@ const LeadsPage = () => {
                     typeof lead.integration_metadata?.instagram_username === 'string'
                       ? lead.integration_metadata.instagram_username
                       : null;
+                  const clinicMeta = isClinicView
+                    ? (lead.integration_metadata?.clinic_registration as Record<string, any> | undefined)
+                    : undefined;
+                  const hereForValue = isClinicView ? clinicListValue(clinicMeta?.concerns, CLINIC_CONCERN_LABELS) : (lead.service || '—');
+                  const heardAboutValue = (() => {
+                    const list = clinicListValue(clinicMeta?.heard_about_us, CLINIC_HEARD_FROM_LABELS);
+                    const other = clinicMeta?.heard_about_us_other ? `${list === '—' ? 'Other' : list} (${clinicMeta.heard_about_us_other})` : list;
+                    return other;
+                  })();
+                  const registeredOnValue = formatClinicDate(clinicMeta?.registered_at || lead.created_at);
                   return (
                     <Box
                       component="tr"
@@ -423,8 +497,14 @@ const LeadsPage = () => {
                           {instagramUsername ? `@${instagramUsername}` : '—'}
                         </Box>
                       )}
-                      <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK, whiteSpace: 'nowrap' }}>{lead.service || '—'}</Box>
+                      <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK, whiteSpace: 'nowrap' }}>{hereForValue}</Box>
                       <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK, whiteSpace: 'nowrap' }}>{lead.source ? LEAD_SOURCE_LABELS[lead.source] || lead.source : '—'}</Box>
+                      {isClinicView && (
+                        <>
+                          <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK, whiteSpace: 'nowrap' }}>{heardAboutValue}</Box>
+                          <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK, whiteSpace: 'nowrap' }}>{registeredOnValue}</Box>
+                        </>
+                      )}
                       <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER }}>
                         <Chip label={LEAD_STATUS_LABELS[lead.status] || lead.status} size="small" sx={{ bgcolor: statusColor.bg, color: statusColor.fg, fontWeight: 700, fontSize: '0.68rem', height: 22 }} />
                       </Box>

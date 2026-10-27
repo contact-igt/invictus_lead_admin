@@ -6,6 +6,7 @@ const BORDER = 'var(--bw-border)';
 const TEXT_MUTED = 'var(--bw-text-muted)';
 
 const PRESET_ORDER: DateRangePreset[] = ['today', 'yesterday', '7d', '30d', '90d', 'custom'];
+const PRESET_ORDER_WITH_ALL: DateRangePreset[] = ['all', ...PRESET_ORDER];
 
 interface DateRangeControlProps {
   preset: DateRangePreset;
@@ -14,6 +15,8 @@ interface DateRangeControlProps {
   customTo: string;
   onCustomFromChange: (value: string) => void;
   onCustomToChange: (value: string) => void;
+  /** Lists are scoped to all time by default; opt in to an "All time" tab. */
+  showAllOption?: boolean;
 }
 
 const DateRangeControl = ({
@@ -23,6 +26,7 @@ const DateRangeControl = ({
   customTo,
   onCustomFromChange,
   onCustomToChange,
+  showAllOption = false,
 }: DateRangeControlProps) => (
   <Stack direction="column" spacing={1} sx={{ minWidth: 0 }}>
     <Box
@@ -37,7 +41,7 @@ const DateRangeControl = ({
         '&::-webkit-scrollbar': { display: 'none' },
       }}
     >
-      {PRESET_ORDER.map((key) => {
+      {(showAllOption ? PRESET_ORDER_WITH_ALL : PRESET_ORDER).map((key) => {
         const active = preset === key;
         return (
           <Box
