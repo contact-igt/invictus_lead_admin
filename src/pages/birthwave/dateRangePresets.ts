@@ -2,7 +2,7 @@
 // days using the browser's local date — consistent with the existing raw
 // <input type="date"> fields this replaces, and with how the backend's own
 // APP_TIME_ZONE-aware helpers interpret plain YYYY-MM-DD strings.
-export type DateRangePreset = 'today' | 'yesterday' | '7d' | '30d' | '90d' | 'custom';
+export type DateRangePreset = 'all' | 'today' | 'yesterday' | '7d' | '30d' | '90d' | 'custom';
 
 export interface DateRange {
   startDate: string; // YYYY-MM-DD
@@ -10,6 +10,7 @@ export interface DateRange {
 }
 
 export const PRESET_LABELS: Record<DateRangePreset, string> = {
+  all: 'All time',
   today: 'Today',
   yesterday: 'Yesterday',
   '7d': '7D',
@@ -33,6 +34,8 @@ const addDays = (date: Date, days: number): Date => {
 
 export const resolvePresetRange = (preset: DateRangePreset, today: Date = new Date()): DateRange | null => {
   switch (preset) {
+    case 'all':
+      return null;
     case 'today':
       return { startDate: toDateKey(today), endDate: toDateKey(today) };
     case 'yesterday': {
