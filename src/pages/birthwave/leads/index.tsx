@@ -5,6 +5,8 @@ import {
   FormControl, InputLabel, MenuItem, Pagination, Select, Stack, TextField, Typography,
 } from '@mui/material';
 import { Icon } from '@iconify/react';
+import { useSnackbar } from 'notistack';
+import { saveAs } from 'file-saver';
 import { useBirthwaveScope } from '../useBirthwaveScope';
 import {
   useBirthwaveDoctorsQuery, useBirthwaveLeadsQuery, useBirthwaveTeamsQuery, useSyncRepliLeadsMutation,
@@ -12,7 +14,7 @@ import {
 } from 'components/hooks/useBirthwaveQuery';
 import { useAuth } from 'redux/selectors/auth/authSelector';
 import { useCrmFieldsQuery } from 'components/hooks/useCrmQuery';
-import { BirthwaveLead } from 'services/birthwave';
+import { BirthwaveApis, BirthwaveLead } from 'services/birthwave';
 import { buildClientPortalPath } from 'routes/paths';
 import {
   CLINIC_CONCERN_LABELS, CLINIC_HEARD_FROM_LABELS, CLINIC_PROVIDER, CLINIC_VIEW_KEY,
@@ -33,6 +35,14 @@ const clinicListValue = (values: unknown, labels: Record<string, string>) =>
 const formatClinicDate = (value?: string | null) =>
   value ? new Date(value).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
 
+const extractFileName = (contentDisposition?: string): string | null => {
+  const match = String(contentDisposition || '').match(/filename="?([^";]+)"?/i);
+  return match?.[1] || null;
+};
+
+const getMutationErrorMessage = (error: any, fallback: string) =>
+  error?.response?.data?.message || error?.message || fallback;
+
 const CARD_BORDER = 'var(--bw-border)';
 const TEXT_DARK = 'var(--bw-text)';
 const TEXT_MUTED = 'var(--bw-text-muted)';
@@ -46,6 +56,8 @@ const LeadsPage = () => {
   const [formOpen, setFormOpen] = useState(false);
   const [editingLead, setEditingLead] = useState<BirthwaveLead | null>(null);
   const { user } = useAuth();
+  const { enqueueSnackbar } = useSnackbar();
+  const [isExporting, setIsExporting] = useState(false);
   const sync = useSyncRepliLeadsMutation();
   const canSync = ['super-admin', 'admin'].includes((user?.role || '').toLowerCase()) && activeClientKey === 'birthwave';
   const page = Math.max(1, Number(searchParams.get('page')) || 1);
@@ -161,6 +173,24 @@ const LeadsPage = () => {
     [search, status, source, serviceId, dateRange, heardFrom, cfKey, cfValue, teamId, ownerId, assignmentStatus, isInstagramView, isClinicView, isWebsiteView, view, page],
   );
 
+  const handleExportCsv = async () => {
+    setIsExporting(true);
+    try {
+      // Same `params` the table itself queries with (page/limit are ignored by
+      // the export endpoint), so the export always matches exactly what's on
+      // screen — search, filters, and the active date range.
+      const response = await BirthwaveApis.exportLeads(scopedClientKey, params);
+      const blob = new Blob([response.data], { type: response.headers?.['content-type'] || 'text/csv;charset=utf-8' });
+      const fallbackName = `birthwave-${view}-leads-${new Date().toISOString().slice(0, 10)}.csv`;
+      const fileName = extractFileName(response.headers?.['content-disposition']) || fallbackName;
+      saveAs(blob, fileName);
+    } catch (error: any) {
+      enqueueSnackbar(getMutationErrorMessage(error, 'Failed to export leads'), { variant: 'error' });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const { data, isLoading } = useBirthwaveLeadsQuery(scopedClientKey, params, { enabled: hasScope });
   const { data: doctors = [] } = useBirthwaveDoctorsQuery(scopedClientKey, { active: true }, { enabled: hasScope });
   const { data: teams = [] } = useBirthwaveTeamsQuery(scopedClientKey, {}, { enabled: hasScope });
@@ -251,23 +281,34 @@ const LeadsPage = () => {
               : 'Search, filter, and manage every Birthwave lead'
         }
         action={
-          isInstagramView ? (canSync ? (
-            <Button variant="contained" disabled={sync.isLoading} onClick={() => sync.mutate()}>
-              {sync.isLoading ? 'Syncing...' : 'Sync now'}
-            </Button>
-          ) : undefined) : isWebsiteView ? undefined : (
+          <Stack direction="row" spacing={1.25}>
             <Button
-              variant="contained"
-              startIcon={<Icon icon="mdi:plus" width={18} height={18} />}
-              onClick={() => {
-                setEditingLead(null);
-                setFormOpen(true);
-              }}
-              sx={{ textTransform: 'none', fontWeight: 700, borderRadius: '10px', bgcolor: GREEN, boxShadow: 'none', '&:hover': { bgcolor: '#218D68', boxShadow: 'none' } }}
+              variant="outlined"
+              disabled={isExporting || isLoading}
+              startIcon={<Icon icon="mdi:download" width={18} height={18} />}
+              onClick={handleExportCsv}
+              sx={{ textTransform: 'none', fontWeight: 700, borderRadius: '10px', borderColor: CARD_BORDER, color: TEXT_DARK, '&:hover': { borderColor: GREEN, bgcolor: 'var(--bw-hover)' } }}
             >
-              Add Lead
+              {isExporting ? 'Exporting…' : 'Export CSV'}
             </Button>
-          )
+            {isInstagramView ? (canSync ? (
+              <Button variant="contained" disabled={sync.isLoading} onClick={() => sync.mutate()}>
+                {sync.isLoading ? 'Syncing...' : 'Sync now'}
+              </Button>
+            ) : undefined) : isWebsiteView ? undefined : (
+              <Button
+                variant="contained"
+                startIcon={<Icon icon="mdi:plus" width={18} height={18} />}
+                onClick={() => {
+                  setEditingLead(null);
+                  setFormOpen(true);
+                }}
+                sx={{ textTransform: 'none', fontWeight: 700, borderRadius: '10px', bgcolor: GREEN, boxShadow: 'none', '&:hover': { bgcolor: '#218D68', boxShadow: 'none' } }}
+              >
+                Add Lead
+              </Button>
+            )}
+          </Stack>
         }
       />
 
