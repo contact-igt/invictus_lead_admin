@@ -263,13 +263,13 @@ const LeadsPage = () => {
     <Box sx={{ p: { xs: 2, sm: 3, lg: 4 } }}>
       <PortalPageHeader
         title={
-          isInstagramView
-            ? `Instagram Leads${data?.pagination?.total ? ` (${data.pagination.total})` : ''}`
+          (isInstagramView
+            ? 'Instagram Leads'
             : isClinicView
-              ? `Clinic registrations${data?.pagination?.total ? ` (${data.pagination.total})` : ''}`
+              ? 'Clinic registrations'
               : isWebsiteView
-              ? `${WEBSITE_SOURCE_LABELS[view] || 'Leads'}${data?.pagination?.total ? ` (${data.pagination.total})` : ''}`
-              : 'Leads'
+                ? WEBSITE_SOURCE_LABELS[view] || 'Leads'
+                : 'Leads') + (data?.pagination?.total !== undefined ? ` (${data.pagination.total})` : '')
         }
         subtitle={
           isInstagramView
