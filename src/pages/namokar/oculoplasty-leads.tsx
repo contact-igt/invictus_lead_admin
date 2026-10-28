@@ -6,7 +6,7 @@ import { useSnackbar } from 'notistack';
 import { useAuth } from 'redux/selectors/auth/authSelector';
 import { getNamokarOculoplastyLeads, retryNamokarOculoplastySheetSync, updateNamokarOculoplastyLead } from 'services/namokarOculoplastyLead.service';
 
-type Lead = { id: number; name: string; phone: string; doctor?: string; service: string; message?: string; source: string; page_name: string; utm_campaign?: string; lead_status: string; notes?: string; pulseos_status: string; pulseos_error?: string; sheet_sync_status: string; sheet_sync_error?: string; created_at: string; };
+type Lead = { id: number; name: string; phone: string; email?: string; doctor?: string; service: string; message?: string; source: string; page_name: string; utm_campaign?: string; lead_status: string; notes?: string; pulseos_status: string; pulseos_error?: string; sheet_sync_status: string; sheet_sync_error?: string; created_at: string; };
 const syncColor = (status: string): 'success' | 'warning' | 'error' | 'default' => status === 'synced' ? 'success' : status === 'failed' ? 'error' : status === 'pending' ? 'warning' : 'default';
 
 export default function NamokarOculoplastyLeadsPage() {
@@ -40,10 +40,10 @@ export default function NamokarOculoplastyLeadsPage() {
       <TextField size="small" select label="Status" value={status} onChange={(event) => { setStatus(event.target.value); resetPage(); }}><MenuItem value="">All statuses</MenuItem>{['new', 'contacted', 'qualified', 'closed'].map((item) => <MenuItem key={item} value={item}>{item}</MenuItem>)}</TextField>
       <TextField size="small" select label="Sheet sync" value={sync} onChange={(event) => { setSync(event.target.value); resetPage(); }}><MenuItem value="">All sync states</MenuItem>{['pending', 'synced', 'failed'].map((item) => <MenuItem key={item} value={item}>{item}</MenuItem>)}</TextField>
     </Box>
-    <Box sx={{ width: '100%', overflowX: 'auto', border: 1, borderColor: 'divider', borderRadius: 2, bgcolor: 'background.paper' }}><Table size="small" sx={{ minWidth: 1080 }}><TableHead><TableRow>{['Name', 'Mobile', 'Service', 'Source / campaign', 'Status', 'PulseOS', 'Sheet', 'Submitted'].map((label) => <TableCell key={label} sx={{ fontWeight: 700 }}>{label}</TableCell>)}</TableRow></TableHead><TableBody>
-      {leadsQuery.isLoading && <TableRow><TableCell colSpan={8} align="center" sx={{ py: 4 }}><CircularProgress size={24} /></TableCell></TableRow>}
-      {!leadsQuery.isLoading && leads.length === 0 && <TableRow><TableCell colSpan={8} align="center" sx={{ py: 4 }}>No Oculoplasty leads found.</TableCell></TableRow>}
-      {leads.map((lead) => <TableRow hover key={lead.id} onClick={() => selectLead(lead)} sx={{ cursor: 'pointer' }}><TableCell>{lead.name}</TableCell><TableCell>{lead.phone}</TableCell><TableCell>{lead.service}</TableCell><TableCell>{lead.source}{lead.utm_campaign ? ` / ${lead.utm_campaign}` : ''}</TableCell><TableCell><Chip size="small" label={lead.lead_status} /></TableCell><TableCell><Chip size="small" label={lead.pulseos_status} color={syncColor(lead.pulseos_status)} /></TableCell><TableCell><Chip size="small" label={lead.sheet_sync_status} color={syncColor(lead.sheet_sync_status)} /></TableCell><TableCell>{new Date(lead.created_at).toLocaleString('en-IN')}</TableCell></TableRow>)}
+    <Box sx={{ width: '100%', overflowX: 'auto', border: 1, borderColor: 'divider', borderRadius: 2, bgcolor: 'background.paper' }}><Table size="small" sx={{ minWidth: 1080 }}><TableHead><TableRow>{['Name', 'Mobile', 'Email', 'Service', 'Source / campaign', 'Status', 'PulseOS', 'Sheet', 'Submitted'].map((label) => <TableCell key={label} sx={{ fontWeight: 700 }}>{label}</TableCell>)}</TableRow></TableHead><TableBody>
+      {leadsQuery.isLoading && <TableRow><TableCell colSpan={9} align="center" sx={{ py: 4 }}><CircularProgress size={24} /></TableCell></TableRow>}
+      {!leadsQuery.isLoading && leads.length === 0 && <TableRow><TableCell colSpan={9} align="center" sx={{ py: 4 }}>No Oculoplasty leads found.</TableCell></TableRow>}
+      {leads.map((lead) => <TableRow hover key={lead.id} onClick={() => selectLead(lead)} sx={{ cursor: 'pointer' }}><TableCell>{lead.name}</TableCell><TableCell>{lead.phone}</TableCell><TableCell>{lead.email || '—'}</TableCell><TableCell>{lead.service}</TableCell><TableCell>{lead.source}{lead.utm_campaign ? ` / ${lead.utm_campaign}` : ''}</TableCell><TableCell><Chip size="small" label={lead.lead_status} /></TableCell><TableCell><Chip size="small" label={lead.pulseos_status} color={syncColor(lead.pulseos_status)} /></TableCell><TableCell><Chip size="small" label={lead.sheet_sync_status} color={syncColor(lead.sheet_sync_status)} /></TableCell><TableCell>{new Date(lead.created_at).toLocaleString('en-IN')}</TableCell></TableRow>)}
     </TableBody></Table></Box>
     {leadsQuery.isError && <Alert severity="error" sx={{ mt: 2 }}>Unable to load Oculoplasty leads.</Alert>}
     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2, mt: 2, flexWrap: 'wrap' }}><Typography color="text.secondary">{pagination?.total || 0} leads</Typography><Stack direction="row" spacing={1}><Button disabled={page === 1} onClick={() => setPage(page - 1)}>Previous</Button><Button disabled={!pagination || page * 25 >= pagination.total} onClick={() => setPage(page + 1)}>Next</Button></Stack></Box>
@@ -58,6 +58,7 @@ export default function NamokarOculoplastyLeadsPage() {
           <Box sx={{ minWidth: 0 }}>
             <Typography variant="h6" fontWeight={700} noWrap>{selected?.name}</Typography>
             <Typography color="text.secondary" sx={{ mt: 0.5, overflowWrap: 'anywhere' }}>{selected?.phone}</Typography>
+            {selected?.email && <Typography color="text.secondary" sx={{ mt: 0.5, overflowWrap: 'anywhere' }}>{selected.email}</Typography>}
           </Box>
           <Button size="small" onClick={() => setSelected(null)}>Close</Button>
         </Box>

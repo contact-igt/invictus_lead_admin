@@ -166,6 +166,19 @@ const DashboardPage = () => {
   const kpiCards: KpiConfig[] = [
     ['new_leads', 'New Leads', 'solar:user-plus-rounded-linear', '#2563EB'], ['assigned_leads', 'Assigned Leads', 'hugeicons:user-check-02', GREEN], ['unassigned_leads', 'Unassigned Leads', 'hugeicons:user-question-02', '#EF4444'], ['tasks_due_today', 'Tasks Due Today', 'hugeicons:task-02', '#F59E0B'], ['tasks_completed_today', 'Tasks Completed Today', 'solar:check-circle-linear', '#16A34A'], ['overdue_tasks', 'Overdue Tasks', 'solar:alarm-linear', '#EF4444'], ['follow_ups_due', 'Follow-ups Due', 'solar:clock-circle-linear', '#7C3AED'], ['appointments_today', 'Appointments Today', 'solar:calendar-mark-linear', '#0EA5E9'], ['appointments_completed_attended', 'Completed / Attended', 'solar:check-circle-linear', '#16A34A'], ['no_shows', 'No Shows', 'solar:close-circle-linear', '#EF4444'], ['open_attention', 'Open Needs Attention', 'hugeicons:alert-02', '#DC2626'], ['lost_leads', 'Lost Leads', 'solar:archive-down-minimalistic-linear', '#64748B'], ['invalid_leads', 'Invalid Leads', 'solar:danger-triangle-linear', '#64748B'],
   ].map(([id, label, icon, color]) => ({ id, label, value: op[id] ?? 0, icon, color, trend: null }));
+  // Leads created within the selected date range — distinct from "New Leads"
+  // below, which only counts leads still in `new_lead` status within that
+  // range. This is the headline number the date-range picker should move.
+  const totalLeadsCard: KpiConfig = {
+    id: 'total_leads',
+    label: 'Total Leads',
+    value: kpis?.total_leads ?? 0,
+    icon: 'solar:users-group-rounded-linear',
+    color: '#0F766E',
+    trend: null,
+    onClick: () => goToLeads(),
+  };
+  kpiCards.unshift(totalLeadsCard);
 
   return (
     <Box sx={{ p: { xs: 2, sm: 3, lg: 4 } }}>
