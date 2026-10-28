@@ -460,6 +460,11 @@ export const BirthwaveApis = {
 
   getLeads: (clientKey: string | undefined, params: Record<string, unknown> = {}) =>
     _axios('get', '/birthwave/leads', undefined, undefined, withClientKey(params, clientKey)),
+  exportLeads: (clientKey: string | undefined, params: Record<string, unknown> = {}) =>
+    _axios('get', '/birthwave/leads/export', undefined, 'application/json', withClientKey(params, clientKey), {
+      responseType: 'blob',
+      returnRawResponse: true,
+    }),
   getLead: (clientKey: string | undefined, id: number | string) =>
     _axios('get', `/birthwave/leads/${id}`, undefined, undefined, withClientKey({}, clientKey)),
   getLeadTimeline: (clientKey: string | undefined, id: number | string) =>
