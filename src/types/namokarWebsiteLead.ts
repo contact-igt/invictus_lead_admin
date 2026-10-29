@@ -4,6 +4,7 @@ export interface NamokarWebsiteLead {
   form_id: string;
   name: string;
   phone: string;
+  email?: string | null;
   service: string;
   message?: string | null;
   referral_code?: string | null;
