@@ -35,6 +35,9 @@ const clinicListValue = (values: unknown, labels: Record<string, string>) =>
 const formatClinicDate = (value?: string | null) =>
   value ? new Date(value).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
 
+const formatClinicAddress = (address?: { line1?: string | null; city?: string | null } | null) =>
+  [address?.line1, address?.city].filter(Boolean).join(', ') || '—';
+
 const extractFileName = (contentDisposition?: string): string | null => {
   const match = String(contentDisposition || '').match(/filename="?([^";]+)"?/i);
   return match?.[1] || null;
@@ -446,7 +449,7 @@ const LeadsPage = () => {
           </Box>
         ) : (
           <Box sx={{ overflowX: 'auto' }}>
-            <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse', minWidth: isClinicView ? 1360 : 1120 }}>
+            <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse', minWidth: isClinicView ? 1760 : 1120 }}>
               <Box component="thead">
                 <Box component="tr">
                   {canBulkAssign && (
@@ -461,12 +464,15 @@ const LeadsPage = () => {
                     </Box>
                   )}
                   {[
-                    'Name',
-                    'Phone',
-                    ...(isInstagramView ? ['Instagram'] : []),
-                    isClinicView ? 'Here for' : 'Service',
+                    // Clinic registrations mirror the clinic's own check-in
+                    // sheet column order (Date of visit, Name, DOB, Phone,
+                    // Email, Address, Concern, Referred by) so staff used to
+                    // that sheet find the same layout here, with our
+                    // CRM-operational columns trailing after.
+                    ...(isClinicView
+                      ? ['Date of visit', 'Name', 'DOB', 'Phone', 'Email', 'Address', 'Here for', 'Referred by']
+                      : ['Name', 'Phone', ...(isInstagramView ? ['Instagram'] : []), 'Service']),
                     'Source',
-                    ...(isClinicView ? ['Heard about us', 'Registered on'] : []),
                     'Status',
                     'Team',
                     'Owner',
@@ -499,12 +505,17 @@ const LeadsPage = () => {
                     ? (lead.integration_metadata?.clinic_registration as Record<string, any> | undefined)
                     : undefined;
                   const hereForValue = isClinicView ? clinicListValue(clinicMeta?.concerns, CLINIC_CONCERN_LABELS) : (lead.service || '—');
-                  const heardAboutValue = (() => {
+                  const referredByValue = (() => {
                     const list = clinicListValue(clinicMeta?.heard_about_us, CLINIC_HEARD_FROM_LABELS);
                     const other = clinicMeta?.heard_about_us_other ? `${list === '—' ? 'Other' : list} (${clinicMeta.heard_about_us_other})` : list;
                     return other;
                   })();
-                  const registeredOnValue = formatClinicDate(clinicMeta?.registered_at || lead.created_at);
+                  // "Date of visit" is the clinic check-in day, not the moment
+                  // the form was submitted — falls back through registered_at
+                  // then created_at only for older records missing clinic_date.
+                  const dateOfVisitValue = formatClinicDate(clinicMeta?.clinic_date || clinicMeta?.registered_at || lead.created_at);
+                  const dobValue = formatClinicDate(clinicMeta?.date_of_birth);
+                  const addressValue = formatClinicAddress(clinicMeta?.address);
                   return (
                     <Box
                       component="tr"
@@ -531,21 +542,30 @@ const LeadsPage = () => {
                           />
                         </Box>
                       )}
-                      <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.82rem', fontWeight: 600, color: TEXT_DARK, whiteSpace: 'nowrap' }}>{lead.name}</Box>
-                      <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK, whiteSpace: 'nowrap' }}>{lead.phone || '—'}</Box>
-                      {isInstagramView && (
-                        <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK, whiteSpace: 'nowrap' }}>
-                          {instagramUsername ? `@${instagramUsername}` : '—'}
-                        </Box>
-                      )}
-                      <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK, whiteSpace: 'nowrap' }}>{hereForValue}</Box>
-                      <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK, whiteSpace: 'nowrap' }}>{lead.source ? LEAD_SOURCE_LABELS[lead.source] || lead.source : '—'}</Box>
-                      {isClinicView && (
+                      {isClinicView ? (
                         <>
-                          <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK, whiteSpace: 'nowrap' }}>{heardAboutValue}</Box>
-                          <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK, whiteSpace: 'nowrap' }}>{registeredOnValue}</Box>
+                          <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK, whiteSpace: 'nowrap' }}>{dateOfVisitValue}</Box>
+                          <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.82rem', fontWeight: 600, color: TEXT_DARK, whiteSpace: 'nowrap' }}>{lead.name}</Box>
+                          <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK, whiteSpace: 'nowrap' }}>{dobValue}</Box>
+                          <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK, whiteSpace: 'nowrap' }}>{lead.phone || '—'}</Box>
+                          <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK, whiteSpace: 'nowrap' }}>{lead.email || '—'}</Box>
+                          <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK, whiteSpace: 'nowrap' }}>{addressValue}</Box>
+                          <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK, whiteSpace: 'nowrap' }}>{hereForValue}</Box>
+                          <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK, whiteSpace: 'nowrap' }}>{referredByValue}</Box>
+                        </>
+                      ) : (
+                        <>
+                          <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.82rem', fontWeight: 600, color: TEXT_DARK, whiteSpace: 'nowrap' }}>{lead.name}</Box>
+                          <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK, whiteSpace: 'nowrap' }}>{lead.phone || '—'}</Box>
+                          {isInstagramView && (
+                            <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK, whiteSpace: 'nowrap' }}>
+                              {instagramUsername ? `@${instagramUsername}` : '—'}
+                            </Box>
+                          )}
+                          <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK, whiteSpace: 'nowrap' }}>{hereForValue}</Box>
                         </>
                       )}
+                      <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK, whiteSpace: 'nowrap' }}>{lead.source ? LEAD_SOURCE_LABELS[lead.source] || lead.source : '—'}</Box>
                       <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER }}>
                         <Chip label={LEAD_STATUS_LABELS[lead.status] || lead.status} size="small" sx={{ bgcolor: statusColor.bg, color: statusColor.fg, fontWeight: 700, fontSize: '0.68rem', height: 22 }} />
                       </Box>
