@@ -576,8 +576,8 @@ const LeadDetailPage = () => {
                 </Box>
                 <Box>
                   <InfoRow label="Here for" value={clinicList(clinic.concerns, CLINIC_CONCERN_LABELS)} />
-                  <InfoRow label="Heard about us via" value={clinicList(clinic.heard_about_us, CLINIC_HEARD_FROM_LABELS) + (clinic.heard_about_us_other ? ` (${clinic.heard_about_us_other})` : '')} />
-                  <InfoRow label="Registered" value={clinic.registered_at ? formatDateTime(clinic.registered_at) : '—'} />
+                  <InfoRow label="Referred by" value={clinicList(clinic.heard_about_us, CLINIC_HEARD_FROM_LABELS) + (clinic.heard_about_us_other ? ` (${clinic.heard_about_us_other})` : '')} />
+                  <InfoRow label="Date of visit" value={clinic.clinic_date ? formatDate(clinic.clinic_date) : clinic.registered_at ? formatDateTime(clinic.registered_at) : '—'} />
                   <InfoRow label="Consent given" value={clinic.consent ? 'Yes' : 'No'} />
                   {clinic.guardian_review_required && <InfoRow label="Guardian review" value="Required" />}
                 </Box>
