@@ -4,8 +4,6 @@ export interface VlsConstitutionalBootcampFormValues {
   name: string;
   mobile: string;
   email: string;
-  current_status: string;
-  city: string;
   amount: string;
   registered_date: string;
   programm_date: string;
@@ -20,8 +18,6 @@ export const vlsConstitutionalBootcampInitialValues: VlsConstitutionalBootcampFo
   name: '',
   mobile: '',
   email: '',
-  current_status: '',
-  city: '',
   amount: '',
   registered_date: '',
   programm_date: '',
@@ -43,8 +39,6 @@ export const vlsConstitutionalBootcampSchema = Yup.object({
     .matches(/^[0-9+\-()\s]+$/, 'Use only digits, spaces, +, -, and parentheses')
     .required('Mobile is required'),
   email: Yup.string().trim().email('Enter a valid email').max(255, 'Email must be 255 characters or fewer'),
-  current_status: Yup.string().trim().max(80, 'Current status must be 80 characters or fewer'),
-  city: Yup.string().trim().max(100, 'City must be 100 characters or fewer'),
   amount: Yup.number()
     .typeError('Amount must be a valid number')
     .min(0, 'Amount cannot be negative')

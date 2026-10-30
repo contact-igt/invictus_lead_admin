@@ -5,8 +5,6 @@ export interface VlsConstitutionalBootcampRegistration {
   name: string;
   mobile: string;
   email: string | null;
-  current_status: string | null;
-  city: string | null;
   amount: string | null;
   registered_date: string | null;
   programm_date: string | null;
@@ -23,8 +21,6 @@ export interface CreateVlsConstitutionalBootcampPayload {
   name: string;
   mobile: string;
   email?: string | null;
-  current_status?: string | null;
-  city?: string | null;
   amount?: string | number | null;
   registered_date?: string | null;
   programm_date?: string | null;
