@@ -156,6 +156,11 @@ const generateDynamicClientMenus = (): MenuItem[] => {
         path: `/pages/d/${clientKey}/vls/law-practice`,
       });
       items.push({
+        name: 'Constitutional Bootcamp',
+        pathName: `/pages/d/${clientKey}/vls/constitutional-bootcamp`, 
+        path: `/pages/d/${clientKey}/vls/constitutional-bootcamp`, 
+      });
+      items.push({
         name: 'MACT Master Class',
         pathName: `/pages/d/${clientKey}/vls/mact-master-class`,
         path: `/pages/d/${clientKey}/vls/mact-master-class`,
