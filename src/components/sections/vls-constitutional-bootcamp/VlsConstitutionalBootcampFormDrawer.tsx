@@ -234,8 +234,6 @@ const VlsConstitutionalBootcampFormDrawer = ({
                 {viewItem('Name', registration?.name)}
                 {viewItem('Mobile', registration?.mobile)}
                 {viewItem('Email', registration?.email)}
-                {viewItem('Current Status', registration?.current_status)}
-                {viewItem('City', registration?.city)}
                 {viewItem('Amount', formatVlsConstitutionalAmount(registration?.amount))}
                 {viewItem('Registered Date', formatVlsConstitutionalDate(registration?.registered_date))}
                 {viewItem('Programme Date', formatVlsConstitutionalDate(registration?.programm_date))}
@@ -266,8 +264,6 @@ const VlsConstitutionalBootcampFormDrawer = ({
               {renderTextField('name', 'Name', 'text', true)}
               {renderTextField('mobile', 'Mobile', 'tel', true)}
               {renderTextField('email', 'Email', 'email')}
-              {renderTextField('current_status', 'Current Status')}
-              {renderTextField('city', 'City')}
               {renderTextField('amount', 'Amount', 'number')}
               {renderDateField('registered_date', 'Registered Date')}
               {renderDateField('programm_date', 'Programme Date')}

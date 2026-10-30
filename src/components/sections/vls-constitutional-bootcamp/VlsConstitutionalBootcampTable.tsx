@@ -174,20 +174,8 @@ const VlsConstitutionalBootcampTable = ({
         </Typography>
       ),
     },
-    {
-      field: 'current_status',
-      headerName: 'Current Status',
-      minWidth: 145,
-      flex: 0.9,
-      renderCell: (params) => <Typography variant="body2">{params.row.current_status || '-'}</Typography>,
-    },
-    {
-      field: 'city',
-      headerName: 'City',
-      minWidth: 130,
-      flex: 0.8,
-      renderCell: (params) => <Typography variant="body2">{params.row.city || '-'}</Typography>,
-    },
+
+
     {
       field: 'amount',
       headerName: 'Amount',
