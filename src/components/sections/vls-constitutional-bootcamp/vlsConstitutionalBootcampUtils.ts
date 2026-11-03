@@ -53,8 +53,6 @@ export const cleanVlsConstitutionalPayload = (
   name: values.name.trim(),
   mobile: values.mobile.trim(),
   email: toOptionalText(values.email),
-  current_status: toOptionalText(values.current_status),
-  city: toOptionalText(values.city),
   amount: values.amount.trim() || null,
   registered_date: values.registered_date || null,
   programm_date: values.programm_date || null,

@@ -58,8 +58,6 @@ const VlsConstitutionalBootcampFormDrawer = ({
           name: registration.name ?? '',
           mobile: registration.mobile ?? '',
           email: registration.email ?? '',
-          current_status: registration.current_status ?? '',
-          city: registration.city ?? '',
           amount:
             registration.amount === null || registration.amount === undefined
               ? ''
