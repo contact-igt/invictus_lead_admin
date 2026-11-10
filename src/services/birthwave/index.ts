@@ -395,10 +395,12 @@ export interface BirthwaveOperationalDashboard {
 
 export type BirthwaveWebsiteSourceKey =
   | 'birthwave_website'
+  | 'birthwave_workshop'
   | 'birthwave_normalbirth'
   | 'birthwave_naturalbirth'
   | 'birthwave_pregnancycare'
-  | 'birthwave_vbac';
+  | 'birthwave_vbac'
+  | 'birthwave_vaginismus';
 
 export interface BirthwaveWebsiteLead {
   id: number;
@@ -427,7 +429,7 @@ export interface BirthwaveWebsiteLead {
   status: string;
   notes: string | null;
   birthwave_lead_id: number | null;
-  sheet_sync_status: 'pending' | 'synced' | 'failed';
+  sheet_sync_status: 'pending' | 'synced' | 'failed' | 'syncing';
   sheet_sync_attempts: number;
   sheet_sync_last_error: string | null;
   sheet_synced_at: string | null;
