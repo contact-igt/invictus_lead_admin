@@ -1,7 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Alert, Button, Chip, Divider, FormControl, InputLabel, MenuItem, Select, Stack, TextField, Typography } from '@mui/material';
+import { Alert, Button, Chip, Divider, FormControl, InputLabel, MenuItem, Select, Stack, TextField, Tooltip, Typography } from '@mui/material';
+import { Icon } from '@iconify/react';
 import { BirthwaveWebsiteLead } from 'services/birthwave';
-import { usePromoteBirthwaveWebsiteLeadMutation, useUpdateBirthwaveWebsiteLeadMutation } from 'components/hooks/useBirthwaveQuery';
+import {
+  usePromoteBirthwaveWebsiteLeadMutation,
+  useRetryBirthwaveWebsiteLeadSheetSyncMutation,
+  useUpdateBirthwaveWebsiteLeadMutation,
+} from 'components/hooks/useBirthwaveQuery';
 import { WEBSITE_LEAD_STATUS_COLORS, WEBSITE_LEAD_STATUS_LABELS, WEBSITE_SOURCE_LABELS } from '../constants';
 import BirthwaveDrawerLayout from '../BirthwaveDrawerLayout';
 
@@ -9,6 +14,13 @@ const CARD_BORDER = 'var(--bw-border)';
 const TEXT_DARK = 'var(--bw-text)';
 const TEXT_MUTED = 'var(--bw-text-muted)';
 const GREEN = '#29AF81';
+
+const SHEET_SYNC_COLORS: Record<string, { bg: string; fg: string }> = {
+  synced:  { bg: 'rgba(41,175,129,0.12)', fg: '#29AF81' },
+  pending: { bg: 'rgba(245,158,11,0.12)', fg: '#D97706' },
+  syncing: { bg: 'rgba(59,130,246,0.12)', fg: '#2563EB' },
+  failed:  { bg: 'rgba(239,68,68,0.12)',  fg: '#EF4444' },
+};
 
 const fmt = (value: string | null) => value ? new Date(value).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
 
@@ -31,8 +43,10 @@ const WebsiteLeadDetailDrawer = ({ clientKey, lead, open, onClose }: Props) => {
   const [notes, setNotes] = useState('');
   const updateMutation = useUpdateBirthwaveWebsiteLeadMutation(clientKey);
   const promoteMutation = usePromoteBirthwaveWebsiteLeadMutation(clientKey);
+  const retrySheetSyncMutation = useRetryBirthwaveWebsiteLeadSheetSyncMutation(clientKey);
   const { mutate: update, isLoading: saving } = updateMutation;
   const { mutate: promote, isLoading: promoting } = promoteMutation;
+  const { mutate: retrySheetSync, isLoading: retrying } = retrySheetSyncMutation;
 
   useEffect(() => {
     if (lead) {
@@ -45,6 +59,8 @@ const WebsiteLeadDetailDrawer = ({ clientKey, lead, open, onClose }: Props) => {
   const statusColor = WEBSITE_LEAD_STATUS_COLORS[lead.status] || { bg: 'var(--bw-surface-2)', fg: TEXT_MUTED };
   const dirty = status !== lead.status || notes !== (lead.notes ?? '');
   const mutationError = (updateMutation.error || promoteMutation.error) as { response?: { data?: { message?: string } } } | null;
+  const sheetSyncColor = SHEET_SYNC_COLORS[lead.sheet_sync_status] || { bg: 'var(--bw-surface-2)', fg: TEXT_MUTED };
+  const sheetSyncFailed = lead.sheet_sync_status === 'failed' || (lead.sheet_sync_status === 'pending' && lead.sheet_sync_attempts > 0);
 
   return (
     <BirthwaveDrawerLayout
@@ -66,6 +82,27 @@ const WebsiteLeadDetailDrawer = ({ clientKey, lead, open, onClose }: Props) => {
       <Stack direction="row" spacing={1} mb={2} flexWrap="wrap" rowGap={1}>
         <Chip label={WEBSITE_LEAD_STATUS_LABELS[lead.status] || lead.status} size="small" sx={{ bgcolor: statusColor.bg, color: statusColor.fg, fontWeight: 700 }} />
         {lead.birthwave_lead_id && <Chip label={`CRM Lead #${lead.birthwave_lead_id}`} size="small" sx={{ bgcolor: 'rgba(41,175,129,0.12)', color: GREEN, fontWeight: 700 }} />}
+        {/* Sheet sync status badge */}
+        <Tooltip title={lead.sheet_sync_last_error || (lead.sheet_sync_status === 'synced' ? `Synced to sheet on ${fmt(lead.sheet_synced_at)}` : `Attempts: ${lead.sheet_sync_attempts}`)}>
+          <Chip
+            icon={<Icon icon={lead.sheet_sync_status === 'synced' ? 'mdi:google-spreadsheet' : lead.sheet_sync_status === 'failed' ? 'mdi:cloud-alert' : 'mdi:cloud-sync'} width={13} />}
+            label={`Sheet: ${lead.sheet_sync_status ?? 'unknown'}`}
+            size="small"
+            sx={{ bgcolor: sheetSyncColor.bg, color: sheetSyncColor.fg, fontWeight: 700, fontSize: '0.65rem' }}
+          />
+        </Tooltip>
+        {sheetSyncFailed && (
+          <Button
+            size="small"
+            variant="outlined"
+            disabled={retrying}
+            onClick={() => retrySheetSync(lead.id)}
+            startIcon={<Icon icon="mdi:refresh" width={14} />}
+            sx={{ fontSize: '0.7rem', height: 24, px: 1, borderColor: '#EF4444', color: '#EF4444', '&:hover': { borderColor: '#DC2626', bgcolor: 'rgba(239,68,68,0.06)' } }}
+          >
+            {retrying ? 'Retrying…' : 'Retry Sheet Sync'}
+          </Button>
+        )}
       </Stack>
 
       <Typography sx={{ fontSize: '0.8rem', fontWeight: 700, color: TEXT_DARK, mb: 0.5 }}>Contact</Typography>

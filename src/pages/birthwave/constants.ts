@@ -46,18 +46,22 @@ export const LEAD_SOURCE_LABELS: Record<string, string> = {
 
 export const WEBSITE_SOURCE_LABELS: Record<string, string> = {
   birthwave_website: 'Website Inquiries',
+  birthwave_workshop: 'Childbirth Workshop',
   birthwave_normalbirth: 'Normal Birth',
   birthwave_naturalbirth: 'Natural Birth',
   birthwave_pregnancycare: 'Pregnancy Care',
   birthwave_vbac: 'VBAC',
+  birthwave_vaginismus: 'Vaginismus',
 };
 
 export const WEBSITE_SOURCE_ORDER = [
   'birthwave_website',
+  'birthwave_workshop',
   'birthwave_normalbirth',
   'birthwave_naturalbirth',
   'birthwave_pregnancycare',
   'birthwave_vbac',
+  'birthwave_vaginismus',
 ] as const;
 
 export const WEBSITE_LEAD_STATUS_LABELS: Record<string, string> = {
