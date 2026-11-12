@@ -51,6 +51,20 @@ export const useSyncRepliLeadsMutation = () => {
 const errorMessage = (error: unknown, fallback: string) =>
   (error as AxiosError<ErrorPayload>)?.response?.data?.message || fallback;
 
+export const useDeleteBirthwaveLeadMutation = (clientKey: string | undefined) => {
+  const qc = useQueryClient();
+  const { enqueueSnackbar } = useSnackbar();
+  return useMutation((id: number | string) => BirthwaveApis.deleteLead(clientKey, id), {
+    onSuccess: () => {
+      enqueueSnackbar('Lead deleted', { variant: 'success' });
+      qc.invalidateQueries({ predicate: (query) => String(query.queryKey[0]).startsWith('birthwave-') });
+    },
+    onError: (error) => {
+      enqueueSnackbar(errorMessage(error, 'Failed to delete lead'), { variant: 'error' });
+    },
+  });
+};
+
 // ── Dashboard ────────────────────────────────────────────────────────────
 export const useBirthwaveDashboardQuery = (
   clientKey: string | undefined,
