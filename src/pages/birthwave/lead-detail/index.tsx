@@ -604,7 +604,7 @@ const LeadDetailPage = () => {
         <Box sx={{ ...cardSx, mt: 2.5 }}>
           <Typography sx={{ fontSize: '0.95rem', fontWeight: 700, color: TEXT_DARK }}>Outcome History</Typography>
           <Typography sx={{ color: TEXT_MUTED, fontSize: '0.78rem', mb: 1.25 }}>Manual interaction evidence and business dispositions.</Typography>
-          {outcomes.length === 0 ? <Typography sx={{ color: TEXT_MUTED, fontSize: '0.82rem' }}>No outcomes recorded yet.</Typography> : <Stack spacing={1}>
+          {outcomes.length === 0 ? <Typography sx={{ color: TEXT_MUTED, fontSize: '0.82rem' }}>No outcomes recorded yet.</Typography> : <Stack direction="column" spacing={1}>
             {outcomes.slice(0, 8).map((outcome) => <Box key={outcome.id} sx={{ borderTop: '1px solid', borderColor: CARD_BORDER, pt: 1 }}>
               <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" spacing={0.5}><Typography sx={{ color: TEXT_DARK, fontSize: '0.82rem', fontWeight: 700 }}>{outcome.contact_result === 'CONNECTED' ? (outcome.disposition || 'Connected') : `Not reached · ${outcome.not_reached_reason || '—'}`}</Typography><Typography sx={{ color: TEXT_MUTED, fontSize: '0.72rem' }}>{formatDateTime(outcome.created_at)}</Typography></Stack>
               <Typography sx={{ color: TEXT_MUTED, fontSize: '0.75rem' }}>{outcome.evidence_source} {outcome.next_action_type ? `· Next: ${taskLabel(outcome.next_action_type)}` : ''}{outcome.notes ? ` · ${outcome.notes}` : ''}</Typography>
@@ -663,20 +663,21 @@ const LeadDetailPage = () => {
           </Box>
         )}
         {lead?.other_leads && lead.other_leads.length > 0 && (
-          <Box sx={{ ...cardSx, mb: 2.5 }}>
+          <Box sx={{ ...cardSx, mt: 2.5, mb: 2.5 }}>
             <Typography sx={{ fontSize: '0.95rem', fontWeight: 700, color: TEXT_DARK, mb: 2 }}>Other Enquiries</Typography>
-            <Stack spacing={1}>
+            <Stack direction="column" spacing={1}>
               {lead.other_leads.map((other) => (
                 <Button
                   key={other.id}
                   onClick={() => navigate(buildClientPortalPath(activeClientKey, `leads/${other.id}`))}
-                  sx={{ justifyContent: 'space-between', textTransform: 'none', color: TEXT_DARK, border: '1px solid', borderColor: CARD_BORDER, borderRadius: '10px', px: 1.5, py: 1 }}
+                  fullWidth
+                  sx={{ justifyContent: 'space-between', flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' }, gap: 1, minWidth: 0, textTransform: 'none', color: TEXT_DARK, border: '1px solid', borderColor: CARD_BORDER, borderRadius: '10px', px: 1.5, py: 1 }}
                 >
-                  <Box sx={{ textAlign: 'left' }}>
+                  <Box sx={{ textAlign: 'left', minWidth: 0, overflowWrap: 'anywhere' }}>
                     <Typography sx={{ fontSize: '0.82rem', fontWeight: 700 }}>{other.service || 'General enquiry'}</Typography>
                     <Typography sx={{ fontSize: '0.72rem', color: TEXT_MUTED }}>{other.source || '—'} · {formatDate(other.created_at)}</Typography>
                   </Box>
-                  <Chip size="small" label={LEAD_STAGE_LABELS[other.stage || ''] || LEAD_STATUS_LABELS[other.status] || other.status} />
+                  <Chip size="small" label={LEAD_STAGE_LABELS[other.stage || ''] || LEAD_STATUS_LABELS[other.status] || other.status} sx={{ flexShrink: 0, maxWidth: '100%', height: 'auto', '& .MuiChip-label': { whiteSpace: 'normal', py: 0.5 } }} />
                 </Button>
               ))}
             </Stack>

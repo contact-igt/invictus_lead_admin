@@ -109,6 +109,11 @@ const WebsiteLeadDetailDrawer = ({ clientKey, lead, open, onClose }: Props) => {
       <Row label="Phone" value={lead.phone} />
       <Row label="Email" value={lead.email} />
       <Row label={lead.source_key === 'birthwave_website' ? 'What do you need help with?' : 'Service'} value={lead.service} />
+      {lead.source_key === 'birthwave_workshop' && <>
+        <Row label="Registration status" value={lead.message?.match(/^Registration status:[ \t]*([^\r\n]+)/im)?.[1]} />
+        <Row label="Pregnancy stage" value={lead.message?.match(/^Pregnancy stage:[ \t]*([^\r\n]+)/im)?.[1]} />
+        <Row label="Workshop date" value={lead.message?.match(/^Workshop session:[ \t]*([^\r\n]+)/im)?.[1]} />
+      </>}
       <Row label="Message" value={lead.message} />
       <Row label="Submitted" value={fmt(lead.created_at)} />
 
