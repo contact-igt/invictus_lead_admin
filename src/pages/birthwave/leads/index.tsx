@@ -11,6 +11,7 @@ import { useBirthwaveScope } from '../useBirthwaveScope';
 import {
   useBirthwaveDoctorsQuery, useBirthwaveLeadsQuery, useBirthwaveTeamsQuery, useSyncRepliLeadsMutation,
   useBirthwaveTeamContextQuery, useBirthwaveTeamQuery, useBulkAssignBirthwaveLeadsMutation, useBirthwaveServicesQuery,
+  useDeleteBirthwaveLeadMutation,
 } from 'components/hooks/useBirthwaveQuery';
 import { useAuth } from 'redux/selectors/auth/authSelector';
 import { useCrmFieldsQuery } from 'components/hooks/useCrmQuery';
@@ -59,6 +60,9 @@ const LeadsPage = () => {
   const [formOpen, setFormOpen] = useState(false);
   const [editingLead, setEditingLead] = useState<BirthwaveLead | null>(null);
   const { user } = useAuth();
+  const [deletingLead, setDeletingLead] = useState<BirthwaveLead | null>(null);
+  const deleteLead = useDeleteBirthwaveLeadMutation(scopedClientKey);
+  const canDelete = ['super-admin', 'admin', 'client'].includes((user?.role || '').toLowerCase());
   const { enqueueSnackbar } = useSnackbar();
   const [isExporting, setIsExporting] = useState(false);
   const sync = useSyncRepliLeadsMutation();
@@ -590,9 +594,11 @@ const LeadsPage = () => {
                           >
                             View
                           </Button>
-                          {/* Delete is not implemented yet for CRM leads (only website
-                              enquiries support it today) — add a matching confirm-dialog
-                              delete action here, next to View, when that's built. */}
+                          {canDelete && (
+                            <Button size="small" color="error" disabled={deleteLead.isLoading} onClick={(e) => { e.stopPropagation(); setDeletingLead(lead); }} sx={{ textTransform: 'none', fontWeight: 700, minWidth: 0 }}>
+                              Delete
+                            </Button>
+                          )}
                         </Stack>
                       </Box>
                     </Box>
@@ -607,6 +613,26 @@ const LeadsPage = () => {
         <Pagination sx={{ mt: 2 }} page={page} count={data?.pagination.totalPages} onChange={(_, value) => updateParam('page', String(value))} />
       )}
       </>
+
+      <Dialog open={Boolean(deletingLead)} onClose={() => !deleteLead.isLoading && setDeletingLead(null)} fullWidth maxWidth="xs" aria-labelledby="delete-lead-title">
+        <DialogTitle id="delete-lead-title">Delete lead?</DialogTitle>
+        <DialogContent>
+          <Typography>Delete {deletingLead?.name || 'this lead'} and its tasks, appointments, assignment history, outcomes and timeline? This cannot be undone.</Typography>
+          <Typography sx={{ mt: 1, color: TEXT_MUTED, fontSize: '0.8rem' }}>The contact, original website enquiry and Google Sheet row will remain.</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button disabled={deleteLead.isLoading} onClick={() => setDeletingLead(null)}>Cancel</Button>
+          <Button color="error" variant="contained" disabled={deleteLead.isLoading} onClick={() => {
+            if (!deletingLead) return;
+            const id = deletingLead.id;
+            deleteLead.mutate(id, { onSuccess: () => {
+              setDeletingLead(null);
+              setSelectedIds((ids) => ids.filter((selected) => selected !== id));
+              if (leads.length === 1 && page > 1) updateParam('page', String(page - 1));
+            } });
+          }}>{deleteLead.isLoading ? 'Deleting...' : 'Delete lead'}</Button>
+        </DialogActions>
+      </Dialog>
 
       <LeadFormDrawer
         clientKey={scopedClientKey}
