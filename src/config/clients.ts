@@ -336,6 +336,9 @@ export const ClientRegistry: Record<string, ClientConfig> = {
         columns: [
           { field: "name", header: "Name", type: "text", flex: 1.3, minWidth: 150, required: true },
           { field: "mobile", header: "Mobile", type: "phone", flex: 1.1, minWidth: 130, required: true },
+          { field: "who_are_you", header: "Profession", type: "text", flex: 1.1, minWidth: 150 },
+          { field: "why_join", header: "Why Join", type: "text", flex: 1.8, minWidth: 220 },
+          { field: "attending", header: "Attending", type: "text", flex: 0.8, minWidth: 110 },
           { field: "email", header: "Email", type: "email", flex: 1.3, minWidth: 160 },
           { field: "amount", header: "Amount (\u20B9)", type: "text", flex: 0.9, minWidth: 110 },
           { field: "registered_date", header: "Registered On", type: "date", flex: 1.5, minWidth: 195 },
@@ -352,6 +355,7 @@ export const ClientRegistry: Record<string, ClientConfig> = {
           { field: "page_name", header: "Page Name", type: "text", flex: 1.3, minWidth: 180 },
           { field: "razorpay_order_id", header: "Order ID", type: "text", flex: 1.2, minWidth: 160 },
           { field: "razorpay_payment_id", header: "Payment ID", type: "text", flex: 1.2, minWidth: 160 },
+          { field: "razorpay_signature", header: "Payment Signature", type: "text", flex: 1.2, minWidth: 160 },
           { field: "captured", header: "Captured", type: "text", flex: 0.9, minWidth: 110 },
           { field: "ip_address", header: "IP Address", type: "text", flex: 1, minWidth: 120 },
           { field: "utm_source", header: "UTM Source", type: "text", flex: 1, minWidth: 120 },
