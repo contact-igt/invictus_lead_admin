@@ -133,7 +133,7 @@ const WebsiteLeadsView = ({ sourceKey }: { sourceKey: BirthwaveWebsiteSourceKey 
             <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse', minWidth: 820 }}>
               <Box component="thead">
                 <Box component="tr">
-                  {['Name', 'Phone', sourceKey === 'birthwave_website' ? 'Needs help with' : 'Service', 'Source / Campaign', 'Status', 'Submitted', 'Actions'].map((col) => (
+                  {['Name', 'Phone', sourceKey === 'birthwave_website' ? 'Needs help with' : 'Service', 'Source / Campaign', 'UTM Source', 'UTM Medium', 'UTM Campaign', 'Status', 'Submitted', 'Actions'].map((col) => (
                     <Box
                       component="th"
                       key={col}
@@ -170,6 +170,9 @@ const WebsiteLeadsView = ({ sourceKey }: { sourceKey: BirthwaveWebsiteSourceKey 
                       <Box component="td" sx={cellSx}>
                         {[lead.source, lead.campaign].filter(Boolean).join(' · ') || '—'}
                       </Box>
+                      <Box component="td" sx={cellSx}>{lead.utm_source || '—'}</Box>
+                      <Box component="td" sx={cellSx}>{lead.utm_medium || '—'}</Box>
+                      <Box component="td" sx={cellSx}>{lead.utm_campaign || '—'}</Box>
                       <Box component="td" sx={{ ...cellSx, whiteSpace: 'nowrap' }}>
                         <Chip label={WEBSITE_LEAD_STATUS_LABELS[lead.status] || lead.status} size="small" sx={{ bgcolor: sc.bg, color: sc.fg, fontWeight: 700, fontSize: '0.68rem', height: 22 }} />
                       </Box>

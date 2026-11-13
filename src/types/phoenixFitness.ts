@@ -9,6 +9,11 @@ export interface PhoenixFitnessLead {
   utm_source: string | null;
   created_at: string;
   updated_at: string;
+  source_provider?: string | null;
+  form_type?: string | null;
+  website_data?: Record<string, unknown> | null;
+  sheet_sync_status?: string;
+  runo_sync_status?: string;
 }
 
 export interface CreatePhoenixFitnessLeadPayload {
@@ -22,6 +27,7 @@ export interface CreatePhoenixFitnessLeadPayload {
 export type UpdatePhoenixFitnessLeadPayload = Partial<CreatePhoenixFitnessLeadPayload>;
 
 export interface PhoenixFitnessListParams {
+  lead_source?: 'landing_page' | 'website';
   page?: number;
   limit?: number;
   search?: string;

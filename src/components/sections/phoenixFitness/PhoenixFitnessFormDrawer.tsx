@@ -191,6 +191,18 @@ const PhoenixFitnessFormDrawer = ({
                 {viewItem('IP Address', lead?.ip_address, true)}
                 {viewItem('UTM Source', lead?.utm_source)}
               </Box>
+              {lead?.source_provider === 'phoenix_website' && (
+                <Stack spacing={2}>
+                  {viewItem('Form Type', lead.form_type)}
+                  {viewItem('Google Sheets Delivery', lead.sheet_sync_status)}
+                  {viewItem('Runo Delivery', lead.runo_sync_status)}
+                  {Object.entries(lead.website_data ?? {}).map(([key, value]) => (
+                    <Box key={key}>
+                      {viewItem(key.replace(/([A-Z])/g, ' $1').replace(/_/g, ' '), value == null ? '' : String(value))}
+                    </Box>
+                  ))}
+                </Stack>
+              )}
               <Divider />
               <Box
                 sx={{

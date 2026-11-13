@@ -19,6 +19,7 @@ const cleanListParams = (params: PhoenixFitnessListParams): PhoenixFitnessQueryP
 
   if (params.page !== undefined) cleaned.page = params.page;
   if (params.limit !== undefined) cleaned.limit = params.limit;
+  if (params.lead_source) cleaned.lead_source = params.lead_source;
   if (params.search?.trim()) cleaned.search = params.search.trim();
   if (params.branch?.trim()) cleaned.branch = params.branch.trim();
   if (params.utm_source?.trim()) cleaned.utm_source = params.utm_source.trim();
@@ -31,6 +32,7 @@ const cleanListParams = (params: PhoenixFitnessListParams): PhoenixFitnessQueryP
 const cleanExportParams = (params: PhoenixFitnessExportParams): PhoenixFitnessQueryParams => {
   const cleaned: PhoenixFitnessQueryParams = {};
 
+  if (params.lead_source) cleaned.lead_source = params.lead_source;
   if (params.search?.trim()) cleaned.search = params.search.trim();
   if (params.branch?.trim()) cleaned.branch = params.branch.trim();
   if (params.utm_source?.trim()) cleaned.utm_source = params.utm_source.trim();

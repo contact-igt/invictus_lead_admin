@@ -149,6 +149,13 @@ const generateDynamicClientMenus = (): MenuItem[] => {
       items.push(...tableItems);
     }
 
+    if (clientKey === 'phoenix_fitness') {
+      items.splice(0, items.length,
+        { name: 'Landing Page Leads', pathName: paths.phoenixFitness(clientKey), path: paths.phoenixFitness(clientKey) },
+        { name: 'Website Leads', pathName: `${paths.phoenixFitness(clientKey)}/website-leads`, path: `${paths.phoenixFitness(clientKey)}/website-leads` },
+      );
+    }
+
     if (clientKey === 'vls_law') {
       items.push({
         name: 'Law Practice Enrollments',

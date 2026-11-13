@@ -122,7 +122,7 @@ const EMPTY_SUMMARY: PhoenixFitnessSummary = {
   top_branch_count: 0,
 };
 
-const PhoenixFitnessSection = () => {
+const PhoenixFitnessSection = ({ leadSource = 'landing_page' }: { leadSource?: 'landing_page' | 'website' }) => {
   const { clientKey } = useParams<{ clientKey: string }>();
   const { enqueueSnackbar } = useSnackbar();
   const isPhoenixFitnessModule = resolveClientModuleKey(clientKey) === 'phoenix_fitness';
@@ -149,6 +149,7 @@ const PhoenixFitnessSection = () => {
   }, [searchInput]);
 
   const params: PhoenixFitnessListParams = {
+    lead_source: leadSource,
     page,
     limit,
     search: debouncedSearch || undefined,
@@ -260,6 +261,7 @@ const PhoenixFitnessSection = () => {
 
     try {
       const exportParams = {
+        lead_source: leadSource,
         search: debouncedSearch || undefined,
         branch: branch || undefined,
         utm_source: utmSource.trim() || undefined,
@@ -355,10 +357,10 @@ const PhoenixFitnessSection = () => {
                   overflowWrap: 'break-word',
                 }}
               >
-                Phoenix Fitness
+                {leadSource === 'website' ? 'Website Leads' : 'Landing Page Leads'}
               </Typography>
               <Typography variant="body2" color="text.secondary" mt={0.35}>
-                Manage website enquiries and branch leads
+                {leadSource === 'website' ? 'Manage Phoenix Fitness website enquiries' : 'Manage Phoenix Fitness landing page enquiries'}
               </Typography>
             </Box>
           </Stack>
@@ -386,6 +388,7 @@ const PhoenixFitnessSection = () => {
             <Button
               variant="contained"
               startIcon={<IconifyIcon icon="mdi:plus" />}
+              disabled={leadSource === 'website'}
               onClick={() => openDrawer('create')}
               sx={{
                 bgcolor: PHOENIX_FITNESS_COLOR,

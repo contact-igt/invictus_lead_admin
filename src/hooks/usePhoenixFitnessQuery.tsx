@@ -62,7 +62,7 @@ export const usePhoenixFitnessLeads = (
     phoenixFitnessKeys.list(clientKey, params),
     () => getPhoenixFitnessLeads(params, superAdminClientKey),
     {
-      keepPreviousData: true,
+      keepPreviousData: false,
       enabled,
       refetchOnWindowFocus: false,
       retry: shouldRetryPhoenixFitnessRequest,

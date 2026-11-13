@@ -155,6 +155,10 @@ const router = createBrowserRouter(
               element: <PhoenixFitnessPage />,
             },
             {
+              path: `${paths.phoenixFitness(':clientKey')}/website-leads`,
+              element: <PhoenixFitnessPage />,
+            },
+            {
               path: paths.vlsConstitutionalBootcamp,
               element: <VlsConstitutionalBootcampPage />,
             },
