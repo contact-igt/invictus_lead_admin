@@ -3,7 +3,7 @@ export const CLIENT_KEY_ALIASES: Readonly<Record<string, string>> = {
     vlslaw: 'vls_law',
 };
 
-export const SUPPORTED_CLIENT_MODULES = ['pixeleye', 'vls_law', 'aarav_eye_care', 'antardrashti_netralaya', 'rio', 'shanti_eye_tech', 'phoenix_fitness', 'birthwave', 'namokar', 'invictus'] as const;
+export const SUPPORTED_CLIENT_MODULES = ['pixeleye', 'vls_law', 'aarav_eye_care', 'antardrashti_netralaya', 'rio', 'shanti_eye_tech', 'phoenix_fitness', 'birthwave', 'namokar', 'neyani', 'invictus'] as const;
 export type SupportedClientModule = typeof SUPPORTED_CLIENT_MODULES[number];
 
 export const CLIENT_MODULE_OPTIONS: Array<{ label: string; value: SupportedClientModule }> = [
@@ -14,6 +14,7 @@ export const CLIENT_MODULE_OPTIONS: Array<{ label: string; value: SupportedClien
     { label: 'Antardrashti Netralaya', value: 'antardrashti_netralaya' },
     { label: 'Rio', value: 'rio' },
     { label: 'Shanti Eye Tech', value: 'shanti_eye_tech' },
+    { label: 'Neyani Eye Hospital', value: 'neyani' },
     { label: 'Phoenix Fitness', value: 'phoenix_fitness' },
     { label: 'Birthwave Women Wellness Hospital', value: 'birthwave' },
     { label: 'Namokar Eye & Oculoplasty Centre', value: 'namokar' },

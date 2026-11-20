@@ -88,7 +88,7 @@ const DynamicSection = ({ config, clientKey }: DynamicSectionProps) => {
   const { data, isLoading } = useQuery(
     queryKey,
     () => _axios('get', config.endpoint, undefined, 'application/json', queryParams),
-    { staleTime: 5 * 60 * 1000 }
+    { staleTime: 5 * 60 * 1000, refetchInterval: config.readOnly ? 60_000 : false }
   );
 
   const filterableColumns = useMemo(
@@ -325,7 +325,7 @@ const DynamicSection = ({ config, clientKey }: DynamicSectionProps) => {
       <PageTitle
         title={config.title}
         btnText={` ${config.title}`}
-        isAddEnable
+        isAddEnable={!config.readOnly}
         searchText={searchText}
         handleInputChange={(e: any) => setSearchText(e.target.value)}
         openModal={() => handleOpenDrawer(null)}
