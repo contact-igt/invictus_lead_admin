@@ -29,6 +29,7 @@ export interface TableConfig {
   title: string;
   endpoint: string; // The API endpoint to fetch data from
   columns: ColumnConfig[];
+  readOnly?: boolean;
   metrics?: DashboardMetricConfig[];
 }
 
@@ -40,6 +41,26 @@ export interface ClientConfig {
 
 import { MAIN_STATUS_OPTIONS, getDayDropdownStatuses } from 'components/sections/pixel-eye/pixelEyeStatuses';
 export const ClientRegistry: Record<string, ClientConfig> = {
+  neyani: {
+    appName: 'Neyani Eye Hospital',
+    theme: { primaryColor: '#14594F' },
+    tables: [{
+      id: 'website-leads',
+      title: 'Website Leads',
+      endpoint: '/neyani',
+      readOnly: true,
+      columns: [
+        { field: 'name', header: 'Name', type: 'text', minWidth: 150 },
+        { field: 'phone', header: 'Phone', type: 'phone', minWidth: 145 },
+        { field: 'treatment', header: 'Treatment', type: 'text', minWidth: 150 },
+        { field: 'message', header: 'Message', type: 'textarea', minWidth: 215 },
+        { field: 'source', header: 'Form', type: 'text', minWidth: 180 },
+        { field: 'sheet_status', header: 'Google Sheets', type: 'text', minWidth: 130 },
+        { field: 'email_status', header: 'Email', type: 'text', minWidth: 105 },
+        { field: 'createdAt', header: 'Submitted', type: 'date', minWidth: 145 },
+      ],
+    }],
+  },
   namokar: {
     appName: 'Namokar Eye & Oculoplasty Centre',
     theme: { primaryColor: '#B54708' },

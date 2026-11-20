@@ -346,14 +346,14 @@ const DynamicTable = ({
       renderCell: (params) => (
         <ActionMenu
           onView={() => onView(params.row.id)}
-          onEdit={() => onEdit(params.row.id)}
-          onRemove={() => onDelete(params.row.id)}
+          onEdit={config.readOnly ? undefined : () => onEdit(params.row.id)}
+          onRemove={config.readOnly ? undefined : () => onDelete(params.row.id)}
         />
       )
     });
 
     return cols;
-  }, [config.columns, isPixelEyeLeads, onEdit, onView, onDelete, onInlineUpdate, onFollowUpHistoryClick]);
+  }, [config.columns, config.readOnly, isPixelEyeLeads, onEdit, onView, onDelete, onInlineUpdate, onFollowUpHistoryClick]);
 
   return (
     <Box sx={{ width: '100%' }}>
