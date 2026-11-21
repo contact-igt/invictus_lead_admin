@@ -122,7 +122,7 @@ const EMPTY_SUMMARY: PhoenixFitnessSummary = {
   top_branch_count: 0,
 };
 
-const PhoenixFitnessSection = ({ leadSource = 'landing_page' }: { leadSource?: 'landing_page' | 'website' }) => {
+const PhoenixFitnessSection = ({ leadSource = 'landing_page' }: { leadSource?: NonNullable<PhoenixFitnessListParams['lead_source']> }) => {
   const { clientKey } = useParams<{ clientKey: string }>();
   const { enqueueSnackbar } = useSnackbar();
   const isPhoenixFitnessModule = resolveClientModuleKey(clientKey) === 'phoenix_fitness';
@@ -296,6 +296,7 @@ const PhoenixFitnessSection = ({ leadSource = 'landing_page' }: { leadSource?: '
     );
   }
 
+  const title = { landing_page: 'Landing Page Leads', website: 'Website Leads', franchise: 'Franchise Leads' }[leadSource];
   const activeFilters = hasPhoenixFitnessFilters(params);
   const drawerLead = detailQuery.data?.data ?? selectedLead;
   const mutationLoading = createMutation.isLoading || updateMutation.isLoading;
@@ -357,10 +358,10 @@ const PhoenixFitnessSection = ({ leadSource = 'landing_page' }: { leadSource?: '
                   overflowWrap: 'break-word',
                 }}
               >
-                {leadSource === 'website' ? 'Website Leads' : 'Landing Page Leads'}
+                {title}
               </Typography>
               <Typography variant="body2" color="text.secondary" mt={0.35}>
-                {leadSource === 'website' ? 'Manage Phoenix Fitness website enquiries' : 'Manage Phoenix Fitness landing page enquiries'}
+                Manage Phoenix Fitness {title.toLowerCase()}
               </Typography>
             </Box>
           </Stack>
@@ -388,7 +389,7 @@ const PhoenixFitnessSection = ({ leadSource = 'landing_page' }: { leadSource?: '
             <Button
               variant="contained"
               startIcon={<IconifyIcon icon="mdi:plus" />}
-              disabled={leadSource === 'website'}
+              disabled={leadSource !== 'landing_page'}
               onClick={() => openDrawer('create')}
               sx={{
                 bgcolor: PHOENIX_FITNESS_COLOR,

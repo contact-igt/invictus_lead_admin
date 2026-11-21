@@ -27,7 +27,7 @@ export interface CreatePhoenixFitnessLeadPayload {
 export type UpdatePhoenixFitnessLeadPayload = Partial<CreatePhoenixFitnessLeadPayload>;
 
 export interface PhoenixFitnessListParams {
-  lead_source?: 'landing_page' | 'website';
+  lead_source?: 'landing_page' | 'website' | 'franchise';
   page?: number;
   limit?: number;
   search?: string;
