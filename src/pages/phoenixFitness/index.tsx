@@ -3,7 +3,9 @@ import PhoenixFitnessSection from 'components/sections/phoenixFitness/PhoenixFit
 
 const PhoenixFitnessPage = () => {
   const { pathname } = useLocation();
-  const leadSource = pathname.endsWith('/website-leads') ? 'website' : 'landing_page';
+  const section = pathname.replace(/\/+$/, '').split('/').pop();
+  const leadSource = section === 'franchise-leads' ? 'franchise'
+    : section === 'website-leads' ? 'website' : 'landing_page';
   return <PhoenixFitnessSection key={leadSource} leadSource={leadSource} />;
 };
 

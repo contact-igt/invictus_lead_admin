@@ -153,6 +153,7 @@ const generateDynamicClientMenus = (): MenuItem[] => {
       items.splice(0, items.length,
         { name: 'Landing Page Leads', pathName: paths.phoenixFitness(clientKey), path: paths.phoenixFitness(clientKey) },
         { name: 'Website Leads', pathName: `${paths.phoenixFitness(clientKey)}/website-leads`, path: `${paths.phoenixFitness(clientKey)}/website-leads` },
+        { name: 'Franchise Leads', pathName: `${paths.phoenixFitness(clientKey)}/franchise-leads`, path: `${paths.phoenixFitness(clientKey)}/franchise-leads` },
       );
     }
 
