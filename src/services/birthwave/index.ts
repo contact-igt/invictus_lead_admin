@@ -484,6 +484,8 @@ export const BirthwaveApis = {
     _axios('post', `/birthwave/leads/${id}/notes`, { note }, undefined, withClientKey({}, clientKey)),
   deleteLead: (clientKey: string | undefined, id: number | string) =>
     _axios('delete', `/birthwave/leads/${id}`, undefined, undefined, withClientKey({}, clientKey)),
+  bulkDeleteLeads: (clientKey: string | undefined, ids: number[]) =>
+    _axios('post', '/birthwave/leads/bulk-delete', { lead_ids: ids }, undefined, withClientKey({}, clientKey)),
   getLeadAssignments: (clientKey: string | undefined, id: number | string) =>
     _axios('get', `/birthwave/leads/${id}/assignments`, undefined, undefined, withClientKey({}, clientKey)),
   assignLead: (clientKey: string | undefined, id: number | string, data: { team_id: number; owner_id: number; reason?: string }) =>

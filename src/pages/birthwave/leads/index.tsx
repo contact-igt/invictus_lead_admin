@@ -279,6 +279,9 @@ const LeadsPage = () => {
           if (allSelected && page > 1) updateParam('page', String(page - 1));
         }
       },
+      onError: (error) => {
+        enqueueSnackbar(getMutationErrorMessage(error, 'Could not confirm deletion. Refresh the leads before retrying.'), { variant: 'error' });
+      },
     });
   };
   const activeFilters = [
