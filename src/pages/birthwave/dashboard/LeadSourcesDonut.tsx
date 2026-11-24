@@ -53,7 +53,13 @@ const LeadSourcesDonut = ({ sources, totalLeads, loading, onSourceClick }: LeadS
     <Box sx={{ ...cardSx, height: '100%', display: 'flex', flexDirection: 'column' }}>
       <Typography sx={{ ...sectionTitleSx, mb: 2 }}>Lead Sources</Typography>
       {loading ? (
-        <Skeleton variant="rounded" height={220} sx={{ borderRadius: '10px' }} />
+        <Stack minHeight={220} alignItems="center" justifyContent="center" spacing={2}>
+          <Skeleton variant="circular" width={132} height={132} sx={{ maskImage: 'radial-gradient(circle, transparent 47%, black 48%)' }} />
+          <Stack direction="row" spacing={1.5}>
+            <Skeleton width={48} />
+            <Skeleton width={48} />
+          </Stack>
+        </Stack>
       ) : sources.length === 0 ? (
         <Stack direction="column" flex={1} minHeight={220} alignItems="center" justifyContent="center">
           <Typography variant="body2" sx={{ color: TEXT_MUTED }}>

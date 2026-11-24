@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Box, Button, MenuItem, Select, Stack, Typography } from '@mui/material';
+import { Box, Button, MenuItem, Select, Skeleton, Stack, Typography } from '@mui/material';
 import { Icon } from '@iconify/react';
 import { useBirthwaveScope } from '../useBirthwaveScope';
 import { useBirthwaveDashboardQuery, useBirthwaveDoctorsQuery } from 'components/hooks/useBirthwaveQuery';
@@ -30,6 +30,32 @@ interface KpiConfig {
   onClick?: () => void;
 }
 
+const kpiCardSx = { ...cardSx, flex: '1 1 150px', minWidth: 150 };
+
+const KpiSkeleton = () => (
+  <Box sx={kpiCardSx}>
+    <Stack direction="row" alignItems="center" spacing={1.5}>
+      <Skeleton variant="rounded" width={38} height={38} sx={{ borderRadius: '10px', flexShrink: 0 }} />
+      <Box sx={{ flex: 1, minWidth: 0 }}>
+        <Skeleton width={32} height={22} />
+        <Skeleton width="80%" height={16} />
+      </Box>
+    </Stack>
+  </Box>
+);
+
+const SummarySkeleton = ({ rows }: { rows: number }) => (
+  <Box sx={{ ...cardSx, p: 2.25 }}>
+    <Skeleton width={128} height={24} sx={{ mb: 1.5 }} />
+    {Array.from({ length: rows }, (_, index) => (
+      <Stack key={index} direction="row" alignItems="center" justifyContent="space-between" sx={{ py: 0.55 }}>
+        <Skeleton width={index % 2 ? '42%' : '62%'} height={20} />
+        <Skeleton width={24} height={20} />
+      </Stack>
+    ))}
+  </Box>
+);
+
 const KpiCard = ({ label, value, icon, color, trend, onClick }: KpiConfig) => (
   <Box
     role={onClick ? 'button' : undefined}
@@ -42,9 +68,7 @@ const KpiCard = ({ label, value, icon, color, trend, onClick }: KpiConfig) => (
       }
     }}
     sx={{
-      ...cardSx,
-      flex: '1 1 150px',
-      minWidth: 150,
+      ...kpiCardSx,
       cursor: onClick ? 'pointer' : 'default',
       transition: 'box-shadow 120ms ease, border-color 120ms ease',
       '&:hover': onClick ? { borderColor: GREEN, boxShadow: '0 2px 10px rgba(41,175,129,0.12)' } : undefined,
@@ -238,17 +262,33 @@ const DashboardPage = () => {
         </Stack>
       </Stack>
 
+      {isLoading && (
+        <Box role="status" sx={{ position: 'absolute', width: '1px', height: '1px', overflow: 'hidden', clipPath: 'inset(50%)' }}>
+          Loading dashboard
+        </Box>
+      )}
+      <Box aria-busy={isLoading}>
       {/* KPI row */}
       <Stack direction="row" flexWrap="wrap" gap={2} mb={2.5}>
         {kpiCards.map((kpi) => (
-          <KpiCard key={kpi.id} {...kpi} />
+          isLoading ? <KpiSkeleton key={kpi.id} /> : <KpiCard key={kpi.id} {...kpi} />
         ))}
       </Stack>
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr 1fr' }, gap: 2.5, mb: 2.5 }}>
+        {isLoading ? (
+          <>
+            <SummarySkeleton rows={3} />
+            <SummarySkeleton rows={8} />
+            <SummarySkeleton rows={5} />
+          </>
+        ) : (
+          <>
         <Box sx={{ ...cardSx, p: 2.25 }}><Typography sx={{ fontWeight: 800, color: TEXT_DARK, mb: 1.5 }}>Lead Sources</Typography>{(operational?.lead_sources || []).slice(0, 8).map((row) => <Stack key={row.source} direction="row" justifyContent="space-between" sx={{ py: 0.55 }}><Typography variant="body2" color="text.secondary">{row.source}</Typography><Typography variant="body2" fontWeight={800}>{row.count}</Typography></Stack>)}{!operational?.lead_sources?.length && <Typography variant="body2" color="text.secondary">No leads in this range.</Typography>}</Box>
         <Box sx={{ ...cardSx, p: 2.25 }}><Typography sx={{ fontWeight: 800, color: TEXT_DARK, mb: 1.5 }}>Services</Typography>{(operational?.service_breakdown || []).slice(0, 8).map((row) => <Stack key={row.service} direction="row" justifyContent="space-between" sx={{ py: 0.55 }}><Typography variant="body2" color="text.secondary">{row.service}</Typography><Typography variant="body2" fontWeight={800}>{row.count}</Typography></Stack>)}{!operational?.service_breakdown?.length && <Typography variant="body2" color="text.secondary">No services in this range.</Typography>}</Box>
         <Box sx={{ ...cardSx, p: 2.25 }}><Typography sx={{ fontWeight: 800, color: TEXT_DARK, mb: 1.5 }}>Appointments Today</Typography>{Object.entries(operational?.appointment_summary || {}).map(([key, value]) => <Stack key={key} direction="row" justifyContent="space-between" sx={{ py: 0.55 }}><Typography variant="body2" color="text.secondary">{key.replace(/_/g, ' ')}</Typography><Typography variant="body2" fontWeight={800}>{value}</Typography></Stack>)}</Box>
+          </>
+        )}
       </Box>
 
       {/* Analytics row */}
@@ -301,6 +341,7 @@ const DashboardPage = () => {
           schedule={dashboard?.today_schedule ?? []}
           loading={isLoading}
         />
+      </Box>
       </Box>
 
       <LeadFormDrawer

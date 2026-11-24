@@ -33,7 +33,7 @@ export interface PortalNavItem {
 const LEADS_CHILDREN: PortalNavChild[] = [
   { label: 'All Leads' },
   { label: WEBSITE_SOURCE_LABELS[WEBSITE_SOURCE_ORDER[0]], query: { view: WEBSITE_SOURCE_ORDER[0] } },
-  { label: 'Instagram Leads', query: { view: 'instagram' } },
+  // { label: 'Instagram Leads', query: { view: 'instagram' } },
   { label: 'Clinic registrations', query: { view: CLINIC_VIEW_KEY } },
   ...WEBSITE_SOURCE_ORDER.slice(1).map((key) => ({
     label: WEBSITE_SOURCE_LABELS[key],
@@ -44,20 +44,20 @@ const LEADS_CHILDREN: PortalNavChild[] = [
 // Exact order per the approved Birthwave portal spec — do not reorder.
 export const PORTAL_NAV_ITEMS: PortalNavItem[] = [
   { segment: 'dashboard', label: 'Dashboard', icon: 'hugeicons:grid-view' },
-  { segment: 'my-work', label: 'My Work', icon: 'hugeicons:task-02' },
-  { segment: 'attention', label: 'Needs Attention', icon: 'hugeicons:alert-02', managerOnly: true },
+  // { segment: 'my-work', label: 'My Work', icon: 'hugeicons:task-02' },
+  // { segment: 'attention', label: 'Needs Attention', icon: 'hugeicons:alert-02', managerOnly: true },
   { segment: 'leads', label: 'Leads', icon: 'hugeicons:user-multiple', children: LEADS_CHILDREN },
-  { segment: 'appointments', label: 'Appointments', icon: 'hugeicons:calendar-03' },
+  // { segment: 'appointments', label: 'Appointments', icon: 'hugeicons:calendar-03' },
   // BW-UI-009: Calls reads crm_calls, which is the V2 telephony/Runo foundation.
   // It has no producer in V1 (nothing calls /crm/calls/ingest/:provider), so the
   // page could only ever render an empty list while implying call logging works.
   // Hidden like Doctors / Campaign Sources / Reports / Settings; route untouched.
   // { segment: 'calls', label: 'Calls', icon: 'hugeicons:call-02' },
-  { segment: 'teams', label: 'Teams', icon: 'hugeicons:user-group', managerOnly: true, children: [
-    { label: 'All Teams' },
-    { label: 'Team Members', segment: 'team-members' },
-  ] },
-  { segment: 'assignment-rules', label: 'Assignment Rules', icon: 'hugeicons:workflow-square-01', adminOnly: true },
+  // { segment: 'teams', label: 'Teams', icon: 'hugeicons:user-group', managerOnly: true, children: [
+  //   { label: 'All Teams' },
+  //   { label: 'Team Members', segment: 'team-members' },
+  // ] },
+  // { segment: 'assignment-rules', label: 'Assignment Rules', icon: 'hugeicons:workflow-square-01', adminOnly: true },
   // BW-SVC-001: the service master. Settings as a whole stays out of the nav
   // (it still holds the two reference-only integration panels), but Services is
   // a real administrative surface — it drives every lead form, landing page and
@@ -67,7 +67,7 @@ export const PORTAL_NAV_ITEMS: PortalNavItem[] = [
   // Pages/routes are untouched; reach them directly by URL if needed.
   // { segment: 'doctors', label: 'Doctors', icon: 'solar:stethoscope-linear' },
   // { segment: 'campaign-sources', label: 'Campaign Sources', icon: 'hugeicons:megaphone-02' },
-  { segment: 'follow-ups', label: 'Follow-ups', icon: 'solar:clock-circle-linear' },
+  // { segment: 'follow-ups', label: 'Follow-ups', icon: 'solar:clock-circle-linear' },
   // { segment: 'reports', label: 'Reports', icon: 'hugeicons:chart-bar-line-01' },
   // { segment: 'settings', label: 'Settings', icon: 'hugeicons:settings-02' },
 ];

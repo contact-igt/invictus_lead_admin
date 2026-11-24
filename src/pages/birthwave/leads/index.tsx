@@ -1,16 +1,17 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Alert, Box, Button, Checkbox, Chip, Dialog, DialogActions, DialogContent, DialogTitle,
-  FormControl, InputLabel, MenuItem, Pagination, Select, Stack, TextField, Typography,
+  IconButton, MenuItem, Pagination, Select, Skeleton, Stack, TextField, Tooltip, Typography,
 } from '@mui/material';
+import { visuallyHidden } from '@mui/utils';
 import { Icon } from '@iconify/react';
 import { useSnackbar } from 'notistack';
 import { saveAs } from 'file-saver';
 import { useBirthwaveScope } from '../useBirthwaveScope';
 import {
   useBirthwaveDoctorsQuery, useBirthwaveLeadsQuery, useBirthwaveTeamsQuery, useSyncRepliLeadsMutation,
-  useBirthwaveTeamContextQuery, useBirthwaveTeamQuery, useBulkAssignBirthwaveLeadsMutation, useBirthwaveServicesQuery,
+  useBirthwaveServicesQuery, useDeleteSelectedBirthwaveLeadsMutation,
   useDeleteBirthwaveLeadMutation,
 } from 'components/hooks/useBirthwaveQuery';
 import { useAuth } from 'redux/selectors/auth/authSelector';
@@ -36,6 +37,10 @@ const clinicListValue = (values: unknown, labels: Record<string, string>) =>
 const formatClinicDate = (value?: string | null) =>
   value ? new Date(value).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
 
+const submittedAtFormatter = new Intl.DateTimeFormat('en-IN', {
+  dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Kolkata',
+});
+
 const formatClinicAddress = (address?: { line1?: string | null; city?: string | null } | null) =>
   [address?.line1, address?.city].filter(Boolean).join(', ') || '—';
 
@@ -51,6 +56,30 @@ const CARD_BORDER = 'var(--bw-border)';
 const TEXT_DARK = 'var(--bw-text)';
 const TEXT_MUTED = 'var(--bw-text-muted)';
 const GREEN = '#29AF81';
+const selectionCheckboxSx = {
+  color: TEXT_MUTED,
+  '&.Mui-checked, &.MuiCheckbox-indeterminate': { color: GREEN },
+};
+
+const SelectionMark = ({ state }: { state?: 'checked' | 'mixed' }) => (
+  <Box
+    component="span"
+    aria-hidden="true"
+    sx={{
+      width: 20,
+      height: 20,
+      display: 'grid',
+      placeItems: 'center',
+      boxSizing: 'border-box',
+      border: '2px solid currentColor',
+      borderColor: state ? 'currentColor' : 'color-mix(in srgb, currentColor 65%, transparent)',
+      borderRadius: '5px',
+      bgcolor: state ? 'currentColor' : 'transparent',
+    }}
+  >
+    {state && <Icon icon={state === 'checked' ? 'mdi:check' : 'mdi:minus'} width={15} color="#fff" />}
+  </Box>
+);
 
 
 const LeadsPage = () => {
@@ -77,7 +106,12 @@ const LeadsPage = () => {
   const isInstagramView = view === 'instagram';
   const isClinicView = view === CLINIC_VIEW_KEY;
   const isWebsiteView = view !== 'crm' && !isInstagramView;
+<<<<<<< Updated upstream
   const isPrenatalYogaView = view === 'birthwave_prenatal_yoga';
+=======
+  const isWebsiteSubmissionView = isWebsiteView && !isClinicView;
+  const showPregnancyWeeks = view === 'birthwave_prenatal_yoga';
+>>>>>>> Stashed changes
 
   const search = searchParams.get('search') || '';
   const status = searchParams.get('status') || '';
@@ -143,6 +177,18 @@ const LeadsPage = () => {
 
   const { data: customFields = [] } = useCrmFieldsQuery(scopedClientKey, 'birthwave_lead', { enabled: hasScope });
   const tableFields = customFields.filter((f) => f.show_in_table);
+  const tableColumns = [
+    ...(isClinicView
+      ? ['Date of visit', 'Name', 'DOB', 'Phone', 'Email', 'Address', 'Here for', 'Referred by']
+      : ['Name', 'Phone', ...(isInstagramView ? ['Instagram'] : []), 'Service']),
+    ...(isWebsiteSubmissionView
+      ? ['Email', 'Submitted (IST)', ...(showPregnancyWeeks ? ['Pregnancy Weeks'] : []), 'Enquiry Message']
+      : ['Source']),
+    'Status',
+    ...(!isWebsiteSubmissionView ? ['Team', 'Owner', 'Assignment', 'Assigned Doctor'] : []),
+    ...tableFields.map((field) => field.label),
+    '',
+  ];
   const filterableFields = customFields.filter((f) => f.filterable);
   const activeFilterField = customFields.find((f) => f.field_key === cfKey);
 
@@ -206,41 +252,39 @@ const LeadsPage = () => {
   const { data: services = [] } = useBirthwaveServicesQuery(scopedClientKey, {}, { enabled: hasScope });
   const leads = data?.data ?? [];
 
-  // ── Bulk assignment (Admin / authorized Team Manager only) ──────────────
-  const { data: teamContext } = useBirthwaveTeamContextQuery(scopedClientKey, { enabled: hasScope });
-  const canBulkAssign = Boolean(
-    teamContext?.is_admin ||
-      teamContext?.memberships?.some((m) => m.operational_role === 'TEAM_MANAGER' && m.status === 'ACTIVE'),
-  );
-  const [selectedIds, setSelectedIds] = useState<number[]>([]);
-  const [bulkOpen, setBulkOpen] = useState(false);
-  const [bulkTeamId, setBulkTeamId] = useState('');
-  const [bulkOwnerId, setBulkOwnerId] = useState('');
-  const [bulkReason, setBulkReason] = useState('');
-  const { data: bulkTeam } = useBirthwaveTeamQuery(scopedClientKey, bulkTeamId || undefined, { enabled: Boolean(bulkTeamId) });
-  const bulkAssign = useBulkAssignBirthwaveLeadsMutation(scopedClientKey);
-  const selectableIds = leads.map((l) => l.id);
-  const allSelected = selectableIds.length > 0 && selectableIds.every((id) => selectedIds.includes(id));
-  const toggleOne = (id: number) =>
-    setSelectedIds((current) => (current.includes(id) ? current.filter((x) => x !== id) : [...current, id]));
-  const toggleAll = () =>
-    setSelectedIds((current) => (allSelected ? current.filter((id) => !selectableIds.includes(id)) : [...new Set([...current, ...selectableIds])]));
-  const submitBulk = () => {
-    if (!bulkTeamId || !bulkOwnerId || selectedIds.length === 0) return;
-    bulkAssign.mutate(
-      { lead_ids: selectedIds, team_id: Number(bulkTeamId), owner_id: Number(bulkOwnerId), reason: bulkReason.trim() || undefined },
-      {
-        onSuccess: () => {
-          setBulkOpen(false);
-          setSelectedIds([]);
-          setBulkTeamId('');
-          setBulkOwnerId('');
-          setBulkReason('');
-        },
-      },
-    );
-  };
+  const [selection, setSelection] = useState<number[]>([]);
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const deleteSelected = useDeleteSelectedBirthwaveLeadsMutation(scopedClientKey);
+  const selectableIds = leads.map((lead) => lead.id);
+  const selectedIds = selectableIds.filter((id) => selection.includes(id));
+  const allSelected = selectableIds.length > 0 && selectedIds.length === selectableIds.length;
+  const selectionScope = searchParams.toString();
 
+  useEffect(() => {
+    setSelection([]);
+    setBulkDeleteOpen(false);
+  }, [scopedClientKey, selectionScope]);
+
+  const toggleOne = (id: number) =>
+    setSelection((current) => current.includes(id) ? current.filter((selected) => selected !== id) : [...current, id]);
+  const toggleAll = () => setSelection(allSelected ? [] : selectableIds);
+  const submitBulkDelete = () => {
+    if (!canDelete || !selectedIds.length || deleteSelected.isLoading) return;
+    const ids = selectedIds;
+    deleteSelected.mutate(ids, {
+      onSuccess: (failedIds) => {
+        const deletedCount = ids.length - failedIds.length;
+        setBulkDeleteOpen(false);
+        setSelection(failedIds);
+        if (failedIds.length) {
+          enqueueSnackbar(`${deletedCount} deleted. ${failedIds.length} could not be deleted and remain selected.`, { variant: 'error' });
+        } else {
+          enqueueSnackbar(`${deletedCount} lead${deletedCount === 1 ? '' : 's'} deleted`, { variant: 'success' });
+          if (allSelected && page > 1) updateParam('page', String(page - 1));
+        }
+      },
+    });
+  };
   const activeFilters = [
     status && { key: 'status', label: LEAD_STATUS_LABELS[status] || status },
     // Source is fixed (not a removable filter) on the Instagram Leads view.
@@ -411,7 +455,7 @@ const LeadsPage = () => {
         </Stack>
       )}
 
-      {canBulkAssign && selectedIds.length > 0 && (
+      {canDelete && selectedIds.length > 0 && (
         <Stack
           direction={{ xs: 'column', sm: 'row' }}
           alignItems={{ xs: 'stretch', sm: 'center' }}
@@ -421,27 +465,26 @@ const LeadsPage = () => {
           <Typography sx={{ fontWeight: 700, color: TEXT_DARK, fontSize: '0.85rem', flexGrow: 1 }}>
             {selectedIds.length} lead{selectedIds.length === 1 ? '' : 's'} selected
           </Typography>
-          <Button size="small" onClick={() => setSelectedIds([])} sx={{ textTransform: 'none', color: TEXT_MUTED }}>
-            Clear
+          <Button size="small" disabled={deleteSelected.isLoading} onClick={() => setSelection([])} sx={{ textTransform: 'none', color: TEXT_MUTED }}>
+            Clear selection
           </Button>
           <Button
             size="small"
             variant="contained"
-            startIcon={<Icon icon="mdi:account-multiple-plus" width={16} />}
-            onClick={() => setBulkOpen(true)}
-            sx={{ textTransform: 'none', fontWeight: 700, bgcolor: GREEN, boxShadow: 'none', '&:hover': { bgcolor: '#218D68', boxShadow: 'none' } }}
+            color="error"
+            startIcon={<Icon icon="mdi:trash-can-outline" width={18} />}
+            onClick={() => setBulkDeleteOpen(true)}
+            disabled={deleteSelected.isLoading || deleteLead.isLoading}
+            sx={{ textTransform: 'none', fontWeight: 700, boxShadow: 'none' }}
           >
-            Bulk Assign
+            Delete selected
           </Button>
         </Stack>
       )}
 
-      <Box sx={{ bgcolor: 'var(--bw-surface)', border: '1px solid', borderColor: CARD_BORDER, borderRadius: '14px', overflow: 'hidden' }}>
-        {isLoading ? (
-          <Box sx={{ p: 3 }}>
-            <Typography sx={{ color: TEXT_MUTED }}>Loading...</Typography>
-          </Box>
-        ) : leads.length === 0 ? (
+      {isLoading && <Box role="status" sx={visuallyHidden}>Loading leads</Box>}
+      <Box aria-busy={isLoading} sx={{ bgcolor: 'var(--bw-surface)', border: '1px solid', borderColor: CARD_BORDER, borderRadius: '14px', overflow: 'hidden' }}>
+        {!isLoading && leads.length === 0 ? (
           <Box sx={{ p: 4, textAlign: 'center' }}>
             <Typography sx={{ color: TEXT_MUTED, fontWeight: isInstagramView ? 700 : 400 }}>
               {isInstagramView ? 'No Instagram leads found.' : 'No leads match these filters.'}
@@ -457,10 +500,15 @@ const LeadsPage = () => {
             <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse', minWidth: isClinicView ? 1760 : 1120 }}>
               <Box component="thead">
                 <Box component="tr">
-                  {canBulkAssign && (
+                  {canDelete && (
                     <Box component="th" sx={{ width: 44, px: 1, borderBottom: '1px solid', borderColor: CARD_BORDER }}>
                       <Checkbox
                         size="small"
+                        disabled={isLoading || deleteSelected.isLoading}
+                        sx={selectionCheckboxSx}
+                        icon={<SelectionMark />}
+                        checkedIcon={<SelectionMark state="checked" />}
+                        indeterminateIcon={<SelectionMark state="mixed" />}
                         checked={allSelected}
                         indeterminate={!allSelected && selectableIds.some((id) => selectedIds.includes(id))}
                         onChange={toggleAll}
@@ -468,6 +516,7 @@ const LeadsPage = () => {
                       />
                     </Box>
                   )}
+<<<<<<< Updated upstream
                   {[
                     // Clinic registrations mirror the clinic's own check-in
                     // sheet column order (Date of visit, Name, DOB, Phone,
@@ -493,6 +542,9 @@ const LeadsPage = () => {
                     ...tableFields.map((f) => f.label),
                     '',
                   ].map((col, index) => (
+=======
+                  {tableColumns.map((col, index) => (
+>>>>>>> Stashed changes
                     <Box component="th" key={`${col}-${index}`} sx={{ textAlign: 'left', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', color: TEXT_MUTED, borderBottom: '1px solid', borderColor: CARD_BORDER, py: 1.25, px: 2 }}>
                       {col}
                     </Box>
@@ -500,7 +552,25 @@ const LeadsPage = () => {
                 </Box>
               </Box>
               <Box component="tbody">
-                {leads.map((lead) => {
+                {isLoading ? Array.from({ length: 5 }, (_, rowIndex) => (
+                  <Box component="tr" key={rowIndex} aria-hidden="true" sx={{ height: 49, '& td': { borderBottom: '1px solid', borderColor: CARD_BORDER } }}>
+                    {canDelete && (
+                      <Box component="td" sx={{ px: 1 }}>
+                        <Skeleton variant="rounded" width={16} height={16} sx={{ mx: 'auto' }} />
+                      </Box>
+                    )}
+                    {tableColumns.map((column, columnIndex) => (
+                      <Box component="td" key={columnIndex} sx={{ px: 2 }}>
+                        <Skeleton
+                          variant="rounded"
+                          height={column === 'Status' ? 22 : 12}
+                          width={column === 'Status' || !column ? 48 : `${55 + ((rowIndex + columnIndex) % 3) * 12}%`}
+                          sx={{ '@media (prefers-reduced-motion: reduce)': { animation: 'none' } }}
+                        />
+                      </Box>
+                    ))}
+                  </Box>
+                )) : leads.map((lead) => {
                   const statusColor = LEAD_STATUS_COLORS[lead.status] || { bg: 'var(--bw-surface-2)', fg: TEXT_MUTED };
                   const instagramUsername =
                     typeof lead.integration_metadata?.instagram_username === 'string'
@@ -537,10 +607,15 @@ const LeadsPage = () => {
                       }}
                       sx={{ cursor: 'pointer', '&:hover td': { bgcolor: 'var(--bw-hover)' }, '&:focus-visible': { outline: '2px solid #29AF81', outlineOffset: -2 } }}
                     >
-                      {canBulkAssign && (
+                      {canDelete && (
                         <Box component="td" sx={{ px: 1, borderBottom: '1px solid', borderColor: CARD_BORDER }} onClick={(e) => e.stopPropagation()}>
                           <Checkbox
                             size="small"
+                            disabled={deleteSelected.isLoading}
+                            sx={selectionCheckboxSx}
+                            icon={<SelectionMark />}
+                            checkedIcon={<SelectionMark state="checked" />}
+                            onKeyDown={(e) => e.stopPropagation()}
                             checked={selectedIds.includes(lead.id)}
                             onChange={() => toggleOne(lead.id)}
                             inputProps={{ 'aria-label': `Select ${lead.name}` }}
@@ -576,14 +651,33 @@ const LeadsPage = () => {
                           )}
                         </>
                       )}
-                      <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK, whiteSpace: 'nowrap' }}>{lead.source ? LEAD_SOURCE_LABELS[lead.source] || lead.source : '—'}</Box>
+                      {isWebsiteSubmissionView ? (
+                        [
+                          { label: 'Email', value: lead.email },
+                          { label: 'Submitted', value: lead.created_at && Number.isFinite(Date.parse(lead.created_at)) ? submittedAtFormatter.format(new Date(lead.created_at)) : null },
+                          ...(showPregnancyWeeks ? [{ label: 'Pregnancy Weeks', value: lead.pregnancy_weeks }] : []),
+                          { label: 'Enquiry Message', value: lead.notes },
+                        ].map(({ label, value }) => (
+                          <Box key={label} component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK }}>
+                            <Box sx={{ maxWidth: 240, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={value == null ? undefined : String(value)}>
+                              {value || (value === 0 ? 0 : '—')}
+                            </Box>
+                          </Box>
+                        ))
+                      ) : (
+                        <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK, whiteSpace: 'nowrap' }}>{lead.source ? LEAD_SOURCE_LABELS[lead.source] || lead.source : '—'}</Box>
+                      )}
                       <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER }}>
                         <Chip label={LEAD_STATUS_LABELS[lead.status] || lead.status} size="small" sx={{ bgcolor: statusColor.bg, color: statusColor.fg, fontWeight: 700, fontSize: '0.68rem', height: 22 }} />
                       </Box>
-                      <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK, whiteSpace: 'nowrap' }}>{lead.current_team?.name || 'Unassigned'}</Box>
-                      <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK, whiteSpace: 'nowrap' }}>{lead.current_owner?.username || 'Unassigned'}</Box>
-                      <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER }}><Chip label={lead.assignment_status || (lead.current_owner_id ? 'ASSIGNED' : 'UNASSIGNED')} size="small" sx={{ bgcolor: lead.current_owner_id ? 'var(--bw-tint-green)' : 'var(--bw-surface-2)', color: lead.current_owner_id ? '#15803D' : TEXT_MUTED, fontWeight: 700, fontSize: '0.65rem' }} /></Box>
-                      <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK, whiteSpace: 'nowrap' }}>{lead.assignedDoctor?.name || 'Unassigned'}</Box>
+                      {!isWebsiteSubmissionView && (
+                        <>
+                          <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK, whiteSpace: 'nowrap' }}>{lead.current_team?.name || 'Unassigned'}</Box>
+                          <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK, whiteSpace: 'nowrap' }}>{lead.current_owner?.username || 'Unassigned'}</Box>
+                          <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER }}><Chip label={lead.assignment_status || (lead.current_owner_id ? 'ASSIGNED' : 'UNASSIGNED')} size="small" sx={{ bgcolor: lead.current_owner_id ? 'var(--bw-tint-green)' : 'var(--bw-surface-2)', color: lead.current_owner_id ? '#15803D' : TEXT_MUTED, fontWeight: 700, fontSize: '0.65rem' }} /></Box>
+                          <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK, whiteSpace: 'nowrap' }}>{lead.assignedDoctor?.name || 'Unassigned'}</Box>
+                        </>
+                      )}
                       {tableFields.map((field) => (
                         <Box key={field.id} component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK, whiteSpace: 'nowrap' }}>
                           {formatCrmFieldValue(field, lead.custom_fields?.[field.field_key])}
@@ -591,20 +685,28 @@ const LeadsPage = () => {
                       ))}
                       <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, whiteSpace: 'nowrap' }}>
                         <Stack direction="row" spacing={0.5}>
-                          <Button
-                            size="small"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate(buildClientPortalPath(activeClientKey, `leads/${lead.id}${detailQuerySuffix}`));
-                            }}
-                            sx={{ textTransform: 'none', color: GREEN, fontWeight: 700, minWidth: 0 }}
-                          >
-                            View
-                          </Button>
+                          <Tooltip title="View lead">
+                            <IconButton
+                              size="small"
+                              aria-label={`View ${lead.name}`}
+                              onKeyDown={(e) => e.stopPropagation()}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(buildClientPortalPath(activeClientKey, `leads/${lead.id}${detailQuerySuffix}`));
+                              }}
+                              sx={{ color: GREEN }}
+                            >
+                              <Icon icon="mdi:eye-outline" width={20} />
+                            </IconButton>
+                          </Tooltip>
                           {canDelete && (
-                            <Button size="small" color="error" disabled={deleteLead.isLoading} onClick={(e) => { e.stopPropagation(); setDeletingLead(lead); }} sx={{ textTransform: 'none', fontWeight: 700, minWidth: 0 }}>
-                              Delete
-                            </Button>
+                            <Tooltip title="Delete lead">
+                              <span>
+                                <IconButton size="small" color="error" aria-label={`Delete ${lead.name}`} disabled={deleteLead.isLoading} onKeyDown={(e) => e.stopPropagation()} onClick={(e) => { e.stopPropagation(); setDeletingLead(lead); }}>
+                                  <Icon icon="mdi:trash-can-outline" width={20} />
+                                </IconButton>
+                              </span>
+                            </Tooltip>
                           )}
                         </Stack>
                       </Box>
@@ -634,7 +736,7 @@ const LeadsPage = () => {
             const id = deletingLead.id;
             deleteLead.mutate(id, { onSuccess: () => {
               setDeletingLead(null);
-              setSelectedIds((ids) => ids.filter((selected) => selected !== id));
+              setSelection((ids) => ids.filter((selected) => selected !== id));
               if (leads.length === 1 && page > 1) updateParam('page', String(page - 1));
             } });
           }}>{deleteLead.isLoading ? 'Deleting...' : 'Delete lead'}</Button>
@@ -649,44 +751,16 @@ const LeadsPage = () => {
         lead={editingLead}
       />
 
-      <Dialog open={bulkOpen} onClose={() => !bulkAssign.isLoading && setBulkOpen(false)} fullWidth maxWidth="sm" PaperProps={{ sx: { m: { xs: 1, sm: 3 } } }}>
-        <DialogTitle>Bulk assign {selectedIds.length} lead{selectedIds.length === 1 ? '' : 's'}</DialogTitle>
-        <DialogContent dividers>
-          <Stack spacing={2} sx={{ pt: 1 }}>
-            <Alert severity="info">Assignment history and the next action are preserved for each selected Lead.</Alert>
-            <FormControl size="small" fullWidth>
-              <InputLabel id="bulk-team-label">Team</InputLabel>
-              <Select labelId="bulk-team-label" label="Team" value={bulkTeamId} onChange={(e) => { setBulkTeamId(String(e.target.value)); setBulkOwnerId(''); }}>
-                <MenuItem value=""><em>Select a team</em></MenuItem>
-                {teams.map((team) => <MenuItem key={team.id} value={team.id}>{team.name}</MenuItem>)}
-              </Select>
-            </FormControl>
-            <FormControl size="small" fullWidth disabled={!bulkTeamId}>
-              <InputLabel id="bulk-owner-label">Owner</InputLabel>
-              <Select labelId="bulk-owner-label" label="Owner" value={bulkOwnerId} onChange={(e) => setBulkOwnerId(String(e.target.value))}>
-                <MenuItem value=""><em>Select an eligible member</em></MenuItem>
-                {(bulkTeam?.members || [])
-                  .filter((m) => m.status === 'ACTIVE' && m.assignment_enabled)
-                  .map((m) => (
-                    <MenuItem key={m.management_id} value={m.management_id}>
-                      {m.management?.username || `User ${m.management_id}`} · {m.operational_role === 'TEAM_MANAGER' ? 'Team Manager' : 'Telecaller'}
-                    </MenuItem>
-                  ))}
-              </Select>
-            </FormControl>
-            <TextField size="small" fullWidth label="Reason" value={bulkReason} onChange={(e) => setBulkReason(e.target.value)} multiline minRows={2} helperText="Optional; included in assignment history." />
-            {bulkAssign.isError && <Alert severity="error">Unable to bulk assign these Leads. Review the selected Team and Owner.</Alert>}
-          </Stack>
+      <Dialog open={bulkDeleteOpen} onClose={() => !deleteSelected.isLoading && setBulkDeleteOpen(false)} fullWidth maxWidth="xs" aria-labelledby="delete-selected-leads-title">
+        <DialogTitle id="delete-selected-leads-title">Delete selected leads?</DialogTitle>
+        <DialogContent>
+          <Typography>Delete {selectedIds.length} selected lead{selectedIds.length === 1 ? '' : 's'} and their CRM history? This cannot be undone.</Typography>
+          <Typography sx={{ mt: 1, color: TEXT_MUTED, fontSize: '0.8rem' }}>Contacts, original website enquiries and Google Sheet rows will remain.</Typography>
         </DialogContent>
-        <DialogActions sx={{ flexDirection: { xs: 'column-reverse', sm: 'row' }, alignItems: { xs: 'stretch', sm: 'center' }, gap: 1, px: 3, py: 2 }}>
-          <Button onClick={() => setBulkOpen(false)} sx={{ textTransform: 'none' }}>Cancel</Button>
-          <Button
-            variant="contained"
-            onClick={submitBulk}
-            disabled={!bulkTeamId || !bulkOwnerId || bulkAssign.isLoading}
-            sx={{ textTransform: 'none', bgcolor: GREEN, boxShadow: 'none' }}
-          >
-            {bulkAssign.isLoading ? 'Assigning…' : 'Assign'}
+        <DialogActions>
+          <Button disabled={deleteSelected.isLoading} onClick={() => setBulkDeleteOpen(false)}>Cancel</Button>
+          <Button color="error" variant="contained" disabled={deleteSelected.isLoading || !selectedIds.length} onClick={submitBulkDelete}>
+            {deleteSelected.isLoading ? 'Deleting…' : 'Delete selected'}
           </Button>
         </DialogActions>
       </Dialog>

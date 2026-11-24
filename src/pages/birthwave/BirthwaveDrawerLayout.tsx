@@ -50,7 +50,8 @@ const BirthwaveDrawerLayout = ({
       sx: {
         width: { xs: '100vw', sm: width },
         maxWidth: '100vw',
-        bgcolor: 'var(--bw-bg)',
+        bgcolor: (theme) => `var(--bw-bg, ${theme.palette.background.paper})`,
+        backgroundImage: 'none',
         display: 'flex',
         flexDirection: 'column',
         borderTopLeftRadius: { xs: 0, sm: '16px' },
@@ -62,10 +63,10 @@ const BirthwaveDrawerLayout = ({
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
       <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={2} sx={{ px: { xs: 2.5, sm: 3 }, py: 2.5, flexShrink: 0 }}>
         <Box sx={{ minWidth: 0 }}>
-          <Typography variant="h6" sx={{ fontWeight: 800, color: 'var(--bw-text)', lineHeight: 1.25 }}>
+          <Typography variant="h6" sx={{ fontWeight: 800, color: (theme) => `var(--bw-text, ${theme.palette.text.primary})`, lineHeight: 1.25 }}>
             {title}
           </Typography>
-          {subtitle && <Typography variant="body2" sx={{ color: 'var(--bw-text-muted)', mt: 0.6 }}>{subtitle}</Typography>}
+          {subtitle && <Typography variant="body2" sx={{ color: (theme) => `var(--bw-text-muted, ${theme.palette.text.secondary})`, mt: 0.6 }}>{subtitle}</Typography>}
         </Box>
         <IconButton onClick={onClose} size="small" aria-label={ariaLabel || `Close ${title}`} sx={{ flexShrink: 0 }}>
           <Icon icon="mdi:close" width={22} height={22} />
@@ -76,7 +77,7 @@ const BirthwaveDrawerLayout = ({
         {children}
       </Box>
       <Divider />
-      <Stack direction={{ xs: 'column-reverse', sm: 'row' }} spacing={1.25} justifyContent="flex-end" sx={{ px: { xs: 2.5, sm: 3 }, py: 2.25, flexShrink: 0, bgcolor: 'var(--bw-surface)' }}>
+      <Stack direction={{ xs: 'column-reverse', sm: 'row' }} spacing={1.25} justifyContent="flex-end" sx={{ px: { xs: 2.5, sm: 3 }, py: 2.25, flexShrink: 0, bgcolor: (theme) => `var(--bw-surface, ${theme.palette.background.paper})` }}>
         {footer}
       </Stack>
     </Box>
