@@ -77,6 +77,7 @@ const LeadsPage = () => {
   const isInstagramView = view === 'instagram';
   const isClinicView = view === CLINIC_VIEW_KEY;
   const isWebsiteView = view !== 'crm' && !isInstagramView;
+  const isPrenatalYogaView = view === 'birthwave_prenatal_yoga';
 
   const search = searchParams.get('search') || '';
   const status = searchParams.get('status') || '';
@@ -475,7 +476,7 @@ const LeadsPage = () => {
                     // CRM-operational columns trailing after.
                     ...(isClinicView
                       ? ['Date of visit', 'Name', 'DOB', 'Phone', 'Email', 'Address', 'Here for', 'Referred by']
-                      : ['Name', 'Phone', ...(isInstagramView ? ['Instagram'] : []), 'Service']),
+                      : ['Name', 'Phone', ...(isInstagramView ? ['Instagram'] : []), 'Service', ...(isPrenatalYogaView ? ['Pregnancy weeks', 'Message'] : [])]),
                     'Source',
                     'Status',
                     'Team',
@@ -567,6 +568,12 @@ const LeadsPage = () => {
                             </Box>
                           )}
                           <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK, whiteSpace: 'nowrap' }}>{hereForValue}</Box>
+                          {isPrenatalYogaView && (
+                            <>
+                              <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK, whiteSpace: 'nowrap' }}>{lead.pregnancy_weeks ?? '—'}</Box>
+                              <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK, maxWidth: 280 }}>{lead.notes || '—'}</Box>
+                            </>
+                          )}
                         </>
                       )}
                       <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK, whiteSpace: 'nowrap' }}>{lead.source ? LEAD_SOURCE_LABELS[lead.source] || lead.source : '—'}</Box>

@@ -45,6 +45,7 @@ export interface BirthwaveLead {
   notes: string | null;
   source_provider?: string | null;
   source_external_id?: string | null;
+  pregnancy_weeks?: number | null;
   /** Provider integration payload (e.g. Repli/Instagram): campaign, answers, conversation id, … */
   integration_metadata?: Record<string, unknown> | null;
   created_at: string;
@@ -400,7 +401,8 @@ export type BirthwaveWebsiteSourceKey =
   | 'birthwave_naturalbirth'
   | 'birthwave_pregnancycare'
   | 'birthwave_vbac'
-  | 'birthwave_vaginismus';
+  | 'birthwave_vaginismus'
+  | 'birthwave_prenatal_yoga';
 
 export interface BirthwaveWebsiteLead {
   id: number;
@@ -411,6 +413,7 @@ export interface BirthwaveWebsiteLead {
   email: string | null;
   service: string | null;
   message: string | null;
+  pregnancy_weeks?: number | null;
   consent: boolean;
   source: string | null;
   campaign: string | null;

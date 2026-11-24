@@ -52,6 +52,7 @@ export const WEBSITE_SOURCE_LABELS: Record<string, string> = {
   birthwave_pregnancycare: 'Pregnancy Care',
   birthwave_vbac: 'VBAC',
   birthwave_vaginismus: 'Vaginismus',
+  birthwave_prenatal_yoga: 'Prenatal Yoga',
 };
 
 export const WEBSITE_SOURCE_ORDER = [
@@ -62,6 +63,7 @@ export const WEBSITE_SOURCE_ORDER = [
   'birthwave_pregnancycare',
   'birthwave_vbac',
   'birthwave_vaginismus',
+  'birthwave_prenatal_yoga',
 ] as const;
 
 export const WEBSITE_LEAD_STATUS_LABELS: Record<string, string> = {
