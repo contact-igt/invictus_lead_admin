@@ -69,15 +69,8 @@ export const useDeleteBirthwaveLeadMutation = (clientKey: string | undefined) =>
 export const useDeleteSelectedBirthwaveLeadsMutation = (clientKey: string | undefined) => {
   const qc = useQueryClient();
   return useMutation(async (ids: number[]) => {
-    const failedIds: number[] = [];
-    for (const id of ids) {
-      try {
-        await BirthwaveApis.deleteLead(clientKey, id);
-      } catch {
-        failedIds.push(id);
-      }
-    }
-    return failedIds;
+    const response = await BirthwaveApis.bulkDeleteLeads(clientKey, ids);
+    return response.data.failed_ids as number[];
   }, {
     onSuccess: () => {
       qc.invalidateQueries({ predicate: (query) => String(query.queryKey[0]).startsWith('birthwave-') });
