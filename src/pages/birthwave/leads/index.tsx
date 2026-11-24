@@ -106,12 +106,8 @@ const LeadsPage = () => {
   const isInstagramView = view === 'instagram';
   const isClinicView = view === CLINIC_VIEW_KEY;
   const isWebsiteView = view !== 'crm' && !isInstagramView;
-<<<<<<< Updated upstream
-  const isPrenatalYogaView = view === 'birthwave_prenatal_yoga';
-=======
   const isWebsiteSubmissionView = isWebsiteView && !isClinicView;
   const showPregnancyWeeks = view === 'birthwave_prenatal_yoga';
->>>>>>> Stashed changes
 
   const search = searchParams.get('search') || '';
   const status = searchParams.get('status') || '';
@@ -516,35 +512,7 @@ const LeadsPage = () => {
                       />
                     </Box>
                   )}
-<<<<<<< Updated upstream
-                  {[
-                    // Clinic registrations mirror the clinic's own check-in
-                    // sheet column order (Date of visit, Name, DOB, Phone,
-                    // Email, Address, Concern, Referred by) so staff used to
-                    // that sheet find the same layout here, with our
-                    // CRM-operational columns trailing after.
-                    ...(isClinicView
-                      ? ['Date of visit', 'Name', 'DOB', 'Phone', 'Email', 'Address', 'Here for', 'Referred by']
-                      : ['Name', 'Phone', ...(isInstagramView ? ['Instagram'] : []), 'Service', ...(isPrenatalYogaView ? ['Pregnancy weeks', 'Message'] : [])]),
-                    'Source',
-                    'Status',
-                    'Team',
-                    'Owner',
-                    'Assignment',
-                    'Assigned Doctor',
-                    // BW-UI-004: the "Next Follow-up" column is gone. It rendered
-                    // birthwave_leads.next_follow_up, which only the manual Lead
-                    // form ever writes — the task engine schedules a FOLLOW_UP
-                    // task instead and never touches that column, so the column
-                    // showed "—" on every row regardless of real follow-up work.
-                    // Live follow-ups are on the Follow-ups page and on Lead
-                    // Detail, both of which read birthwave_tasks.
-                    ...tableFields.map((f) => f.label),
-                    '',
-                  ].map((col, index) => (
-=======
                   {tableColumns.map((col, index) => (
->>>>>>> Stashed changes
                     <Box component="th" key={`${col}-${index}`} sx={{ textAlign: 'left', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', color: TEXT_MUTED, borderBottom: '1px solid', borderColor: CARD_BORDER, py: 1.25, px: 2 }}>
                       {col}
                     </Box>
@@ -643,12 +611,6 @@ const LeadsPage = () => {
                             </Box>
                           )}
                           <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK, whiteSpace: 'nowrap' }}>{hereForValue}</Box>
-                          {isPrenatalYogaView && (
-                            <>
-                              <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK, whiteSpace: 'nowrap' }}>{lead.pregnancy_weeks ?? '—'}</Box>
-                              <Box component="td" sx={{ py: 1.25, px: 2, borderBottom: '1px solid', borderColor: CARD_BORDER, fontSize: '0.8rem', color: TEXT_DARK, maxWidth: 280 }}>{lead.notes || '—'}</Box>
-                            </>
-                          )}
                         </>
                       )}
                       {isWebsiteSubmissionView ? (
