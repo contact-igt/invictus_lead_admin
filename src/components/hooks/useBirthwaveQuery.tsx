@@ -66,6 +66,25 @@ export const useDeleteBirthwaveLeadMutation = (clientKey: string | undefined) =>
 };
 
 // ── Dashboard ────────────────────────────────────────────────────────────
+export const useDeleteSelectedBirthwaveLeadsMutation = (clientKey: string | undefined) => {
+  const qc = useQueryClient();
+  return useMutation(async (ids: number[]) => {
+    const failedIds: number[] = [];
+    for (const id of ids) {
+      try {
+        await BirthwaveApis.deleteLead(clientKey, id);
+      } catch {
+        failedIds.push(id);
+      }
+    }
+    return failedIds;
+  }, {
+    onSuccess: () => {
+      qc.invalidateQueries({ predicate: (query) => String(query.queryKey[0]).startsWith('birthwave-') });
+    },
+  });
+};
+
 export const useBirthwaveDashboardQuery = (
   clientKey: string | undefined,
   params: Record<string, unknown> = {},

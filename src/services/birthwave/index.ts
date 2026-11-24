@@ -43,6 +43,7 @@ export interface BirthwaveLead {
   assignedDoctor?: { id: number; name: string; specialty?: string | null } | null;
   next_follow_up: string | null;
   notes: string | null;
+  pregnancy_weeks?: number | null;
   source_provider?: string | null;
   source_external_id?: string | null;
   pregnancy_weeks?: number | null;

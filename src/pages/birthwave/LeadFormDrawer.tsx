@@ -12,13 +12,14 @@ import {
   MenuItem,
   Select,
   TextField,
+  Typography,
 } from '@mui/material';
 import { BirthwaveDoctor, BirthwaveLead } from 'services/birthwave';
 import { useBirthwaveServicesQuery, useCreateBirthwaveLeadMutation, useUpdateBirthwaveLeadMutation } from 'components/hooks/useBirthwaveQuery';
 import { useCrmFieldsQuery } from 'components/hooks/useCrmQuery';
 import DynamicCustomFieldInputs from './crm/DynamicCustomFieldInputs';
 import { LEAD_SOURCE_LABELS, LEAD_STATUS_LABELS } from './constants';
-import BirthwaveDrawerLayout, { BirthwaveFormGrid, BirthwaveFormGridItem } from './BirthwaveDrawerLayout';
+import BirthwaveDrawerLayout, { BirthwaveFormGridItem } from './BirthwaveDrawerLayout';
 
 interface LeadFormDrawerProps {
   clientKey: string | undefined;
@@ -61,6 +62,7 @@ const LeadFormDrawer = ({ clientKey, open, onClose, doctors, lead }: LeadFormDra
 
   const formik = useFormik({
     enableReinitialize: true,
+    validateOnMount: true,
     initialValues: {
       name: lead?.name ?? '',
       phone: lead?.phone ?? '',
@@ -108,7 +110,7 @@ const LeadFormDrawer = ({ clientKey, open, onClose, doctors, lead }: LeadFormDra
       onClose={onClose}
       title={isEdit ? 'Edit Lead' : 'Add Lead'}
       subtitle={isEdit ? 'Update lead details' : 'Create a new Birthwave lead'}
-      width={460}
+      width={560}
       footer={<>
         <Button variant="outlined" color="inherit" onClick={onClose} disabled={isLoading}>Cancel</Button>
         <Button type="submit" form="birthwave-lead-form" variant="contained" disabled={isLoading || !formik.isValid || (!formik.dirty && !isEdit)}>
@@ -118,37 +120,49 @@ const LeadFormDrawer = ({ clientKey, open, onClose, doctors, lead }: LeadFormDra
     >
       <Box id="birthwave-lead-form" component="form" onSubmit={formik.handleSubmit} noValidate>
         {createMutation.isError || updateMutation.isError ? <Alert severity="error" sx={{ mb: 2 }}>{((createMutation.error || updateMutation.error) as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Unable to save this Lead.'}</Alert> : null}
-          <BirthwaveFormGrid>
+          <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: 'repeat(2, minmax(0, 1fr))' } }}>
+            <Typography variant="subtitle2" sx={{ gridColumn: '1 / -1', fontWeight: 700 }}>Contact details</Typography>
             <BirthwaveFormGridItem><TextField
               fullWidth
+              required
               name="name"
-              label="Name"
+              label="Full name"
+              autoComplete="name"
               value={formik.values.name}
               onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
               error={formik.touched.name && Boolean(formik.errors.name)}
               helperText={formik.touched.name && formik.errors.name}
               sx={ctrl}
             /></BirthwaveFormGridItem>
             <BirthwaveFormGridItem><TextField
               fullWidth
+              required
               name="phone"
-              label="Mobile"
+              label="Mobile number"
+              type="tel"
+              autoComplete="tel"
               value={formik.values.phone}
               onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
               error={formik.touched.phone && Boolean(formik.errors.phone)}
               helperText={formik.touched.phone && formik.errors.phone}
               sx={ctrl}
             /></BirthwaveFormGridItem>
-            <BirthwaveFormGridItem><TextField
+            <BirthwaveFormGridItem sx={{ gridColumn: '1 / -1' }}><TextField
               fullWidth
               name="email"
               label="Email"
+              type="email"
+              autoComplete="email"
               value={formik.values.email}
               onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
               error={formik.touched.email && Boolean(formik.errors.email)}
               helperText={formik.touched.email && formik.errors.email}
               sx={ctrl}
             /></BirthwaveFormGridItem>
+            <Typography variant="subtitle2" sx={{ gridColumn: '1 / -1', fontWeight: 700, mt: 0.5 }}>Enquiry details</Typography>
             {/*
               BW-SVC-001: the Service field was free text, so every operator typed
               their own spelling and nothing tied a Lead to a managed service. It
@@ -209,7 +223,7 @@ const LeadFormDrawer = ({ clientKey, open, onClose, doctors, lead }: LeadFormDra
                 </Select>
             </FormControl></BirthwaveFormGridItem>
 
-            <BirthwaveFormGridItem fullWidth><FormControl fullWidth sx={ctrl}>
+            <BirthwaveFormGridItem><FormControl fullWidth sx={ctrl}>
               <InputLabel id="lead-doctor-label">Assigned Doctor</InputLabel>
               <Select
                 labelId="lead-doctor-label"
@@ -228,7 +242,7 @@ const LeadFormDrawer = ({ clientKey, open, onClose, doctors, lead }: LeadFormDra
               <FormHelperText>Optional</FormHelperText>
             </FormControl></BirthwaveFormGridItem>
 
-            <BirthwaveFormGridItem fullWidth><TextField
+            <BirthwaveFormGridItem sx={{ gridColumn: '1 / -1' }}><TextField
               fullWidth
               multiline
               minRows={3}
@@ -239,7 +253,7 @@ const LeadFormDrawer = ({ clientKey, open, onClose, doctors, lead }: LeadFormDra
             /></BirthwaveFormGridItem>
 
             {formVisibleFields.length > 0 && (
-              <BirthwaveFormGridItem fullWidth><>
+              <BirthwaveFormGridItem sx={{ gridColumn: '1 / -1' }}><>
                 <Divider />
                 <DynamicCustomFieldInputs
                   fields={formVisibleFields}
@@ -248,7 +262,7 @@ const LeadFormDrawer = ({ clientKey, open, onClose, doctors, lead }: LeadFormDra
                 />
               </></BirthwaveFormGridItem>
             )}
-          </BirthwaveFormGrid>
+          </Box>
       </Box>
     </BirthwaveDrawerLayout>
   );

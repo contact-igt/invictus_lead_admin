@@ -44,7 +44,13 @@ const RecentLeadsTable = ({ clientKey, leads, loading }: RecentLeadsTableProps) 
     {loading ? (
       <Stack direction="column" spacing={1}>
         {[1, 2, 3, 4].map((i) => (
-          <Skeleton key={i} variant="rounded" height={40} sx={{ borderRadius: '8px' }} />
+          <Stack key={i} direction="row" alignItems="center" spacing={2} sx={{ height: 40 }}>
+            <Skeleton width="27%" />
+            <Skeleton width="24%" />
+            <Skeleton width="13%" />
+            <Skeleton variant="rounded" width="13%" height={20} />
+            <Skeleton variant="circular" width={20} height={20} />
+          </Stack>
         ))}
       </Stack>
     ) : leads.length === 0 ? (
