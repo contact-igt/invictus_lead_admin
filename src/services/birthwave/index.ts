@@ -48,6 +48,7 @@ export interface BirthwaveLead {
   pregnancy_weeks?: number | null;
   /** Provider integration payload (e.g. Repli/Instagram): campaign, answers, conversation id, … */
   integration_metadata?: Record<string, unknown> | null;
+  contact_review_required?: boolean;
   created_at: string;
   updated_at: string;
   custom_fields?: CrmCustomFieldValues;
@@ -322,6 +323,7 @@ export interface BirthwaveLeadActivity {
     | 'primary_task_changed'
     | 'missing_next_action'
     | 'contact_attempt_recorded'
+    | 'contact_identity_conflict'
     | 'customer_connected'
     | 'customer_not_reached'
     | 'disposition_recorded'
