@@ -66,6 +66,7 @@ const EVENT_ICON: Record<BirthwaveLeadActivity['event_type'], string> = {
   primary_task_changed: 'hugeicons:arrow-reload-horizontal',
   missing_next_action: 'hugeicons:alert-02',
   contact_attempt_recorded: 'hugeicons:call-02',
+  contact_identity_conflict: 'hugeicons:alert-02',
   customer_connected: 'hugeicons:user-check-01',
   customer_not_reached: 'hugeicons:call-cancel-01',
   disposition_recorded: 'hugeicons:check-list',
@@ -561,6 +562,11 @@ const LeadDetailPage = () => {
             <InfoRow label="Contact Name" value={lead.contact?.display_name || lead.name || '—'} />
             <InfoRow label="Contact Phone" value={lead.contact?.normalized_phone || lead.phone || '—'} />
             <InfoRow label="Contact Email" value={lead.contact?.normalized_email || lead.email || '—'} />
+            {lead.contact_review_required && (
+              <Alert severity="warning" sx={{ mt: 1 }}>
+                Phone and email matched different existing Contacts. Phone was kept as the primary Contact; manual review is required.
+              </Alert>
+            )}
           </Box>
 
           {clinic && (
